@@ -28,6 +28,7 @@ type Check_Request struct {
 	Vendor         Vendor     `json:"vendor" bson:"vendor"`
 	Description    string     `json:"description" bson:"description"`
 	Purchases      []Purchase `json:"purchases" bson:"purchases"`
+	Receipts       []string   `json:"receipts" bson:"receipts"`
 	Order_Total    float64    `json:"order_total" bson:"order_total"`
 	Credit_Card    string     `json:"credit_card" bson:"credit_card"`
 	Created_At     time.Time  `json:"created_at" bson:"created_at"`

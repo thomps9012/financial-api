@@ -1,8 +1,6 @@
 package user
 
-import (
-	"time"
-)
+import "time"
 
 type Vehicle struct {
 	ID          int16  `json:"id" bson:"_id"`
