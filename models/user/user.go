@@ -44,20 +44,43 @@ type Manager struct {
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
-func initialMgrID(email string) string {
+func setManagerID(email string, employee_role Role) string {
 	var manager_id string
 	managers := []Manager{
 		{"test1", []string{"id1", "id2", "id3", "id4", "id5"}},
 		{"test2", []string{"id6", "id7", "id8", "id9", "id10"}},
 		{"test3", []string{"id11", "id12", "id13", "id14", "id15"}},
 	}
-	for i := range managers {
-		var employeesArr = managers[i].Employees
-		for s := range employeesArr {
-			if employeesArr[s] == email {
-				manager_id = managers[i].ID
+	executives := []Manager{
+		{"test4", []string{"id16", "id22", "id32", "id41", "id35"}},
+		{"test5", []string{"id66", "id57", "id84", "id92", "id101"}},
+		{"test6", []string{"id161", "id312", "id123", "id149", "id915"}},
+	}
+	var finance = "finance_id"
+	N_A := "N/A"
+	switch employee_role {
+	case EMPLOYEE:
+		for i := range managers {
+			var employeesArr = managers[i].Employees
+			for s := range employeesArr {
+				if employeesArr[s] == email {
+					manager_id = managers[i].ID
+				}
 			}
 		}
+	case MANAGER:
+		for i := range executives {
+			var employeesArr = managers[i].Employees
+			for s := range employeesArr {
+				if employeesArr[s] == email {
+					manager_id = managers[i].ID
+				}
+			}
+		}
+	case EXECUTIVE:
+		manager_id = finance
+	default:
+		manager_id = N_A
 	}
 	return manager_id
 }
@@ -75,7 +98,7 @@ func (u *User) Create(email string, role Role) (string, error) {
 	u.Last_Login = time.Now()
 	u.Is_Active = true
 	if role != EXECUTIVE {
-		manager_id := initialMgrID(email)
+		manager_id := setManagerID(email, role)
 		u.Manager_ID = manager_id
 	} else {
 		u.Manager_ID = "N/A"
@@ -152,8 +175,26 @@ func (u *User) AddNotification(item_id string, user_id string) (bool, error) {
 	return true, nil
 }
 
-// func (u *User) ClearNotifications(user_id string) (bool, error) {
-// }
+func (u *User) ClearNotifications(user_id string) (bool, error) {
+	collection := conn.DB.Collection("users")
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pullAll", Value: "incomplete_actions"}})
+	if err != nil {
+		panic(err)
+	}
+	if result.ModifiedCount == 0 {
+		return false, err
+	}
+	return true, nil
+}
 
-// func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
-// }
+func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
+	collection := conn.DB.Collection("users")
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": item_id}}})
+	if err != nil {
+		panic(err)
+	}
+	if result.ModifiedCount == 0 {
+		return false, err
+	}
+	return true, nil
+}

@@ -68,3 +68,53 @@ func (m *Mileage_Request) Create(user_id string) (string, error) {
 	}
 	return m.ID, nil
 }
+
+func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool, error) {
+	collection := conn.DB.Collection("mileage_requests")
+	var milage_req Mileage_Request
+	filter := bson.D{{Key: "request_id", Value: request.ID}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
+	if err != nil {
+		panic(err)
+	}
+	if milage_req.User_ID != user_id {
+		return false, fmt.Errorf("you are not the user who created the request")
+	}
+	current_status := m.Current_Status
+	if current_status != PENDING && current_status != REJECTED {
+		return false, fmt.Errorf("this request is already being processed")
+	}
+	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
+	if update_err != nil {
+		panic(update_err)
+	}
+	if result.ModifiedCount == 0 {
+		return false, err
+	}
+	return true, nil
+}
+
+func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool, error) {
+	collection := conn.DB.Collection("mileage_requests")
+	var milage_req Mileage_Request
+	filter := bson.D{{Key: "request_id", Value: request.ID}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
+	if err != nil {
+		panic(err)
+	}
+	if milage_req.User_ID != user_id {
+		return false, fmt.Errorf("you are not the user who created the request")
+	}
+	current_status := m.Current_Status
+	if current_status != PENDING && current_status != REJECTED {
+		return false, fmt.Errorf("this request is already being processed")
+	}
+	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
+	if update_err != nil {
+		panic(update_err)
+	}
+	if result.DeletedCount == 0 {
+		return false, err
+	}
+	return true, nil
+}

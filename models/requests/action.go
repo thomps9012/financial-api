@@ -104,7 +104,7 @@ func Archive(request_id string, request_type string) (bool, error) {
 	// i.e. mileage_requests
 	collection := conn.DB.Collection(request_type)
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED}}}
+	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}}
 	// updates the request
 	err := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if err != nil {
