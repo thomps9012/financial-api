@@ -10,6 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// possible expanison after org chart release
+type Role string
+
+const (
+	EMPLOYEE  Role = "EMPLOYEE"
+	MANAGER   Role = "MANAGER"
+	FINANCE   Role = "FINANCE"
+	EXECUTIVE Role = "EXECUTIVE"
+)
+
 type Vehicle struct {
 	ID          string `json:"id" bson:"_id"`
 	Name        string `json:"name" bson:"name"`
@@ -17,13 +27,15 @@ type Vehicle struct {
 }
 
 type User struct {
-	ID            string    `json:"id" bson:"_id"`
-	Email_Address string    `json:"email_address" bson:"email_address"`
-	Name          string    `json:"name" bson:"name"`
-	Last_Login    time.Time `json:"last_login" bson:"last_login"`
-	Vehicles      []Vehicle `json:"vehicles" bson:"vehicles"`
-	Manager_ID    string    `json:"manager_id" bson:"manager_id"`
-	Is_Active     bool      `json:"is_active" bson:"is_active"`
+	ID                 string    `json:"id" bson:"_id"`
+	Email_Address      string    `json:"email_address" bson:"email_address"`
+	Name               string    `json:"name" bson:"name"`
+	Last_Login         time.Time `json:"last_login" bson:"last_login"`
+	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
+	InComplete_Actions []string  `json:"incomplete_actions" bson:"incomplete_actions"`
+	Manager_ID         string    `json:"manager_id" bson:"manager_id"`
+	Is_Active          bool      `json:"is_active" bson:"is_active"`
+	Role               Role      `json:"role" bson:"role"`
 }
 
 type Manager struct {
@@ -31,7 +43,8 @@ type Manager struct {
 	Employees []string
 }
 
-func findManagerID(email string) string {
+// can optimize this function with a switch to search certain arrays based on the user's role
+func initialMgrID(email string) string {
 	var manager_id string
 	managers := []Manager{
 		{"test1", []string{"id1", "id2", "id3", "id4", "id5"}},
@@ -49,7 +62,7 @@ func findManagerID(email string) string {
 	return manager_id
 }
 
-func (u *User) Create(email string) (string, error) {
+func (u *User) Create(email string, role Role) (string, error) {
 	collection := conn.DB.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	var user User
@@ -58,11 +71,14 @@ func (u *User) Create(email string) (string, error) {
 		return "", fmt.Errorf("account already created")
 	}
 	u.ID = uuid.NewString()
+	u.Role = role
 	u.Last_Login = time.Now()
 	u.Is_Active = true
-	manager_id := findManagerID(email)
-	if manager_id != "" {
+	if role != EXECUTIVE {
+		manager_id := initialMgrID(email)
 		u.Manager_ID = manager_id
+	} else {
+		u.Manager_ID = "N/A"
 	}
 	_, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {
@@ -86,13 +102,12 @@ func (u *User) Login(email string) (bool, error) {
 
 func (u *User) AddVehicle(name string, description string, user_id string) (string, error) {
 	collection := conn.DB.Collection("users")
-	filter := bson.D{{Key: "_id", Value: user_id}}
 	vehicle := &Vehicle{
 		ID:          uuid.NewString(),
 		Name:        name,
 		Description: description,
 	}
-	result, err := collection.UpdateOne(context.TODO(), filter, bson.D{{Key: "$push", Value: bson.M{"vehicles": vehicle}}})
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"vehicles": vehicle}}})
 	if err != nil {
 		panic(err)
 	}
@@ -104,8 +119,7 @@ func (u *User) AddVehicle(name string, description string, user_id string) (stri
 
 func (u *User) Deactivate(user_id string) (bool, error) {
 	collection := conn.DB.Collection("users")
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	result, err := collection.UpdateOne(context.TODO(), filter, bson.D{{Key: "$set", Value: bson.M{"is_active": false}}})
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$set", Value: bson.M{"is_active": false}}})
 	if err != nil {
 		panic(err)
 	}
@@ -114,3 +128,32 @@ func (u *User) Deactivate(user_id string) (bool, error) {
 	}
 	return true, nil
 }
+
+func (u *User) FindMgrID(user_id string) (string, error) {
+	collection := conn.DB.Collection("users")
+	var user User
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		panic(err)
+	}
+	return user.Manager_ID, nil
+}
+
+func (u *User) AddNotification(item_id string, user_id string) (bool, error) {
+	collection := conn.DB.Collection("users")
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": item_id}}})
+	if err != nil {
+		panic(err)
+	}
+	if result.ModifiedCount == 0 {
+		return false, err
+	}
+	return true, nil
+}
+
+// func (u *User) ClearNotifications(user_id string) (bool, error) {
+// }
+
+// func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
+// }

@@ -1,6 +1,15 @@
 package requests
 
-import "time"
+import (
+	"context"
+	conn "financial-api/m/db"
+	user "financial-api/m/models/user"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 type Mileage_Request struct {
 	ID                string    `json:"id" bson:"_id"`
@@ -19,4 +28,43 @@ type Mileage_Request struct {
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
 	Current_Status    Status    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
+}
+
+func (m *Mileage_Request) Create(user_id string) (string, error) {
+	collection := conn.DB.Collection("mileage_requests")
+	var milage_req Mileage_Request
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: m.Date}, {Key: "starting_location", Value: m.Starting_Location}, {Key: "destintation", Value: m.Destination}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
+	if err == nil {
+		return "", fmt.Errorf("mileage request already created")
+	}
+	var currentMileageRate = 62.5
+	m.ID = uuid.NewString()
+	m.Created_At = time.Now()
+	m.Is_Active = true
+	m.User_ID = user_id
+	m.Current_Status = PENDING
+	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
+	first_action := &Action{
+		ID:         uuid.NewString(),
+		User_ID:    user_id,
+		Status:     PENDING,
+		Created_At: time.Now(),
+	}
+	m.Action_History = append(m.Action_History, *first_action)
+	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate + m.Tolls + m.Parking
+	var req_user user.User
+	manager_id, mgr_find_err := req_user.FindMgrID(m.User_ID)
+	if mgr_find_err != nil {
+		panic(err)
+	}
+	var manager user.User
+	update_user, update_err := manager.AddNotification(m.ID, manager_id)
+	if update_err != nil {
+		panic(err)
+	}
+	if !update_user {
+		return "", err
+	}
+	return m.ID, nil
 }
