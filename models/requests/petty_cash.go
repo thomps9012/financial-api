@@ -68,11 +68,11 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, user_id string) 
 		panic(err)
 	}
 	if petty_cash_req.User_ID != user_id {
-		return false, fmt.Errorf("you are not the user who created the request")
+		panic("you are not the user who created this request")
 	}
 	current_status := petty_cash_req.Current_Status
 	if current_status != PENDING && current_status != REJECTED {
-		return false, fmt.Errorf("this request is already being processed")
+		panic("this request is already being processed")
 	}
 	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
 	if update_err != nil {
@@ -93,11 +93,11 @@ func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) 
 		panic(err)
 	}
 	if petty_cash_req.User_ID != user_id {
-		return false, fmt.Errorf("you are not the user who created the request")
+		panic("you are not the user who created this request")
 	}
 	current_status := petty_cash_req.Current_Status
 	if current_status != PENDING && current_status != REJECTED {
-		return false, fmt.Errorf("this request is already being processed")
+		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
 	if update_err != nil {
