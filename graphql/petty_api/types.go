@@ -20,6 +20,12 @@ var PettyCashType = graphql.NewObject(
 			"user": &graphql.Field{
 				Type: u.UserType,
 			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"grant": &graphql.Field{
+				Type: g.GrantType,
+			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
 			},
@@ -84,29 +90,17 @@ var AggUserPettyCash = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Aggregate User Petty Cash Requests",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
 			},
 			"user": &graphql.Field{
 				Type: u.UserType,
 			},
-			"date": &graphql.Field{
+			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
 			},
-			"amount": &graphql.Field{
+			"total_amount": &graphql.Field{
 				Type: graphql.Float,
-			},
-			"created_at": &graphql.Field{
-				Type: graphql.DateTime,
-			},
-			"current_status": &graphql.Field{
-				Type: u.StatusType,
-			},
-			"is_active": &graphql.Field{
-				Type: graphql.Boolean,
 			},
 		},
 	},
@@ -116,29 +110,17 @@ var AggGrantPettyCashReq = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Aggregate Grant Petty Cash Requests",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
 			"grant_id": &graphql.Field{
 				Type: graphql.ID,
 			},
 			"grant": &graphql.Field{
 				Type: g.GrantType,
 			},
-			"date": &graphql.Field{
+			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
 			},
-			"amount": &graphql.Field{
+			"total_amount": &graphql.Field{
 				Type: graphql.Float,
-			},
-			"created_at": &graphql.Field{
-				Type: graphql.DateTime,
-			},
-			"current_status": &graphql.Field{
-				Type: u.StatusType,
-			},
-			"is_active": &graphql.Field{
-				Type: graphql.Boolean,
 			},
 		},
 	},

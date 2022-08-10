@@ -3,6 +3,7 @@ package requests
 import (
 	"context"
 	conn "financial-api/m/db"
+	grant "financial-api/m/models/grants"
 	user "financial-api/m/models/user"
 	"fmt"
 	"time"
@@ -14,6 +15,7 @@ import (
 type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
+	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
 	Date           time.Time `json:"date" bson:"date"`
 	Description    string    `json:"description" bson:"description"`
 	Amount         float64   `json:"amount" bson:"amount"`
@@ -24,11 +26,31 @@ type Petty_Cash_Request struct {
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
-type Petty_Cash_Overview struct{}
+type Petty_Cash_Overview struct {
+	ID             string      `json:"id" bson:"_id"`
+	User_ID        string      `json:"user_id" bson:"user_id"`
+	User           user.User   `json:"user" bson:"user"`
+	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
+	Grant          grant.Grant `json:"grant" bson:"grant"`
+	Date           time.Time   `json:"date" bson:"date"`
+	Created_At     time.Time   `json:"created_at" bson:"created_at"`
+	Current_Status Status      `json:"current_status" bson:"current_status"`
+	Is_Active      bool        `json:"is_active" bson:"is_active"`
+}
 
-type User_Petty_Cash struct{}
+type User_Petty_Cash struct {
+	User_ID      string    `json:"user_id" bson:"user_id"`
+	User         user.User `json:"user" bson:"user"`
+	Last_Request time.Time `json:"last_request" bson:"last_request"`
+	Total_Amount float64   `json:"total_amount" bson:"total_amount"`
+}
 
-type Grant_Petty_Cash struct{}
+type Grant_Petty_Cash struct {
+	Grant_ID     string      `json:"grant_id" bson:"grant_id"`
+	Grant        grant.Grant `json:"grant" bson:"grant"`
+	Last_Request time.Time   `json:"last_request" bson:"last_request"`
+	Total_Amount float64     `json:"total_amount" bson:"total_amount"`
+}
 
 func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 	var petty_cash_req Petty_Cash_Request
@@ -114,4 +136,110 @@ func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) 
 		return false, err
 	}
 	return true, nil
+}
+
+func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
+	collection := conn.DB.Collection("petty_cash_requests")
+	var overviews []Petty_Cash_Overview
+	cursor, err := collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var user user.User
+		var grant grant.Grant
+		var petty_cash_req Petty_Cash_Request
+		decode_err := cursor.Decode(&petty_cash_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		grant_info, grant_err := grant.Find(petty_cash_req.Grant_ID)
+		if grant_err != nil {
+			panic(grant_err)
+		}
+		user_info, user_err := user.FindByID(petty_cash_req.User_ID)
+		if user_err != nil {
+			panic(user_err)
+		}
+		petty_cash_overview := &Petty_Cash_Overview{
+			ID:             petty_cash_req.ID,
+			User_ID:        petty_cash_req.User_ID,
+			User:           user_info,
+			Grant_ID:       petty_cash_req.Grant_ID,
+			Grant:          grant_info,
+			Date:           petty_cash_req.Date,
+			Current_Status: petty_cash_req.Current_Status,
+			Created_At:     petty_cash_req.Created_At,
+			Is_Active:      petty_cash_req.Is_Active,
+		}
+		overviews = append(overviews, *petty_cash_overview)
+	}
+	return overviews, nil
+}
+func (u *User_Petty_Cash) FindByUser(user_id string) (User_Petty_Cash, error) {
+	collection := conn.DB.Collection("petty_cash_requests")
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	var user user.User
+	user_info, user_err := user.FindByID(user_id)
+	if user_err != nil {
+		panic(user_err)
+	}
+	total_amount := 0.0
+	last_request := time.Date(2020, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	for cursor.Next(context.TODO()) {
+		var petty_cash_req Petty_Cash_Request
+		decode_err := cursor.Decode(&petty_cash_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		if petty_cash_req.Date.After(last_request) {
+			last_request = petty_cash_req.Date
+		}
+		total_amount += petty_cash_req.Amount
+	}
+	petty_cash_overview := &User_Petty_Cash{
+		User_ID:      user_id,
+		User:         user_info,
+		Last_Request: last_request,
+		Total_Amount: total_amount,
+	}
+	return *petty_cash_overview, nil
+}
+func (g *Grant_Petty_Cash) FindByGrant(grant_id string) (Grant_Petty_Cash, error) {
+	collection := conn.DB.Collection("petty_cash_requests")
+	cursor, err := collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	var grant grant.Grant
+	grant_info, grant_err := grant.Find(grant_id)
+	if grant_err != nil {
+		panic(grant_err)
+	}
+	total_amount := 0.0
+	last_request := time.Date(2020, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	for cursor.Next(context.TODO()) {
+		var petty_cash_req Petty_Cash_Request
+		decode_err := cursor.Decode(&petty_cash_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		if petty_cash_req.Date.After(last_request) {
+			last_request = petty_cash_req.Date
+		}
+		total_amount += petty_cash_req.Amount
+	}
+	petty_cash_overview := &Grant_Petty_Cash{
+		Grant_ID:     grant_id,
+		Grant:        grant_info,
+		Last_Request: last_request,
+		Total_Amount: total_amount,
+	}
+	return *petty_cash_overview, nil
 }

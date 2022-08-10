@@ -48,7 +48,6 @@ type Check_Request struct {
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
 
-// possibly add created at date in here
 type Check_Request_Overview struct {
 	ID             string      `json:"id" bson:"_id"`
 	User_ID        string      `json:"user_id" bson:"user_id"`
