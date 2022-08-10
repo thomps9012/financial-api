@@ -30,6 +30,30 @@ type Mileage_Request struct {
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
+type Mileage_Overview struct {
+	ID             string    `json:"id" bson:"_id"`
+	User_ID        string    `json:"user_id" bson:"user_id"`
+	User           user.User `json:"user" bson:"user"`
+	Date           time.Time `json:"date" bson:"date"`
+	Trip_Mileage   int64     `json:"trip_mileage" bson:"trip_mileage"`
+	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
+	Created_At     time.Time `json:"created_at" bson:"created_at"`
+	Current_Status Status    `json:"current_status" bson:"current_status"`
+	Is_Active      bool      `json:"is_active" bson:"is_active"`
+}
+
+type Monthly_Mileage_Overview struct {
+	User_ID       string     `json:"user_id" bson:"user_id"`
+	Name          string     `json:"name" bson:"name"`
+	Month         time.Month `json:"month" bson:"month"`
+	Year          int        `json:"year" bson:"year"`
+	Mileage       int64      `json:"mileage" bson:"mileage"`
+	Tolls         float64    `json:"tolls" bson:"tolls"`
+	Parking       float64    `json:"parking" bson:"parking"`
+	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
+	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
+}
+
 func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	collection := conn.DB.Collection("mileage_requests")
 	var milage_req Mileage_Request
@@ -117,4 +141,48 @@ func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool,
 		return false, err
 	}
 	return true, nil
+}
+func (m *Mileage_Request) FindByID(mileage_id string) (Mileage_Request, error) {
+	collection := conn.DB.Collection("mileage_requests")
+	var milage_req Mileage_Request
+	filter := bson.D{{Key: "_id", Value: mileage_id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
+	if err != nil {
+		panic(err)
+	}
+	return milage_req, nil
+}
+
+func (m *Mileage_Overview) FindAll() ([]Mileage_Overview, error) {
+	collection := conn.DB.Collection("mileage_requests")
+	var overviews []Mileage_Overview
+	cursor, err := collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var mileage_req Mileage_Request
+		decode_err := cursor.Decode(&mileage_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		var user user.User
+		user_info, user_err := user.FindByID(mileage_req.User_ID)
+		if user_err != nil {
+			panic(user_err)
+		}
+		mileage_overview := &Mileage_Overview{
+			ID:             mileage_req.ID,
+			User_ID:        mileage_req.User_ID,
+			User:           user_info,
+			Date:           mileage_req.Date,
+			Trip_Mileage:   mileage_req.Trip_Mileage,
+			Reimbursement:  mileage_req.Reimbursement,
+			Created_At:     mileage_req.Created_At,
+			Current_Status: mileage_req.Current_Status,
+			Is_Active:      mileage_req.Is_Active,
+		}
+		overviews = append(overviews, *mileage_overview)
+	}
+	return overviews, nil
 }

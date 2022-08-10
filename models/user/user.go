@@ -340,6 +340,7 @@ func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
 	return true, nil
 }
 
+// one of these should be deprecated
 func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly_Mileage, error) {
 	collection := conn.DB.Collection("mileage_requests")
 	var user User
