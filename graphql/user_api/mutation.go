@@ -31,6 +31,9 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(RoleType),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"login": &graphql.Field{
 			Type:        UserType,
@@ -42,6 +45,9 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
 			},
 		},
 		"add_vehicle": &graphql.Field{
@@ -58,6 +64,9 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"remove_vehicle": &graphql.Field{
 			Type:        VehicleType,
@@ -69,6 +78,9 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				"vehicle_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
 			},
 		},
 	},

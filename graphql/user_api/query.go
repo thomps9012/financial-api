@@ -15,6 +15,9 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"monthly_mileage": &graphql.Field{
 			Type:        UserMonthlyMileageType,
@@ -29,6 +32,9 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 				"year": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.Int),
 				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
 			},
 		},
 		"monthly_petty_cash": &graphql.Field{
@@ -45,6 +51,9 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.Int),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"check_requests": &graphql.Field{
 			Type:        UserCheckRequests,
@@ -53,6 +62,9 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
 			},
 		},
 	},

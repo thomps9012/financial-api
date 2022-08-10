@@ -39,6 +39,9 @@ var MileageMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.Float),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 	},
 })

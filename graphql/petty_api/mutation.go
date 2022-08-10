@@ -27,6 +27,9 @@ var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: &graphql.List{OfType: graphql.String},
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 	},
 })

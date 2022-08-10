@@ -7,6 +7,52 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+var AddressInputType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "Vendor Address Input",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"website": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"street": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"city": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"state": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"zip": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+		},
+	},
+)
+
+var AddressType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Vendor Address Information",
+		Fields: graphql.Fields{
+			"website": &graphql.Field{
+				Type: graphql.String,
+			},
+			"street": &graphql.Field{
+				Type: graphql.String,
+			},
+			"city": &graphql.Field{
+				Type: graphql.String,
+			},
+			"state": &graphql.Field{
+				Type: graphql.String,
+			},
+			"zip": &graphql.Field{
+				Type: graphql.Int,
+			},
+		},
+	},
+)
+
 var VendorInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "Vendor Input",
@@ -15,7 +61,7 @@ var VendorInputType = graphql.NewInputObject(
 				Type: graphql.NewNonNull(graphql.String),
 			},
 			"address": &graphql.InputObjectFieldConfig{
-				Type: graphql.NewNonNull(graphql.String),
+				Type: graphql.NewNonNull(AddressInputType),
 			},
 		},
 	},
@@ -28,7 +74,7 @@ var VendorType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"address": &graphql.Field{
-				Type: graphql.String,
+				Type: AddressType,
 			},
 		},
 	},

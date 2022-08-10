@@ -20,6 +20,9 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.Int),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"detail": &graphql.Field{
 			Type:        MileageType,
@@ -28,6 +31,9 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
 			},
 		},
 	},

@@ -72,6 +72,7 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	if mgr_find_err != nil {
 		panic(err)
 	}
+	// add in extra validation based on org chart here
 	var manager user.User
 	update_user, update_err := manager.AddNotification(c.ID, manager_id)
 	if update_err != nil {

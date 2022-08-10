@@ -17,6 +17,9 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"grant_requests": &graphql.Field{
 			Type:        AggGrantPettyCashReq,
@@ -26,6 +29,9 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"detail": &graphql.Field{
 			Type:        PettyCashType,
@@ -34,6 +40,9 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
 			},
 		},
 	},
