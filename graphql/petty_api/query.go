@@ -1,6 +1,13 @@
 package petty_api
 
-import "github.com/graphql-go/graphql"
+import (
+	"context"
+	conn "financial-api/m/db"
+	. "financial-api/m/models/requests"
+
+	"github.com/graphql-go/graphql"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Petty Cash Request Queries",
@@ -8,6 +15,14 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 		"overview": &graphql.Field{
 			Type:        PettyCashOverviewType,
 			Description: "Gather overview information for all petty cash requests, and basic info",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var petty_cash_overview Petty_Cash_Overview
+				results, err := petty_cash_overview.FindAll()
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
 		},
 		"user_requests": &graphql.Field{
 			Type:        AggUserPettyCash,
@@ -18,7 +33,16 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				user_id, isOK := p.Args["user_id"].(string)
+				if !isOK {
+					panic("need to enter a valid user id")
+				}
+				var user_petty_cash User_Petty_Cash
+				results, err := user_petty_cash.FindByUser(user_id)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
 			},
 		},
 		"grant_requests": &graphql.Field{
@@ -30,7 +54,16 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				grant_id, isOK := p.Args["grant_id"].(string)
+				if !isOK {
+					panic("need to enter a valid grant id")
+				}
+				var grant_petty_cash Grant_Petty_Cash
+				results, err := grant_petty_cash.FindByGrant(grant_id)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
 			},
 		},
 		"detail": &graphql.Field{
@@ -42,8 +75,20 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				request_id, isOk := p.Args["id"].(string)
+				if !isOk {
+					panic("must enter a valid check request id")
+				}
+				var petty_cash_req Petty_Cash_Request
+				collection := conn.DB.Collection("petty_cash_requests")
+				filter := bson.D{{Key: "_id", Value: request_id}}
+				err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
+				if err != nil {
+					panic(err)
+				}
+				return petty_cash_req, nil
 			},
 		},
 	},
-})
+},
+)

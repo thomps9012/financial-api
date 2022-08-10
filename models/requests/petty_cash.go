@@ -24,6 +24,12 @@ type Petty_Cash_Request struct {
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
+type Petty_Cash_Overview struct{}
+
+type User_Petty_Cash struct{}
+
+type Grant_Petty_Cash struct{}
+
 func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 	var petty_cash_req Petty_Cash_Request
 	collection := conn.DB.Collection("petty_cash_requests")
