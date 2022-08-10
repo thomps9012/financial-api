@@ -31,6 +31,14 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				"user_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var check_request User_Check_Overview
@@ -38,7 +46,9 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				results, err := check_request.FindByUser(user_id)
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := check_request.FindByUser(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -52,6 +62,14 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var check_request Grant_Check_Overview
@@ -59,7 +77,9 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid grant id")
 				}
-				results, err := check_request.FindByGrant(grant_id)
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := check_request.FindByGrant(grant_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}

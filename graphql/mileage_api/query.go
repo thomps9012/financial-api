@@ -8,6 +8,9 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 		"overview": &graphql.Field{
 			Type:        MileageOverviewType,
 			Description: "Gather overview information for all mileage requests, and basic info",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// return , nil
+			},
 		},
 		"monthly_mileage": &graphql.Field{
 			Type:        AggMonthlyMileageType,

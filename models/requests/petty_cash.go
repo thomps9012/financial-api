@@ -176,9 +176,16 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 	}
 	return overviews, nil
 }
-func (u *User_Petty_Cash) FindByUser(user_id string) (User_Petty_Cash, error) {
+
+// refactor inputs to start and end dates to allow for flexibility in data search
+func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date string) (User_Petty_Cash, error) {
 	collection := conn.DB.Collection("petty_cash_requests")
-	filter := bson.D{{Key: "user_id", Value: user_id}}
+	var filter bson.D
+	if start_date != "" && end_date != "" {
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+	} else {
+		filter = bson.D{{Key: "user_id", Value: user_id}}
+	}
 	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		panic(err)
@@ -210,9 +217,15 @@ func (u *User_Petty_Cash) FindByUser(user_id string) (User_Petty_Cash, error) {
 	}
 	return *petty_cash_overview, nil
 }
-func (g *Grant_Petty_Cash) FindByGrant(grant_id string) (Grant_Petty_Cash, error) {
+func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Petty_Cash, error) {
 	collection := conn.DB.Collection("petty_cash_requests")
-	cursor, err := collection.Find(context.TODO(), bson.D{})
+	var filter bson.D
+	if start_date != "" && end_date != "" {
+		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+	} else {
+		filter = bson.D{{Key: "grant_id", Value: grant_id}}
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		panic(err)
 	}

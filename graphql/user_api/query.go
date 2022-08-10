@@ -57,7 +57,7 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"check_requests": &graphql.Field{
 			Type:        UserCheckRequests,
-			Description: "Aggregate and gather all check requests for a user",
+			Description: "Aggregate and gather all check requests for a user over a given time period",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),

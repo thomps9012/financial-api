@@ -67,6 +67,12 @@ var PettyCashOverviewType = graphql.NewObject(
 			"user": &graphql.Field{
 				Type: u.UserType,
 			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"grant": &graphql.Field{
+				Type: g.GrantType,
+			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
 			},

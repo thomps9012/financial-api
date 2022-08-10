@@ -103,9 +103,6 @@ var AggMonthlyMileageType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Monthly Mileage Requests",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
 			"month": &graphql.Field{
 				Type: graphql.Int,
 			},
@@ -113,12 +110,12 @@ var AggMonthlyMileageType = graphql.NewObject(
 				Type: graphql.Int,
 			},
 			"user_id": &graphql.Field{
-				Type: graphql.ID,
+				Type: graphql.String,
 			},
 			"user": &graphql.Field{
 				Type: u.UserType,
 			},
-			"mileage": &graphql.Field{
+			"total_mileage": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"tolls": &graphql.Field{
@@ -127,7 +124,7 @@ var AggMonthlyMileageType = graphql.NewObject(
 			"parking": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"reimbursement": &graphql.Field{
+			"total_reimbursement": &graphql.Field{
 				Type: graphql.Float,
 			},
 		},

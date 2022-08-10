@@ -1,6 +1,10 @@
 package user_api
 
-import "github.com/graphql-go/graphql"
+import (
+	g "financial-api/m/models/grants"
+
+	"github.com/graphql-go/graphql"
+)
 
 var RoleType = graphql.NewEnum(
 	graphql.EnumConfig{
@@ -118,6 +122,130 @@ var PurchaseType = graphql.NewObject(
 	},
 )
 
+var UserOverviewType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "User Information Overview",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"manager_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"role": &graphql.Field{
+				Type: RoleType,
+			},
+			"mileage_requests": &graphql.Field{
+				Type: graphql.NewList(UserMileageOverview),
+			},
+			"check_requests": &graphql.Field{
+				Type: graphql.NewList(UserCheckReqOverview),
+			},
+			"petty_cash_requests": &graphql.Field{
+				Type: graphql.NewList(UserPettyCashOverview),
+			},
+		},
+	},
+)
+
+var UserMileageOverview = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Mileage Request Overview",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"trip_mileage": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"reimbursement": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"created_at": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"current_status": &graphql.Field{
+				Type: StatusType,
+			},
+			"is_active": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+		},
+	},
+)
+
+var UserPettyCashOverview = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Petty Cash Request Overview",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"grant": &graphql.Field{
+				Type: g.GrantType,
+			},
+			"date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"amount": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"created_at": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"current_status": &graphql.Field{
+				Type: StatusType,
+			},
+			"is_active": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+		},
+	},
+)
+
+var UserCheckReqOverview = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "User Check Request Overview",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"grant": &graphql.Field{
+				Type: g.GrantType,
+			},
+			"date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"vendor": &graphql.Field{
+				Type: VendorType,
+			},
+			"order_total": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"created_at": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"current_status": &graphql.Field{
+				Type: StatusType,
+			},
+			"is_active": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+		},
+	},
+)
 var UserType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
@@ -214,7 +342,7 @@ var UserMonthlyPettyCash = graphql.NewObject(
 )
 var UserCheckRequests = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Monthly Check Requests",
+		Name: "User Total Check Requests",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
@@ -222,13 +350,13 @@ var UserCheckRequests = graphql.NewObject(
 			"name": &graphql.Field{
 				Type: graphql.String,
 			},
-			"month": &graphql.Field{
-				Type: graphql.Int,
+			"start_date": &graphql.Field{
+				Type: graphql.DateTime,
 			},
-			"year": &graphql.Field{
-				Type: graphql.Int,
+			"end_date": &graphql.Field{
+				Type: graphql.DateTime,
 			},
-			"amount": &graphql.Field{
+			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
 			"vendors": &graphql.Field{

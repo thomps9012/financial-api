@@ -31,6 +31,14 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				"user_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				user_id, isOK := p.Args["user_id"].(string)
@@ -38,7 +46,9 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic("need to enter a valid user id")
 				}
 				var user_petty_cash User_Petty_Cash
-				results, err := user_petty_cash.FindByUser(user_id)
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -52,6 +62,14 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.DateTime,
+					DefaultValue: "",
+				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				grant_id, isOK := p.Args["grant_id"].(string)
@@ -59,7 +77,9 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic("need to enter a valid grant id")
 				}
 				var grant_petty_cash Grant_Petty_Cash
-				results, err := grant_petty_cash.FindByGrant(grant_id)
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := grant_petty_cash.FindByGrant(grant_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
