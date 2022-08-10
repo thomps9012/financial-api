@@ -30,13 +30,13 @@ type Mileage_Request struct {
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
-func (m *Mileage_Request) Create(user_id string) (string, error) {
+func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	collection := conn.DB.Collection("mileage_requests")
 	var milage_req Mileage_Request
 	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: m.Date}, {Key: "starting_location", Value: m.Starting_Location}, {Key: "destintation", Value: m.Destination}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
 	if err == nil {
-		return "", fmt.Errorf("mileage request already created")
+		return *m, fmt.Errorf("mileage request already created")
 	}
 	var currentMileageRate = 62.5
 	m.ID = uuid.NewString()
@@ -64,9 +64,9 @@ func (m *Mileage_Request) Create(user_id string) (string, error) {
 		panic(err)
 	}
 	if !update_user {
-		return "", err
+		return *m, err
 	}
-	return m.ID, nil
+	return *m, nil
 }
 
 func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool, error) {
