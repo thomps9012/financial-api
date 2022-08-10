@@ -13,6 +13,7 @@ import (
 
 type Mileage_Request struct {
 	ID                string    `json:"id" bson:"_id"`
+	User_ID           string    `json:"user_id" bson:"user_id"`
 	Date              time.Time `json:"date" bson:"date"`
 	Starting_Location string    `json:"starting_location" bson:"starting_location"`
 	Destination       string    `json:"destination" bson:"destination"`
@@ -24,7 +25,6 @@ type Mileage_Request struct {
 	Trip_Mileage      int64     `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
-	User_ID           string    `json:"user_id" bson:"user_id"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
 	Current_Status    Status    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`

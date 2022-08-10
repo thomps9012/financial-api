@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	c "financial-api/m/checkAPI"
-	m "financial-api/m/mileageAPI"
-	p "financial-api/m/pettyAPI"
-	u "financial-api/m/userAPI"
+	c "financial-api/m/graphql/check_api"
+	m "financial-api/m/graphql/mileage_api"
+	p "financial-api/m/graphql/petty_api"
+	u "financial-api/m/graphql/user_api"
 	"fmt"
 	"net/http"
 
@@ -16,20 +16,44 @@ import (
 var rootQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Query",
 	Fields: graphql.Fields{
-		"user":       u.UserQueries,
-		"mileage":    m.MileageQueries,
-		"petty_cash": p.PettyCashQueries,
-		"check":      c.CheckQueries,
+		"user": &graphql.Field{
+			Name: "User Queries",
+			Type: u.UserQueries,
+		},
+		"mileage": &graphql.Field{
+			Name: "Mileage Queries",
+			Type: m.MileageQueries,
+		},
+		"petty_cash": &graphql.Field{
+			Name: "Petty Cash Queries",
+			Type: p.PettyCashQueries,
+		},
+		"check": &graphql.Field{
+			Name: "Check Request Queries",
+			Type: c.CheckQueries,
+		},
 	},
 })
 
 var rootMutations = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Mutation",
 	Fields: graphql.Fields{
-		"user":       u.UserMutations,
-		"mileage":    m.MileageMutations,
-		"petty_cash": p.PettyCashMutations,
-		"check":      c.CheckMutations,
+		"user": &graphql.Field{
+			Name: "User Mutations",
+			Type: u.UserMutations,
+		},
+		"mileage": &graphql.Field{
+			Name: "Mileage Mutations",
+			Type: m.MileageMutations,
+		},
+		"petty_cash": &graphql.Field{
+			Name: "Petty Cash Mutations",
+			Type: p.PettyCashMutations,
+		},
+		"check": &graphql.Field{
+			Name: "Check Request Mutations",
+			Type: c.CheckRequestMutations,
+		},
 	},
 })
 

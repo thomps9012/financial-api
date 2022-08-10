@@ -28,7 +28,7 @@ type Vehicle struct {
 
 type User struct {
 	ID                 string    `json:"id" bson:"_id"`
-	Email_Address      string    `json:"email_address" bson:"email_address"`
+	Email              string    `json:"email" bson:"email"`
 	Name               string    `json:"name" bson:"name"`
 	Last_Login         time.Time `json:"last_login" bson:"last_login"`
 	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
@@ -139,6 +139,17 @@ func (u *User) AddVehicle(name string, description string, user_id string) (stri
 	}
 	return vehicle.ID, nil
 }
+func (u *User) RemoveVehicle(vehicle_id string, user_id string) (bool, error) {
+	collection := conn.DB.Collection("users")
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"vehicles": bson.M{"_id": vehicle_id}}}})
+	if err != nil {
+		panic(err)
+	}
+	if result.ModifiedCount == 0 {
+		return false, err
+	}
+	return true, nil
+}
 
 func (u *User) Deactivate(user_id string) (bool, error) {
 	collection := conn.DB.Collection("users")
@@ -150,6 +161,17 @@ func (u *User) Deactivate(user_id string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (u *User) FindByID(user_id string) (User, error) {
+	collection := conn.DB.Collection("users")
+	var user User
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		panic(err)
+	}
+	return user, nil
 }
 
 func (u *User) FindMgrID(user_id string) (string, error) {
