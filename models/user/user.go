@@ -204,13 +204,13 @@ func setManagerID(email string, employee_role Role) string {
 	return manager_id
 }
 
-func (u *User) Create(email string, role Role) (string, error) {
+func (u *User) Create(email string, role Role) (User, error) {
 	collection := conn.DB.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	var user User
 	findErr := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if findErr == nil {
-		return "", fmt.Errorf("account already created")
+		return *u, fmt.Errorf("account already created")
 	}
 	u.ID = uuid.NewString()
 	u.Role = role
@@ -226,7 +226,7 @@ func (u *User) Create(email string, role Role) (string, error) {
 	if err != nil {
 		panic(err)
 	}
-	return u.ID, nil
+	return *u, nil
 }
 
 func (u *User) Login(email string) (bool, error) {

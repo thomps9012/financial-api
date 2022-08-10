@@ -1,14 +1,14 @@
 package user_api
 
 import (
+	. "financial-api/m/models/user"
+	"regexp"
+
 	"github.com/graphql-go/graphql"
 )
 
 // move email check to resolver
-// emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", value)
-// if !emailCheck {
-// 	return nil
-// }
+
 // return value
 
 var UserMutations = graphql.NewObject(graphql.ObjectConfig{
@@ -32,7 +32,26 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				email, isOk := p.Args["email"].(string)
+				if !isOk {
+					panic("must enter a valid email")
+				}
+				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
+				if !emailCheck {
+					panic("must have a Northern Ohio Recovery Association Email to register")
+				}
+				user := &User{
+					Name: p.Args["name"].(string),
+				}
+				role, roleOK := p.Args["role"].(Role)
+				if !roleOK {
+					panic("user must have an active role")
+				}
+				result, err := user.Create(email, role)
+				if err != nil {
+					panic(err)
+				}
+				return result, nil
 			},
 		},
 		"login": &graphql.Field{
@@ -47,7 +66,20 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				email, isOk := p.Args["email"].(string)
+				if !isOk {
+					panic("must enter a valid email")
+				}
+				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
+				if !emailCheck {
+					panic("must have a Northern Ohio Recovery Association Email to register")
+				}
+				var user User
+				result, err := user.Login(email)
+				if err != nil {
+					panic(err)
+				}
+				return result, nil
 			},
 		},
 		"add_vehicle": &graphql.Field{
@@ -65,11 +97,32 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				user_id, idOK := p.Args["user_id"].(string)
+				if !idOK {
+					panic("you must enter a valid user id")
+				}
+				name, nameOK := p.Args["name"].(string)
+				if !nameOK {
+					panic("you must enter a valid vehicle name")
+				}
+				description, descriptionOK := p.Args["description"].(string)
+				if !descriptionOK {
+					panic("you must enter a valid vehicle description")
+				}
+				var user User
+				result, err := user.AddVehicle(user_id, name, description)
+				if err != nil {
+					panic(err)
+				}
+				return &Vehicle{
+					ID:          result,
+					Name:        name,
+					Description: description,
+				}, nil
 			},
 		},
 		"remove_vehicle": &graphql.Field{
-			Type:        VehicleType,
+			Type:        graphql.Boolean,
 			Description: "Allow a user to remove a vehicle from their account",
 			Args: graphql.FieldConfigArgument{
 				"user_id": &graphql.ArgumentConfig{
@@ -80,7 +133,20 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				user_id, idOK := p.Args["user_id"].(string)
+				if !idOK {
+					panic("you must enter a valid user id")
+				}
+				vehicle_id, vehicle_idOK := p.Args["vehicle_id"].(string)
+				if !vehicle_idOK {
+					panic("you must enter a valid vehicle id")
+				}
+				var user User
+				result, err := user.RemoveVehicle(user_id, vehicle_id)
+				if err != nil {
+					panic(err)
+				}
+				return result, nil
 			},
 		},
 	},
