@@ -14,7 +14,8 @@ import (
 type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	Date           time.Time `json:"date" bson:"date"`
-	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
+	Description    string    `json:"description" bson:"description"`
+	Amount         float64   `json:"amount" bson:"amount"`
 	Receipts       []string  `json:"receipts" bson:"receipts"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
@@ -26,7 +27,7 @@ type Petty_Cash_Request struct {
 func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 	var petty_cash_req Petty_Cash_Request
 	collection := conn.DB.Collection("petty_cash_requests")
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: p.Date}, {Key: "reimbursement", Value: p.Reimbursement}}
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: p.Date}, {Key: "amount", Value: p.Amount}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
 	if err == nil {
 		return "", fmt.Errorf("duplicate petty cash request")
