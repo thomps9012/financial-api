@@ -295,7 +295,7 @@ var UserMonthlyMileageType = graphql.NewObject(
 				Type: graphql.NewList(VehicleType),
 			},
 			"month": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"year": &graphql.Field{
 				Type: graphql.Int,
@@ -311,6 +311,9 @@ var UserMonthlyMileageType = graphql.NewObject(
 			},
 			"reimbursement": &graphql.Field{
 				Type: graphql.Float,
+			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.ID),
 			},
 		},
 	},
@@ -331,7 +334,7 @@ var UserMonthlyPettyCash = graphql.NewObject(
 			"year": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"amount": &graphql.Field{
+			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
 			"receipts": &graphql.Field{
