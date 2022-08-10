@@ -221,26 +221,17 @@ var AggUserCheckReq = graphql.NewObject(
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
 			},
-			"user": &graphql.Field{
-				Type: u.UserType,
+			"vendors": &graphql.Field{
+				Type: graphql.NewList(VendorType),
 			},
-			"vendor": &graphql.Field{
-				Type: VendorType,
+			"credit_cards": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
 			},
-			"order_total": &graphql.Field{
+			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"credit_card": &graphql.Field{
-				Type: graphql.String,
-			},
-			"created_at": &graphql.Field{
+			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
-			},
-			"current_status": &graphql.Field{
-				Type: u.StatusType,
-			},
-			"is_active": &graphql.Field{
-				Type: graphql.Boolean,
 			},
 		},
 	},
@@ -259,20 +250,17 @@ var AggGrantCheckReq = graphql.NewObject(
 			"grant": &graphql.Field{
 				Type: g.GrantType,
 			},
-			"vendor": &graphql.Field{
-				Type: VendorType,
+			"vendors": &graphql.Field{
+				Type: graphql.NewList(VendorType),
 			},
-			"order_total": &graphql.Field{
+			"credit_cards": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"created_at": &graphql.Field{
+			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
-			},
-			"current_status": &graphql.Field{
-				Type: u.StatusType,
-			},
-			"is_active": &graphql.Field{
-				Type: graphql.Boolean,
 			},
 		},
 	},

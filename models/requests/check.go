@@ -62,28 +62,21 @@ type Check_Request_Overview struct {
 	Is_Active      bool        `json:"is_active" bson:"is_active"`
 }
 type User_Check_Overview struct {
-	ID             string    `json:"id" bson:"_id"`
-	User_ID        string    `json:"user_id" bson:"user_id"`
-	User           user.User `json:"user" bson:"user"`
-	Date           time.Time `json:"date" bson:"date"`
-	Vendor         Vendor    `json:"vendor" bson:"vendor"`
-	Order_Total    float64   `json:"order_total" bson:"order_total"`
-	Credit_Card    string    `json:"credit_card" bson:"credit_card"`
-	Created_At     time.Time `json:"created_at" bson:"created_at"`
-	Current_Status Status    `json:"current_status" bson:"current_status"`
-	Is_Active      bool      `json:"is_active" bson:"is_active"`
+	User_ID      string    `json:"user_id" bson:"user_id"`
+	User         user.User `json:"user" bson:"user"`
+	Vendors      []Vendor  `json:"vendors" bson:"vendors"`
+	Total_Amount float64   `json:"total_amount" bson:"total_amount"`
+	Credit_Cards string    `json:"credit_cards" bson:"credit_cards"`
+	Last_Request time.Time `json:"last_request" bson:"last_request"`
 }
 
 type Grant_Check_Overview struct {
-	ID             string      `json:"id" bson:"_id"`
-	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
-	Grant          grant.Grant `json:"grant" bson:"grant"`
-	Date           time.Time   `json:"date" bson:"date"`
-	Vendor         Vendor      `json:"vendor" bson:"vendor"`
-	Order_Total    float64     `json:"order_total" bson:"order_total"`
-	Current_Status Status      `json:"current_status" bson:"current_status"`
-	Created_At     time.Time   `json:"created_at" bson:"created_at"`
-	Is_Active      bool        `json:"is_active" bson:"is_active"`
+	Grant_ID     string      `json:"grant_id" bson:"grant_id"`
+	Grant        grant.Grant `json:"grant" bson:"grant"`
+	Vendors      []Vendor    `json:"vendors" bson:"vendors"`
+	Total_Amount float64     `json:"total_amount" bson:"total_amount"`
+	Credit_Cards string      `json:"credit_cards" bson:"credit_cards"`
+	Last_Request time.Time   `json:"last_request" bson:"last_request"`
 }
 
 func (c *Check_Request) Create(user_id string) (string, error) {
@@ -214,72 +207,78 @@ func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 	return overviews, nil
 }
 
-func (u *User_Check_Overview) FindByUser(user_id string) ([]User_Check_Overview, error) {
-	var overviews []User_Check_Overview
+func (u *User_Check_Overview) FindByUser(user_id string) (User_Check_Overview, error) {
 	collection := conn.DB.Collection("check_request")
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		panic(err)
 	}
+	var user user.User
+	user_info, user_err := user.FindByID(user_id)
+	if user_err != nil {
+		panic(user_err)
+	}
+	last_request := time.Date(2020, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	total_amount := 0.0
+	var vendors []Vendor
 	for cursor.Next(context.TODO()) {
-		var user user.User
-		var check_req User_Check_Overview
+		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		user_info, user_err := user.FindByID(check_req.User_ID)
-		if user_err != nil {
-			panic(user_err)
+		vendors = append(vendors, check_req.Vendor)
+		if check_req.Date.After(last_request) {
+			last_request = check_req.Date
 		}
-		check_overview := &User_Check_Overview{
-			ID:             check_req.ID,
-			User_ID:        check_req.User_ID,
-			User:           user_info,
-			Date:           check_req.Date,
-			Vendor:         check_req.Vendor,
-			Order_Total:    check_req.Order_Total,
-			Current_Status: check_req.Current_Status,
-			Created_At:     check_req.Created_At,
-			Is_Active:      check_req.Is_Active,
-		}
-		overviews = append(overviews, *check_overview)
+		total_amount += check_req.Order_Total
 	}
-	return overviews, nil
+	check_overview := &User_Check_Overview{
+		User_ID:      user_id,
+		User:         user_info,
+		Vendors:      vendors,
+		Last_Request: last_request,
+		Total_Amount: total_amount,
+	}
+	return *check_overview, nil
 }
 
-func (g *Grant_Check_Overview) FindByGrant(grant_id string) ([]Grant_Check_Overview, error) {
-	var overviews []Grant_Check_Overview
+func (g *Grant_Check_Overview) FindByGrant(grant_id string) (Grant_Check_Overview, error) {
 	collection := conn.DB.Collection("check_request")
 	filter := bson.D{{Key: "grant_id", Value: grant_id}}
 	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		panic(err)
 	}
+	var grant grant.Grant
+	grant_info, grant_err := grant.Find(grant_id)
+	if grant_err != nil {
+		panic(grant_err)
+	}
+	last_request := time.Date(2020, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	total_amount := 0.0
+	var vendors []Vendor
 	for cursor.Next(context.TODO()) {
-		var grant grant.Grant
-		var check_req Grant_Check_Overview
+		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		grant_info, grant_err := grant.Find(check_req.Grant_ID)
-		if grant_err != nil {
-			panic(grant_err)
+		vendors = append(vendors, check_req.Vendor)
+		if check_req.Date.After(last_request) {
+			last_request = check_req.Date
 		}
-		check_overview := &Grant_Check_Overview{
-			ID:             check_req.ID,
-			Grant_ID:       check_req.Grant_ID,
-			Grant:          grant_info,
-			Date:           check_req.Date,
-			Vendor:         check_req.Vendor,
-			Order_Total:    check_req.Order_Total,
-			Current_Status: check_req.Current_Status,
-			Created_At:     check_req.Created_At,
-			Is_Active:      check_req.Is_Active,
-		}
-		overviews = append(overviews, *check_overview)
+		total_amount += check_req.Order_Total
 	}
-	return overviews, nil
+	check_overview := &Grant_Check_Overview{
+		Grant_ID:     grant_id,
+		Grant:        grant_info,
+		Vendors:      vendors,
+		Last_Request: last_request,
+		Total_Amount: total_amount,
+	}
+	return *check_overview, nil
 }
