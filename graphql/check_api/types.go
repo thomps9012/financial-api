@@ -84,9 +84,6 @@ var PurchaseInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "Purchase Input",
 		Fields: graphql.InputObjectConfigFieldMap{
-			"grant_id": &graphql.InputObjectFieldConfig{
-				Type: graphql.NewNonNull(graphql.String),
-			},
 			"grant_line_item": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
 			},
@@ -104,9 +101,6 @@ var PurchaseType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Vendor Information",
 		Fields: graphql.Fields{
-			"grant_id": &graphql.Field{
-				Type: graphql.String,
-			},
 			"grant_line_item": &graphql.Field{
 				Type: graphql.String,
 			},
@@ -183,6 +177,9 @@ var CheckReqOverviewType = graphql.NewObject(
 			"user": &graphql.Field{
 				Type: u.UserType,
 			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
 			"grant": &graphql.Field{
 				Type: g.GrantType,
 			},
@@ -194,6 +191,9 @@ var CheckReqOverviewType = graphql.NewObject(
 			},
 			"order_total": &graphql.Field{
 				Type: graphql.Float,
+			},
+			"created_at": &graphql.Field{
+				Type: graphql.DateTime,
 			},
 			"current_status": &graphql.Field{
 				Type: u.StatusType,

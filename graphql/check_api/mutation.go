@@ -26,6 +26,9 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 				"description": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
 				"purchases": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(&graphql.List{OfType: PurchaseInputType}),
 				},
@@ -52,20 +55,23 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 				}
 				purchases_input := p.Args["purchases"].(map[string]interface{})
 				var purchases []Purchase
+				var order_total = 0.0
 				for range purchases_input {
 					purchase := &Purchase{
-						Grant_ID:        purchases_input["grant_id"].(string),
 						Grant_Line_Item: purchases_input["line_item"].(string),
 						Description:     purchases_input["description"].(string),
 						Amount:          purchases_input["amount"].(float64),
 					}
+					order_total += purchases_input["amount"].(float64)
 					purchases = append(purchases, *purchase)
 				}
 				check_request := &Check_Request{
 					Date:        p.Args["date"].(time.Time),
 					Vendor:      *vendor,
 					Description: p.Args["description"].(string),
+					Grant_ID:    p.Args["grant_id"].(string),
 					Purchases:   purchases,
+					Order_Total: order_total,
 					Receipts:    p.Args["receipts"].([]string),
 					Credit_Card: p.Args["credit_card"].(string),
 				}

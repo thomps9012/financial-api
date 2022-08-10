@@ -1,6 +1,13 @@
 package check_api
 
-import "github.com/graphql-go/graphql"
+import (
+	"context"
+	conn "financial-api/m/db"
+	. "financial-api/m/models/requests"
+
+	"github.com/graphql-go/graphql"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Check Request Queries",
@@ -8,6 +15,14 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 		"overview": &graphql.Field{
 			Type:        CheckReqOverviewType,
 			Description: "Gather overview information for all check requests, and basic info",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var check_request Check_Request_Overview
+				results, err := check_request.FindAll()
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
 		},
 		"user_requests": &graphql.Field{
 			Type:        AggUserCheckReq,
@@ -18,7 +33,16 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				var check_request User_Check_Overview
+				user_id, isOk := p.Args["user_id"].(string)
+				if !isOk {
+					panic("must enter a valid user id")
+				}
+				results, err := check_request.FindByUser(user_id)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
 			},
 		},
 		"grant_requests": &graphql.Field{
@@ -30,7 +54,16 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				var check_request Grant_Check_Overview
+				grant_id, isOk := p.Args["grant_id"].(string)
+				if !isOk {
+					panic("must enter a valid grant id")
+				}
+				results, err := check_request.FindByGrant(grant_id)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
 			},
 		},
 		"detail": &graphql.Field{
@@ -42,7 +75,18 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// return , nil
+				request_id, isOk := p.Args["id"].(string)
+				if !isOk {
+					panic("must enter a valid check request id")
+				}
+				var check_request Check_Request
+				collection := conn.DB.Collection("check_requests")
+				filter := bson.D{{Key: "_id", Value: request_id}}
+				err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
+				if err != nil {
+					panic(err)
+				}
+				return check_request, nil
 			},
 		},
 	},

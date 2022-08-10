@@ -3,6 +3,7 @@ package requests
 import (
 	"context"
 	conn "financial-api/m/db"
+	grant "financial-api/m/models/grants"
 	user "financial-api/m/models/user"
 	"fmt"
 	"time"
@@ -25,7 +26,6 @@ type Vendor struct {
 }
 
 type Purchase struct {
-	Grant_ID        string  `json:"grant_id" bson:"grant_id"`
 	Grant_Line_Item string  `json:"line_item" bson:"line_item"`
 	Description     string  `json:"description" bson:"description"`
 	Amount          float64 `json:"amount" bson:"amount"`
@@ -36,6 +36,7 @@ type Check_Request struct {
 	Date           time.Time  `json:"date" bson:"date"`
 	Vendor         Vendor     `json:"vendor" bson:"vendor"`
 	Description    string     `json:"description" bson:"description"`
+	Grant_ID       string     `json:"grant_id" bson:"grant_id"`
 	Purchases      []Purchase `json:"purchases" bson:"purchases"`
 	Receipts       []string   `json:"receipts" bson:"receipts"`
 	Order_Total    float64    `json:"order_total" bson:"order_total"`
@@ -45,6 +46,45 @@ type Check_Request struct {
 	Action_History []Action   `json:"action_history" bson:"action_history"`
 	Current_Status Status     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
+}
+
+// possibly add created at date in here
+type Check_Request_Overview struct {
+	ID             string      `json:"id" bson:"_id"`
+	User_ID        string      `json:"user_id" bson:"user_id"`
+	User           user.User   `json:"user" bson:"user"`
+	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
+	Grant          grant.Grant `json:"grant" bson:"grant"`
+	Date           time.Time   `json:"date" bson:"date"`
+	Vendor         Vendor      `json:"vendor" bson:"vendor"`
+	Order_Total    float64     `json:"order_total" bson:"order_total"`
+	Current_Status Status      `json:"current_status" bson:"current_status"`
+	Created_At     time.Time   `json:"created_at" bson:"created_at"`
+	Is_Active      bool        `json:"is_active" bson:"is_active"`
+}
+type User_Check_Overview struct {
+	ID             string    `json:"id" bson:"_id"`
+	User_ID        string    `json:"user_id" bson:"user_id"`
+	User           user.User `json:"user" bson:"user"`
+	Date           time.Time `json:"date" bson:"date"`
+	Vendor         Vendor    `json:"vendor" bson:"vendor"`
+	Order_Total    float64   `json:"order_total" bson:"order_total"`
+	Credit_Card    string    `json:"credit_card" bson:"credit_card"`
+	Created_At     time.Time `json:"created_at" bson:"created_at"`
+	Current_Status Status    `json:"current_status" bson:"current_status"`
+	Is_Active      bool      `json:"is_active" bson:"is_active"`
+}
+
+type Grant_Check_Overview struct {
+	ID             string      `json:"id" bson:"_id"`
+	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
+	Grant          grant.Grant `json:"grant" bson:"grant"`
+	Date           time.Time   `json:"date" bson:"date"`
+	Vendor         Vendor      `json:"vendor" bson:"vendor"`
+	Order_Total    float64     `json:"order_total" bson:"order_total"`
+	Current_Status Status      `json:"current_status" bson:"current_status"`
+	Created_At     time.Time   `json:"created_at" bson:"created_at"`
+	Is_Active      bool        `json:"is_active" bson:"is_active"`
 }
 
 func (c *Check_Request) Create(user_id string) (string, error) {
@@ -132,4 +172,115 @@ func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, err
 		return false, err
 	}
 	return true, nil
+}
+
+func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
+	collection := conn.DB.Collection("check_request")
+	var overviews []Check_Request_Overview
+	cursor, err := collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var user user.User
+		var grant grant.Grant
+		var check_req Check_Request
+		decode_err := cursor.Decode(&check_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		grant_info, grant_err := grant.Find(check_req.Grant_ID)
+		if grant_err != nil {
+			panic(grant_err)
+		}
+		user_info, user_err := user.FindByID(check_req.User_ID)
+		if user_err != nil {
+			panic(user_err)
+		}
+		check_overview := &Check_Request_Overview{
+			ID:             check_req.ID,
+			User_ID:        check_req.User_ID,
+			User:           user_info,
+			Grant_ID:       check_req.Grant_ID,
+			Grant:          grant_info,
+			Date:           check_req.Date,
+			Vendor:         check_req.Vendor,
+			Order_Total:    check_req.Order_Total,
+			Current_Status: check_req.Current_Status,
+			Created_At:     check_req.Created_At,
+			Is_Active:      check_req.Is_Active,
+		}
+		overviews = append(overviews, *check_overview)
+	}
+	return overviews, nil
+}
+
+func (u *User_Check_Overview) FindByUser(user_id string) ([]User_Check_Overview, error) {
+	var overviews []User_Check_Overview
+	collection := conn.DB.Collection("check_request")
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var user user.User
+		var check_req User_Check_Overview
+		decode_err := cursor.Decode(&check_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		user_info, user_err := user.FindByID(check_req.User_ID)
+		if user_err != nil {
+			panic(user_err)
+		}
+		check_overview := &User_Check_Overview{
+			ID:             check_req.ID,
+			User_ID:        check_req.User_ID,
+			User:           user_info,
+			Date:           check_req.Date,
+			Vendor:         check_req.Vendor,
+			Order_Total:    check_req.Order_Total,
+			Current_Status: check_req.Current_Status,
+			Created_At:     check_req.Created_At,
+			Is_Active:      check_req.Is_Active,
+		}
+		overviews = append(overviews, *check_overview)
+	}
+	return overviews, nil
+}
+
+func (g *Grant_Check_Overview) FindByGrant(grant_id string) ([]Grant_Check_Overview, error) {
+	var overviews []Grant_Check_Overview
+	collection := conn.DB.Collection("check_request")
+	filter := bson.D{{Key: "grant_id", Value: grant_id}}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var grant grant.Grant
+		var check_req Grant_Check_Overview
+		decode_err := cursor.Decode(&check_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		grant_info, grant_err := grant.Find(check_req.Grant_ID)
+		if grant_err != nil {
+			panic(grant_err)
+		}
+		check_overview := &Grant_Check_Overview{
+			ID:             check_req.ID,
+			Grant_ID:       check_req.Grant_ID,
+			Grant:          grant_info,
+			Date:           check_req.Date,
+			Vendor:         check_req.Vendor,
+			Order_Total:    check_req.Order_Total,
+			Current_Status: check_req.Current_Status,
+			Created_At:     check_req.Created_At,
+			Is_Active:      check_req.Is_Active,
+		}
+		overviews = append(overviews, *check_overview)
+	}
+	return overviews, nil
 }
