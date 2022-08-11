@@ -9,7 +9,7 @@ import (
 
 var AddressInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
-		Name: "Vendor Address Input",
+		Name: "VendorAddressInput",
 		Fields: graphql.InputObjectConfigFieldMap{
 			"website": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
@@ -32,7 +32,7 @@ var AddressInputType = graphql.NewInputObject(
 
 var AddressType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vendor Address Information",
+		Name: "VendorAddress",
 		Fields: graphql.Fields{
 			"website": &graphql.Field{
 				Type: graphql.String,
@@ -55,7 +55,7 @@ var AddressType = graphql.NewObject(
 
 var VendorInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
-		Name: "Vendor Input",
+		Name: "VendorInput",
 		Fields: graphql.InputObjectConfigFieldMap{
 			"name": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
@@ -68,7 +68,7 @@ var VendorInputType = graphql.NewInputObject(
 )
 var VendorType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vendor Information",
+		Name: "Vendor",
 		Fields: graphql.Fields{
 			"name": &graphql.Field{
 				Type: graphql.String,
@@ -82,7 +82,7 @@ var VendorType = graphql.NewObject(
 
 var PurchaseInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
-		Name: "Purchase Input",
+		Name: "PurchaseInput",
 		Fields: graphql.InputObjectConfigFieldMap{
 			"grant_line_item": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
@@ -99,7 +99,7 @@ var PurchaseInputType = graphql.NewInputObject(
 
 var PurchaseType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vendor Information",
+		Name: "Purchase",
 		Fields: graphql.Fields{
 			"grant_line_item": &graphql.Field{
 				Type: graphql.String,
@@ -116,7 +116,7 @@ var PurchaseType = graphql.NewObject(
 
 var CheckRequestType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Check Request",
+		Name: "CheckRequest",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -172,7 +172,7 @@ var CheckRequestType = graphql.NewObject(
 
 var CheckReqOverviewType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Check Request Overview",
+		Name: "CheckRequestOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -213,7 +213,7 @@ var CheckReqOverviewType = graphql.NewObject(
 
 var AggUserCheckReq = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Check Requests",
+		Name: "UserCheckRequests",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -239,7 +239,7 @@ var AggUserCheckReq = graphql.NewObject(
 
 var AggGrantCheckReq = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Grant Check Requests",
+		Name: "GrantCheckRequests",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,

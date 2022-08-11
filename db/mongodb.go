@@ -9,33 +9,34 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB *mongo.Database
+var Db *mongo.Database
 
 func InitDB() {
 	// change on production
-	ATLAS_URI := "mongodb://localhost:27017"
+	ATLAS_URI := "mongodb+srv://spars01:H0YXCAGHoUihHcSZ@cluster0.wuezj.mongodb.net/TEST_finance_records?retryWrites=true&w=majority"
 	clientOptions := options.Client().ApplyURI(ATLAS_URI)
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("this is the client err", err)
 	}
 
 	err = client.Ping(context.TODO(), nil)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("this is the ping err", err)
 	}
 
 	fmt.Println("Connected to MongoDB!")
 
-	const dbName = "finance_records"
-	DB = client.Database(dbName)
+	// change on production
+	const dbName = "TEST_finance_records"
+	Db = client.Database(dbName)
 }
 
 func CloseDB() {
-	err := DB.Client().Disconnect(context.TODO())
+	err := Db.Client().Disconnect(context.TODO())
 
 	if err != nil {
 		log.Fatal(err)

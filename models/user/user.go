@@ -205,7 +205,7 @@ func setManagerID(email string, employee_role Role) string {
 }
 
 func (u *User) Create(email string, role Role) (User, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	var user User
 	findErr := collection.FindOne(context.TODO(), filter).Decode(&user)
@@ -230,7 +230,7 @@ func (u *User) Create(email string, role Role) (User, error) {
 }
 
 func (u *User) Login(email string) (bool, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	result, err := collection.UpdateOne(context.TODO(), filter, bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}})
 	if err != nil {
@@ -243,7 +243,7 @@ func (u *User) Login(email string) (bool, error) {
 }
 
 func (u *User) AddVehicle(name string, description string, user_id string) (string, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	vehicle := &Vehicle{
 		ID:          uuid.NewString(),
 		Name:        name,
@@ -259,7 +259,7 @@ func (u *User) AddVehicle(name string, description string, user_id string) (stri
 	return vehicle.ID, nil
 }
 func (u *User) RemoveVehicle(vehicle_id string, user_id string) (bool, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"vehicles": bson.M{"_id": vehicle_id}}}})
 	if err != nil {
 		panic(err)
@@ -271,7 +271,7 @@ func (u *User) RemoveVehicle(vehicle_id string, user_id string) (bool, error) {
 }
 
 func (u *User) Deactivate(user_id string) (bool, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$set", Value: bson.M{"is_active": false}}})
 	if err != nil {
 		panic(err)
@@ -283,7 +283,7 @@ func (u *User) Deactivate(user_id string) (bool, error) {
 }
 
 func (u *User) FindByID(user_id string) (User, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	var user User
 	filter := bson.D{{Key: "_id", Value: user_id}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
@@ -294,7 +294,7 @@ func (u *User) FindByID(user_id string) (User, error) {
 }
 
 func (u *User) FindMgrID(user_id string) (string, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	var user User
 	filter := bson.D{{Key: "_id", Value: user_id}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
@@ -305,7 +305,7 @@ func (u *User) FindMgrID(user_id string) (string, error) {
 }
 
 func (u *User) AddNotification(item_id string, user_id string) (bool, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": item_id}}})
 	if err != nil {
 		panic(err)
@@ -317,7 +317,7 @@ func (u *User) AddNotification(item_id string, user_id string) (bool, error) {
 }
 
 func (u *User) ClearNotifications(user_id string) (bool, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pullAll", Value: "incomplete_actions"}})
 	if err != nil {
 		panic(err)
@@ -329,7 +329,7 @@ func (u *User) ClearNotifications(user_id string) (bool, error) {
 }
 
 func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
-	collection := conn.DB.Collection("users")
+	collection := conn.Db.Collection("users")
 	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": item_id}}})
 	if err != nil {
 		panic(err)
@@ -342,7 +342,7 @@ func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
 
 // one of these should be deprecated
 func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly_Mileage, error) {
-	collection := conn.DB.Collection("mileage_requests")
+	collection := conn.Db.Collection("mileage_requests")
 	var user User
 	result, err := user.FindByID(user_id)
 	if err != nil {
@@ -388,7 +388,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 }
 
 func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Monthly_Petty_Cash, error) {
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	var user User
 	result, err := user.FindByID(user_id)
 	if err != nil {
@@ -424,7 +424,7 @@ func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Month
 }
 
 func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (User_Agg_Check_Requests, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var user User
 	result, err := user.FindByID(user_id)
 	if err != nil {

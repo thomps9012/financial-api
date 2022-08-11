@@ -10,7 +10,7 @@ import (
 )
 
 var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Petty Cash Request Queries",
+	Name: "Query",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
 			Type:        PettyCashOverviewType,
@@ -100,7 +100,7 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic("must enter a valid check request id")
 				}
 				var petty_cash_req Petty_Cash_Request
-				collection := conn.DB.Collection("petty_cash_requests")
+				collection := conn.Db.Collection("petty_cash_requests")
 				filter := bson.D{{Key: "_id", Value: request_id}}
 				err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
 				if err != nil {

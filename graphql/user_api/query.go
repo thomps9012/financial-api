@@ -7,7 +7,7 @@ import (
 )
 
 var UserQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "User Queries",
+	Name: "Query",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
 			Type:        UserType,

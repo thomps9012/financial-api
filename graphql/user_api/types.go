@@ -8,7 +8,7 @@ import (
 
 var RoleType = graphql.NewEnum(
 	graphql.EnumConfig{
-		Name: "User Organization Role",
+		Name: "Role",
 		Values: graphql.EnumValueConfigMap{
 			"EMPLOYEE": &graphql.EnumValueConfig{
 				Value: "EMPLOYEE",
@@ -28,7 +28,7 @@ var RoleType = graphql.NewEnum(
 
 var StatusType = graphql.NewEnum(
 	graphql.EnumConfig{
-		Name: "Request Status",
+		Name: "Status",
 		Values: graphql.EnumValueConfigMap{
 			"PENDING": &graphql.EnumValueConfig{
 				Value: "PENDING",
@@ -54,7 +54,7 @@ var StatusType = graphql.NewEnum(
 
 var ActionType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Request Action",
+		Name: "RequestAction",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -74,7 +74,7 @@ var ActionType = graphql.NewObject(
 
 var VehicleType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vehicle Information",
+		Name: "VehicleInformation",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
@@ -91,7 +91,7 @@ var VehicleType = graphql.NewObject(
 
 var VendorType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vendor Information",
+		Name: "Vendor",
 		Fields: graphql.Fields{
 			"name": &graphql.Field{
 				Type: graphql.String,
@@ -104,7 +104,7 @@ var VendorType = graphql.NewObject(
 )
 var PurchaseType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vendor Information",
+		Name: "Purchase",
 		Fields: graphql.Fields{
 			"grant_id": &graphql.Field{
 				Type: graphql.String,
@@ -124,7 +124,7 @@ var PurchaseType = graphql.NewObject(
 
 var UserOverviewType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Information Overview",
+		Name: "UserOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
@@ -153,7 +153,7 @@ var UserOverviewType = graphql.NewObject(
 
 var UserMileageOverview = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Mileage Request Overview",
+		Name: "UserMileageOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -182,7 +182,7 @@ var UserMileageOverview = graphql.NewObject(
 
 var UserPettyCashOverview = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Petty Cash Request Overview",
+		Name: "UserPettyCashOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -214,7 +214,7 @@ var UserPettyCashOverview = graphql.NewObject(
 
 var UserCheckReqOverview = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Check Request Overview",
+		Name: "UserCheckRequestOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -283,7 +283,7 @@ var UserType = graphql.NewObject(
 
 var UserMonthlyMileageType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Monthly Mileage Requests",
+		Name: "UserMonthlyMileageRequests",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
@@ -320,7 +320,7 @@ var UserMonthlyMileageType = graphql.NewObject(
 )
 var UserMonthlyPettyCash = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Monthly Petty Cash Requests",
+		Name: "UserMonthlyPettyCashRequests",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
@@ -345,7 +345,7 @@ var UserMonthlyPettyCash = graphql.NewObject(
 )
 var UserCheckRequests = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User Total Check Requests",
+		Name: "UserTotalCheckRequests",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,

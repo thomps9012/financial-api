@@ -101,7 +101,7 @@ var MileageOverviewType = graphql.NewObject(
 
 var AggMonthlyMileageType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Monthly Mileage Requests",
+		Name: "MonthlyMileageRequests",
 		Fields: graphql.Fields{
 			"user_id": &graphql.Field{
 				Type: graphql.ID,

@@ -39,7 +39,7 @@ const (
 func Approve(request_id string, manager_id string, manager_role user.Role, request_type Request_Type) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
-	collection := conn.DB.Collection(string(request_type))
+	collection := conn.Db.Collection(string(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	// possible expansion here
 	var current_status Status
@@ -81,7 +81,7 @@ func Approve(request_id string, manager_id string, manager_role user.Role, reque
 func Reject(request_id string, manager_id string, request_type Request_Type) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
-	collection := conn.DB.Collection(string(request_type))
+	collection := conn.Db.Collection(string(request_type))
 	var milage_req Mileage_Request
 	// manager id is the id of the manager making the rejection
 	current_action := &Action{
@@ -110,7 +110,7 @@ func Reject(request_id string, manager_id string, request_type Request_Type) (bo
 func Archive(request_id string, request_type Request_Type) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
-	collection := conn.DB.Collection(string(request_type))
+	collection := conn.Db.Collection(string(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}}
 	// updates the request

@@ -8,7 +8,7 @@ import (
 )
 
 var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Petty Cash Mutations",
+	Name: "Mutations",
 	Fields: graphql.Fields{
 		"create": &graphql.Field{
 			Type:        PettyCashType,

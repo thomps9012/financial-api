@@ -12,7 +12,7 @@ import (
 )
 
 var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mileage Request Queries",
+	Name: "Query",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
 			Type:        MileageOverviewType,
@@ -46,7 +46,7 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !validYear {
 					panic("must enter a valid year")
 				}
-				users, err := conn.DB.Collection("users").Find(context.TODO(), bson.D{})
+				users, err := conn.Db.Collection("users").Find(context.TODO(), bson.D{})
 				if err != nil {
 					panic(err)
 				}

@@ -15,7 +15,7 @@ type Grant struct {
 }
 
 func (g *Grant) Find(grant_id string) (Grant, error) {
-	collection := conn.DB.Collection("grants")
+	collection := conn.Db.Collection("grants")
 	var grant Grant
 	filter := bson.D{{Key: "_id", Value: grant_id}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&grant)
@@ -25,7 +25,7 @@ func (g *Grant) Find(grant_id string) (Grant, error) {
 	return grant, nil
 }
 
-func (g *Grant) BulkInsert(grant_list []Grant) (bool, error) {
+func (g *Grant) BulkInsert() (bool, error) {
 	grants := []interface{}{
 		Grant{
 			ID:   "H79TI082369",
@@ -73,7 +73,7 @@ func (g *Grant) BulkInsert(grant_list []Grant) (bool, error) {
 			ID:   "H79TI085410",
 			Name: "N MAT (NORA Medication-Assisted Treatment Program)"},
 	}
-	collection := conn.DB.Collection("grants")
+	collection := conn.Db.Collection("grants")
 	result, err := collection.InsertMany(context.TODO(), grants)
 	if err != nil {
 		panic(err)

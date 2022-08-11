@@ -10,7 +10,7 @@ import (
 )
 
 var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Check Request Queries",
+	Name: "Query",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
 			Type:        CheckReqOverviewType,
@@ -100,7 +100,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic("must enter a valid check request id")
 				}
 				var check_request Check_Request
-				collection := conn.DB.Collection("check_requests")
+				collection := conn.Db.Collection("check_requests")
 				filter := bson.D{{Key: "_id", Value: request_id}}
 				err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
 				if err != nil {

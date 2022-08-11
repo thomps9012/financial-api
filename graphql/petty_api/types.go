@@ -9,7 +9,7 @@ import (
 
 var PettyCashType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Petty Cash Request",
+		Name: "PettyCashRequest",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -56,7 +56,7 @@ var PettyCashType = graphql.NewObject(
 
 var PettyCashOverviewType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Petty Cash Request Overview",
+		Name: "PettyCashOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -94,7 +94,7 @@ var PettyCashOverviewType = graphql.NewObject(
 
 var AggUserPettyCash = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Aggregate User Petty Cash Requests",
+		Name: "AggregateUserPettyCash",
 		Fields: graphql.Fields{
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -114,7 +114,7 @@ var AggUserPettyCash = graphql.NewObject(
 
 var AggGrantPettyCashReq = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Aggregate Grant Petty Cash Requests",
+		Name: "AggregateGrantPettyCash",
 		Fields: graphql.Fields{
 			"grant_id": &graphql.Field{
 				Type: graphql.ID,

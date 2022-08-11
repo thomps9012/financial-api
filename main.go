@@ -1,90 +1,71 @@
 package main
 
 import (
-	"encoding/json"
+	conn "financial-api/m/db"
 	c "financial-api/m/graphql/check_api"
 	m "financial-api/m/graphql/mileage_api"
 	p "financial-api/m/graphql/petty_api"
 	u "financial-api/m/graphql/user_api"
-	"fmt"
 	"net/http"
+	"os"
 
-	"github.com/friendsofgo/graphiql"
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
 )
 
-var rootQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
-	Fields: graphql.Fields{
-		"user": &graphql.Field{
-			Name: "User Queries",
-			Type: u.UserQueries,
-		},
-		"mileage": &graphql.Field{
-			Name: "Mileage Queries",
-			Type: m.MileageQueries,
-		},
-		"petty_cash": &graphql.Field{
-			Name: "Petty Cash Queries",
-			Type: p.PettyCashQueries,
-		},
-		"check": &graphql.Field{
-			Name: "Check Request Queries",
-			Type: c.CheckQueries,
-		},
-	},
-})
+const defaultPort = "8080"
 
-var rootMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mutation",
-	Fields: graphql.Fields{
-		"user": &graphql.Field{
-			Name: "User Mutations",
-			Type: u.UserMutations,
-		},
-		"mileage": &graphql.Field{
-			Name: "Mileage Mutations",
-			Type: m.MileageMutations,
-		},
-		"petty_cash": &graphql.Field{
-			Name: "Petty Cash Mutations",
-			Type: p.PettyCashMutations,
-		},
-		"check": &graphql.Field{
-			Name: "Check Request Mutations",
-			Type: c.CheckRequestMutations,
-		},
-	},
+var userSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query:    u.UserQueries,
+	Mutation: u.UserMutations,
 })
-
-var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    rootQueries,
-	Mutation: rootMutations,
+var mileageSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query:    m.MileageQueries,
+	Mutation: m.MileageMutations,
 })
-
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
-	result := graphql.Do(graphql.Params{
-		Schema:        rootSchema,
-		RequestString: query,
-	})
-	if len(result.Errors) > 0 {
-		fmt.Printf("errors: %v", result.Errors)
-	}
-	return result
-}
+var pettyCashSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query:    p.PettyCashQueries,
+	Mutation: p.PettyCashMutations,
+})
+var checkRequestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query:    c.CheckQueries,
+	Mutation: c.CheckRequestMutations,
+})
 
 func main() {
-	http.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
-		result := executeQuery(r.URL.Query().Get("query"), rootSchema)
-		json.NewEncoder(w).Encode(result)
-	})
-	fmt.Println("Server is running on port 8080")
-	http.ListenAndServe(":8080", nil)
-	// below modification allows for removal of graphiql on deployment
-	graphiqlHandler, err := graphiql.NewGraphiqlHandler("http://localhost:8080/graphql")
-	if err != nil {
-		panic(err)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
 	}
-	http.Handle("/graphiql", graphiqlHandler)
-	http.ListenAndServe(":4040", nil)
+	conn.InitDB()
+	defer conn.CloseDB()
+	userHandler := handler.New(&handler.Config{
+		Schema:     &userSchema,
+		Pretty:     true,
+		GraphiQL:   false,
+		Playground: true,
+	})
+	mileageHandler := handler.New(&handler.Config{
+		Schema:     &mileageSchema,
+		Pretty:     true,
+		GraphiQL:   false,
+		Playground: true,
+	})
+	pettyCashHandler := handler.New(&handler.Config{
+		Schema:     &pettyCashSchema,
+		Pretty:     true,
+		GraphiQL:   false,
+		Playground: true,
+	})
+	checkRequestHandler := handler.New(&handler.Config{
+		Schema:     &checkRequestSchema,
+		Pretty:     true,
+		GraphiQL:   false,
+		Playground: true,
+	})
+	http.Handle("/user", userHandler)
+	http.Handle("/mileage", mileageHandler)
+	http.Handle("/petty_cash", pettyCashHandler)
+	http.Handle("/check_request", checkRequestHandler)
+	http.ListenAndServe(":8080", nil)
 }

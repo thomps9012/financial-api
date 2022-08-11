@@ -54,7 +54,7 @@ type Grant_Petty_Cash struct {
 
 func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 	var petty_cash_req Petty_Cash_Request
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: p.Date}, {Key: "amount", Value: p.Amount}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
 	if err == nil {
@@ -89,7 +89,7 @@ func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 }
 
 func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, user_id string) (bool, error) {
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	var petty_cash_req Petty_Cash_Request
 	filter := bson.D{{Key: "request_id", Value: request.ID}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
@@ -114,7 +114,7 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, user_id string) 
 }
 
 func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) (bool, error) {
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	var petty_cash_req Petty_Cash_Request
 	filter := bson.D{{Key: "request_id", Value: request.ID}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
@@ -139,7 +139,7 @@ func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) 
 }
 
 func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	var overviews []Petty_Cash_Overview
 	cursor, err := collection.Find(context.TODO(), bson.D{})
 	if err != nil {
@@ -179,7 +179,7 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 
 // refactor inputs to start and end dates to allow for flexibility in data search
 func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date string) (User_Petty_Cash, error) {
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
 	if start_date != "" && end_date != "" {
 		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
@@ -218,7 +218,7 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 	return *petty_cash_overview, nil
 }
 func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Petty_Cash, error) {
-	collection := conn.DB.Collection("petty_cash_requests")
+	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
 	if start_date != "" && end_date != "" {
 		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}

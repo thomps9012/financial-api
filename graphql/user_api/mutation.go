@@ -1,18 +1,14 @@
 package user_api
 
 import (
-	. "financial-api/m/models/user"
+	u "financial-api/m/models/user"
 	"regexp"
 
 	"github.com/graphql-go/graphql"
 )
 
-// move email check to resolver
-
-// return value
-
 var UserMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "User Mutations",
+	Name: "Mutations",
 	Fields: graphql.Fields{
 		"create": &graphql.Field{
 			Type:        UserType,
@@ -23,9 +19,6 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
-				},
-				"type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.EnumValueType),
 				},
 				"role": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(RoleType),
@@ -40,10 +33,10 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !emailCheck {
 					panic("must have a Northern Ohio Recovery Association Email to register")
 				}
-				user := &User{
+				user := &u.User{
 					Name: p.Args["name"].(string),
 				}
-				role, roleOK := p.Args["role"].(Role)
+				role, roleOK := p.Args["role"].(u.Role)
 				if !roleOK {
 					panic("user must have an active role")
 				}
@@ -74,7 +67,7 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !emailCheck {
 					panic("must have a Northern Ohio Recovery Association Email to register")
 				}
-				var user User
+				var user u.User
 				result, err := user.Login(email)
 				if err != nil {
 					panic(err)
@@ -109,12 +102,12 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !descriptionOK {
 					panic("you must enter a valid vehicle description")
 				}
-				var user User
+				var user u.User
 				result, err := user.AddVehicle(user_id, name, description)
 				if err != nil {
 					panic(err)
 				}
-				return &Vehicle{
+				return &u.Vehicle{
 					ID:          result,
 					Name:        name,
 					Description: description,
@@ -141,7 +134,7 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !vehicle_idOK {
 					panic("you must enter a valid vehicle id")
 				}
-				var user User
+				var user u.User
 				result, err := user.RemoveVehicle(user_id, vehicle_id)
 				if err != nil {
 					panic(err)

@@ -8,7 +8,7 @@ import (
 )
 
 var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Check Request Mutations",
+	Name: "Mutations",
 	Fields: graphql.Fields{
 		"create": &graphql.Field{
 			Type:        CheckRequestType,

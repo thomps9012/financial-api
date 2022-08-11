@@ -8,7 +8,7 @@ import (
 )
 
 var MileageMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mileage Mutations",
+	Name: "Mutations",
 	Fields: graphql.Fields{
 		"create": &graphql.Field{
 			Type:        MileageType,

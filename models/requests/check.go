@@ -80,7 +80,7 @@ type Grant_Check_Overview struct {
 }
 
 func (c *Check_Request) Create(user_id string) (string, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var check_req Check_Request
 	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: c.Date}, {Key: "order_total", Value: c.Order_Total}, {Key: "vendor.name", Value: c.Vendor.Name}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
@@ -117,7 +117,7 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 }
 
 func (c *Check_Request) Update(request Check_Request, user_id string) (bool, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var check_request Check_Request
 	filter := bson.D{{Key: "request_id", Value: request.ID}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
@@ -142,7 +142,7 @@ func (c *Check_Request) Update(request Check_Request, user_id string) (bool, err
 }
 
 func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var check_request Check_Request
 	filter := bson.D{{Key: "request_id", Value: request.ID}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
@@ -167,7 +167,7 @@ func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, err
 }
 
 func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var overviews []Check_Request_Overview
 	cursor, err := collection.Find(context.TODO(), bson.D{})
 	if err != nil {
@@ -208,7 +208,7 @@ func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 }
 
 func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_date string) (User_Check_Overview, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var filter bson.D
 	if start_date != "" && end_date != "" {
 		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
@@ -251,7 +251,7 @@ func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_
 }
 
 func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Check_Overview, error) {
-	collection := conn.DB.Collection("check_requests")
+	collection := conn.Db.Collection("check_requests")
 	var filter bson.D
 	if start_date != "" && end_date != "" {
 		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}

@@ -55,7 +55,7 @@ type Monthly_Mileage_Overview struct {
 }
 
 func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
-	collection := conn.DB.Collection("mileage_requests")
+	collection := conn.Db.Collection("mileage_requests")
 	var milage_req Mileage_Request
 	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: m.Date}, {Key: "starting_location", Value: m.Starting_Location}, {Key: "destintation", Value: m.Destination}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
@@ -94,7 +94,7 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 }
 
 func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool, error) {
-	collection := conn.DB.Collection("mileage_requests")
+	collection := conn.Db.Collection("mileage_requests")
 	var milage_req Mileage_Request
 	filter := bson.D{{Key: "request_id", Value: request.ID}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
@@ -119,7 +119,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool,
 }
 
 func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool, error) {
-	collection := conn.DB.Collection("mileage_requests")
+	collection := conn.Db.Collection("mileage_requests")
 	var milage_req Mileage_Request
 	filter := bson.D{{Key: "request_id", Value: request.ID}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
@@ -143,7 +143,7 @@ func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool,
 	return true, nil
 }
 func (m *Mileage_Request) FindByID(mileage_id string) (Mileage_Request, error) {
-	collection := conn.DB.Collection("mileage_requests")
+	collection := conn.Db.Collection("mileage_requests")
 	var milage_req Mileage_Request
 	filter := bson.D{{Key: "_id", Value: mileage_id}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
@@ -154,7 +154,7 @@ func (m *Mileage_Request) FindByID(mileage_id string) (Mileage_Request, error) {
 }
 
 func (m *Mileage_Overview) FindAll() ([]Mileage_Overview, error) {
-	collection := conn.DB.Collection("mileage_requests")
+	collection := conn.Db.Collection("mileage_requests")
 	var overviews []Mileage_Overview
 	cursor, err := collection.Find(context.TODO(), bson.D{})
 	if err != nil {
