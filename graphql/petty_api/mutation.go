@@ -1,7 +1,7 @@
 package petty_api
 
 import (
-	. "financial-api/m/models/requests"
+	r "financial-api/m/models/requests"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -34,7 +34,7 @@ var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				petty_cash_req := &Petty_Cash_Request{
+				petty_cash_req := &r.Petty_Cash_Request{
 					Date:        p.Args["date"].(time.Time),
 					Grant_ID:    p.Args["grant_id"].(string),
 					Amount:      p.Args["amount"].(float64),

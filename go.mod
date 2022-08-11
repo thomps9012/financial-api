@@ -3,15 +3,12 @@ module financial-api/m
 go 1.18
 
 require (
-	github.com/go-chi/chi v1.5.4
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/handlers v1.5.1
 	github.com/graphql-go/graphql v0.8.0
 	go.mongodb.org/mongo-driver v1.10.1
 )
 
 require (
-	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/graphql-go/handler v0.2.3
 	github.com/klauspost/compress v1.13.6 // indirect
