@@ -72,6 +72,7 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 						Reimbursement: user_mileage.Reimbursement,
 						Request_IDS:   user_mileage.Request_IDS,
 					}
+					// possible to exclude null records
 					records = append(records, *user_record)
 				}
 				return records, nil
