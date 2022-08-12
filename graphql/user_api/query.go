@@ -78,41 +78,6 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		// "monthly_petty_cash": &graphql.Field{
-		// 	Type:        UserMonthlyPettyCash,
-		// 	Description: "Aggregate and gather all petty cash requests for a user for a given month and year",
-		// 	Args: graphql.FieldConfigArgument{
-		// 		"id": &graphql.ArgumentConfig{
-		// 			Type: graphql.NewNonNull(graphql.ID),
-		// 		},
-		// 		"month": &graphql.ArgumentConfig{
-		// 			Type: graphql.NewNonNull(graphql.Int),
-		// 		},
-		// 		"year": &graphql.ArgumentConfig{
-		// 			Type: graphql.NewNonNull(graphql.Int),
-		// 		},
-		// 	},
-		// 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		// 		var user u.User
-		// 		user_id, isOk := p.Args["id"].(string)
-		// 		if !isOk {
-		// 			panic("must enter a valid user id")
-		// 		}
-		// 		month, validMo := p.Args["month"].(int)
-		// 		if !validMo {
-		// 			panic("must enter a valid month")
-		// 		}
-		// 		year, validYear := p.Args["year"].(int)
-		// 		if !validYear {
-		// 			panic("must enter a valid year")
-		// 		}
-		// 		results, err := user.MonthlyPettyCash(user_id, month, year)
-		// 		if err != nil {
-		// 			panic(err)
-		// 		}
-		// 		return results, nil
-		// 	},
-		// },
 		"check_requests": &graphql.Field{
 			Type:        UserCheckRequests,
 			Description: "Aggregate and gather all check requests for a user over a given time period",

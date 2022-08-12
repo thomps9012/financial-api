@@ -237,32 +237,6 @@ var CheckReqOverviewType = graphql.NewObject(
 	},
 )
 
-var AggUserCheckReq = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "UserCheckRequests",
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
-			"user_id": &graphql.Field{
-				Type: graphql.ID,
-			},
-			"vendors": &graphql.Field{
-				Type: graphql.NewList(VendorType),
-			},
-			"credit_cards": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
-			},
-			"total_amount": &graphql.Field{
-				Type: graphql.Float,
-			},
-			"last_request": &graphql.Field{
-				Type: graphql.DateTime,
-			},
-		},
-	},
-)
-
 var AggGrantCheckReq = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "GrantCheckRequests",

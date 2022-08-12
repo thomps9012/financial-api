@@ -86,7 +86,7 @@ func (g *Grant) BulkInsert() (bool, error) {
 
 var GrantType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Grant Information",
+		Name: "GrantInformation",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
