@@ -53,6 +53,32 @@ var AddressType = graphql.NewObject(
 	},
 )
 
+var CheckRequestInputType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "CheckRequestInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"date": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"grant_id": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.ID),
+			},
+			"purchases": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(&graphql.List{OfType: PurchaseInputType}),
+			},
+			"receipts": &graphql.InputObjectFieldConfig{
+				Type: &graphql.List{OfType: graphql.String},
+			},
+			"credit_card": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
 var VendorInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "VendorInput",

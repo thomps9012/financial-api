@@ -89,9 +89,9 @@ var VehicleType = graphql.NewObject(
 	},
 )
 
-var VendorType = graphql.NewObject(
+var UserVendorType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Vendor",
+		Name: "UserVendor",
 		Fields: graphql.Fields{
 			"name": &graphql.Field{
 				Type: graphql.String,
@@ -102,9 +102,9 @@ var VendorType = graphql.NewObject(
 		},
 	},
 )
-var PurchaseType = graphql.NewObject(
+var UserPurchaseType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Purchase",
+		Name: "UserPurchase",
 		Fields: graphql.Fields{
 			"grant_id": &graphql.Field{
 				Type: graphql.String,
@@ -229,7 +229,7 @@ var UserCheckReqOverview = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"vendor": &graphql.Field{
-				Type: VendorType,
+				Type: UserVendorType,
 			},
 			"order_total": &graphql.Field{
 				Type: graphql.Float,
@@ -363,10 +363,10 @@ var UserCheckRequests = graphql.NewObject(
 				Type: graphql.Float,
 			},
 			"vendors": &graphql.Field{
-				Type: graphql.NewList(VendorType),
+				Type: graphql.NewList(UserVendorType),
 			},
 			"purchases": &graphql.Field{
-				Type: graphql.NewList(PurchaseType),
+				Type: graphql.NewList(UserPurchaseType),
 			},
 			"receipts": &graphql.Field{
 				Type: graphql.NewList(graphql.String),

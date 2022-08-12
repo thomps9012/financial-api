@@ -3,7 +3,7 @@ package check_api
 import (
 	"context"
 	conn "financial-api/m/db"
-	. "financial-api/m/models/requests"
+	r "financial-api/m/models/requests"
 
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,11 +12,11 @@ import (
 var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "CheckQueries",
 	Fields: graphql.Fields{
-		"check_overview": &graphql.Field{
+		"overview": &graphql.Field{
 			Type:        CheckReqOverviewType,
 			Description: "Gather overview information for all check requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var check_request Check_Request_Overview
+				var check_request r.Check_Request_Overview
 				results, err := check_request.FindAll()
 				if err != nil {
 					panic(err)
@@ -24,7 +24,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"user_check_requests": &graphql.Field{
+		"user_requests": &graphql.Field{
 			Type:        AggUserCheckReq,
 			Description: "Aggregate and gather all check requests for a given user",
 			Args: graphql.FieldConfigArgument{
@@ -41,7 +41,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var check_request User_Check_Overview
+				var check_request r.User_Check_Overview
 				user_id, isOk := p.Args["user_id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
@@ -72,7 +72,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var check_request Grant_Check_Overview
+				var check_request r.Grant_Check_Overview
 				grant_id, isOk := p.Args["grant_id"].(string)
 				if !isOk {
 					panic("must enter a valid grant id")
@@ -86,7 +86,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"check_detail": &graphql.Field{
+		"detail": &graphql.Field{
 			Type:        CheckRequestType,
 			Description: "Detailed information for a single check request by id",
 			Args: graphql.FieldConfigArgument{
@@ -99,7 +99,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid check request id")
 				}
-				var check_request Check_Request
+				var check_request r.Check_Request
 				collection := conn.Db.Collection("check_requests")
 				filter := bson.D{{Key: "_id", Value: request_id}}
 				err := collection.FindOne(context.TODO(), filter).Decode(&check_request)

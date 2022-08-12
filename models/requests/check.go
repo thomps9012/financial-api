@@ -5,7 +5,6 @@ import (
 	conn "financial-api/m/db"
 	grant "financial-api/m/models/grants"
 	user "financial-api/m/models/user"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -79,14 +78,19 @@ type Grant_Check_Overview struct {
 	Last_Request time.Time   `json:"last_request" bson:"last_request"`
 }
 
-func (c *Check_Request) Create(user_id string) (string, error) {
+func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) (bool, error) {
 	collection := conn.Db.Collection("check_requests")
 	var check_req Check_Request
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: c.Date}, {Key: "order_total", Value: c.Order_Total}, {Key: "vendor.name", Value: c.Vendor.Name}}
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "order_total", Value: order_total}, {Key: "vendor.name", Value: vendor_name}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
-	if err == nil {
-		return "", fmt.Errorf("duplicate check request")
+	if err != nil {
+		return false, err
 	}
+	return true, nil
+}
+
+func (c *Check_Request) Create(user_id string) (string, error) {
+	collection := conn.Db.Collection("check_requests")
 	c.ID = uuid.NewString()
 	c.Created_At = time.Now()
 	c.Is_Active = true
@@ -99,19 +103,23 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 		Created_At: time.Now(),
 	}
 	c.Action_History = append(c.Action_History, *first_action)
+	_, insert_err := collection.InsertOne(context.TODO(), *c)
+	if insert_err != nil {
+		panic(insert_err)
+	}
 	var req_user user.User
 	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
 	if mgr_find_err != nil {
-		panic(err)
+		panic(mgr_find_err)
 	}
 	// add in extra validation based on org chart here
 	var manager user.User
 	update_user, update_err := manager.AddNotification(c.ID, manager_id)
 	if update_err != nil {
-		panic(err)
+		panic(update_err)
 	}
 	if !update_user {
-		return "", err
+		return "", update_err
 	}
 	return c.ID, nil
 }
