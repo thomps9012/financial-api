@@ -10,9 +10,9 @@ import (
 )
 
 var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
+	Name: "PettyCashQueries",
 	Fields: graphql.Fields{
-		"overview": &graphql.Field{
+		"petty_cash_overview": &graphql.Field{
 			Type:        PettyCashOverviewType,
 			Description: "Gather overview information for all petty cash requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -55,7 +55,7 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"grant_requests": &graphql.Field{
+		"grant_petty_cash_requests": &graphql.Field{
 			Type:        AggGrantPettyCashReq,
 			Description: "Aggregate and gather all petty cash requests for a given grant",
 			Args: graphql.FieldConfigArgument{
@@ -86,7 +86,7 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"detail": &graphql.Field{
+		"petty_cash_detail": &graphql.Field{
 			Type:        PettyCashType,
 			Description: "Detailed information for a single petty cash request by id",
 			Args: graphql.FieldConfigArgument{

@@ -2,6 +2,7 @@ package requests
 
 import (
 	"context"
+	"errors"
 	conn "financial-api/m/db"
 	user "financial-api/m/models/user"
 	"fmt"
@@ -18,11 +19,11 @@ type Mileage_Request struct {
 	Starting_Location string    `json:"starting_location" bson:"starting_location"`
 	Destination       string    `json:"destination" bson:"destination"`
 	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose"`
-	Start_Odometer    int64     `json:"start_odometer" bson:"start_odometer"`
-	End_Odometer      int64     `json:"end_odometer" bson:"end_odometer"`
+	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer"`
+	End_Odometer      int       `json:"end_odometer" bson:"end_odometer"`
 	Tolls             float64   `json:"tolls" bson:"tolls"`
 	Parking           float64   `json:"parking" bson:"parking"`
-	Trip_Mileage      int64     `json:"trip_mileage" bson:"trip_mileage"`
+	Trip_Mileage      int       `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
@@ -35,7 +36,7 @@ type Mileage_Overview struct {
 	User_ID        string    `json:"user_id" bson:"user_id"`
 	User           user.User `json:"user" bson:"user"`
 	Date           time.Time `json:"date" bson:"date"`
-	Trip_Mileage   int64     `json:"trip_mileage" bson:"trip_mileage"`
+	Trip_Mileage   int       `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Current_Status Status    `json:"current_status" bson:"current_status"`
@@ -47,21 +48,28 @@ type Monthly_Mileage_Overview struct {
 	Name          string     `json:"name" bson:"name"`
 	Month         time.Month `json:"month" bson:"month"`
 	Year          int        `json:"year" bson:"year"`
-	Mileage       int64      `json:"mileage" bson:"mileage"`
+	Mileage       int        `json:"mileage" bson:"mileage"`
 	Tolls         float64    `json:"tolls" bson:"tolls"`
 	Parking       float64    `json:"parking" bson:"parking"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
 }
 
-func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
-	collection := conn.Db.Collection("mileage_requests")
+func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end int) (bool, error) {
 	var milage_req Mileage_Request
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: m.Date}, {Key: "starting_location", Value: m.Starting_Location}, {Key: "destintation", Value: m.Destination}}
+	collection := conn.Db.Collection("mileage_requests")
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "start_odometer", Value: start}, {Key: "end_odometer", Value: end}}
+	fmt.Printf("%s\n", filter.Map())
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
-	if err == nil {
-		return *m, fmt.Errorf("mileage request already created")
+	if err != nil {
+		return false, err
 	}
+	return true, nil
+}
+
+func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
+	fmt.Printf("%s\n", m.Date)
+	collection := conn.Db.Collection("mileage_requests")
 	var currentMileageRate = 62.5
 	m.ID = uuid.NewString()
 	m.Created_At = time.Now()
@@ -72,25 +80,31 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	first_action := &Action{
 		ID:         uuid.NewString(),
 		User_ID:    user_id,
-		Status:     PENDING,
+		Status:     "PENDING",
 		Created_At: time.Now(),
 	}
+
 	m.Action_History = append(m.Action_History, *first_action)
-	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate + m.Tolls + m.Parking
+	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
+	_, insert_err := collection.InsertOne(context.TODO(), *m)
+	if insert_err != nil {
+		panic(insert_err)
+	}
 	var req_user user.User
 	manager_id, mgr_find_err := req_user.FindMgrID(m.User_ID)
 	if mgr_find_err != nil {
-		panic(err)
+		panic(mgr_find_err)
 	}
 	var manager user.User
 	update_user, update_err := manager.AddNotification(m.ID, manager_id)
 	if update_err != nil {
-		panic(err)
+		panic(update_err)
 	}
 	if !update_user {
-		return *m, err
+		return *m, errors.New("failed to update manager")
 	}
 	return *m, nil
+
 }
 
 func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool, error) {

@@ -6,9 +6,41 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+var MileageInputType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "MileageInputType",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"date": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"starting_location": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"destination": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"trip_purpose": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"start_odometer": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+			"end_odometer": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+			"tolls": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"parking": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+		},
+	},
+)
+
 var MileageType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Mileage Request",
+		Name: "MileageRequest",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -66,7 +98,7 @@ var MileageType = graphql.NewObject(
 )
 var MileageOverviewType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Mileage Request Overview",
+		Name: "MileageRequestOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,

@@ -24,7 +24,7 @@ const (
 type Action struct {
 	ID         string    `json:"id" bson:"_id"`
 	User_ID    string    `json:"user_id" bson:"user_id"`
-	Status     Status    `json:"status" bson:"status"`
+	Status     string    `json:"status" bson:"status"`
 	Created_At time.Time `json:"created_at" bson:"created_at"`
 }
 
@@ -36,20 +36,20 @@ const (
 	PETTY_CASH Request_Type = "petty_cash_requests"
 )
 
-func Approve(request_id string, manager_id string, manager_role user.Role, request_type Request_Type) (bool, error) {
+func Approve(request_id string, manager_id string, manager_role string, request_type Request_Type) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(string(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	// possible expansion here
-	var current_status Status
+	var current_status string
 	switch manager_role {
-	case user.MANAGER:
-		current_status = MANAGER_APPROVED
-	case user.FINANCE:
-		current_status = FINANCE_APPROVED
-	case user.EXECUTIVE:
-		current_status = ORGANIZATION_APPROVED
+	case "MANAGER":
+		current_status = "MANAGER_APPROVED"
+	case "FINANCE":
+		current_status = "FINANCE_APPROVED"
+	case "EXECUTIVE":
+		current_status = "ORGANIZATION_APPROVED"
 	}
 	current_action := &Action{
 		ID:         uuid.NewString(),
@@ -87,7 +87,7 @@ func Reject(request_id string, manager_id string, request_type Request_Type) (bo
 	current_action := &Action{
 		ID:         uuid.NewString(),
 		User_ID:    manager_id,
-		Status:     REJECTED,
+		Status:     "REJECTED",
 		Created_At: time.Now(),
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}

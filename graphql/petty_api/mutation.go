@@ -8,9 +8,9 @@ import (
 )
 
 var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mutations",
+	Name: "PettyCashMutations",
 	Fields: graphql.Fields{
-		"create": &graphql.Field{
+		"create_petty_cash": &graphql.Field{
 			Type:        PettyCashType,
 			Description: "Creates a new petty cash request for a given user",
 			Args: graphql.FieldConfigArgument{

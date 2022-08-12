@@ -8,9 +8,9 @@ import (
 )
 
 var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mutations",
+	Name: "CheckMutations",
 	Fields: graphql.Fields{
-		"create": &graphql.Field{
+		"create_check": &graphql.Field{
 			Type:        CheckRequestType,
 			Description: "Creates a new check request for a given user",
 			Args: graphql.FieldConfigArgument{
@@ -47,7 +47,7 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 					Street:   vendor_address_input["street"].(string),
 					City:     vendor_address_input["city"].(string),
 					State:    vendor_address_input["state"].(string),
-					Zip_Code: vendor_address_input["zip"].(int64),
+					Zip_Code: vendor_address_input["zip"].(int),
 				}
 				vendor := &Vendor{
 					Name:    vendor_input["name"].(string),

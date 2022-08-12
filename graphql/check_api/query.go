@@ -10,9 +10,9 @@ import (
 )
 
 var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
+	Name: "CheckQueries",
 	Fields: graphql.Fields{
-		"overview": &graphql.Field{
+		"check_overview": &graphql.Field{
 			Type:        CheckReqOverviewType,
 			Description: "Gather overview information for all check requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -24,7 +24,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"user_requests": &graphql.Field{
+		"user_check_requests": &graphql.Field{
 			Type:        AggUserCheckReq,
 			Description: "Aggregate and gather all check requests for a given user",
 			Args: graphql.FieldConfigArgument{
@@ -86,7 +86,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"detail": &graphql.Field{
+		"check_detail": &graphql.Field{
 			Type:        CheckRequestType,
 			Description: "Detailed information for a single check request by id",
 			Args: graphql.FieldConfigArgument{

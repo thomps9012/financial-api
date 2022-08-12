@@ -1,14 +1,15 @@
 package mileage_api
 
 import (
-	. "financial-api/m/models/requests"
+	"errors"
+	r "financial-api/m/models/requests"
 	"time"
 
 	"github.com/graphql-go/graphql"
 )
 
 var MileageMutations = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mutations",
+	Name: "MileageMutations",
 	Fields: graphql.Fields{
 		"create": &graphql.Field{
 			Type:        MileageType,
@@ -17,29 +18,8 @@ var MileageMutations = graphql.NewObject(graphql.ObjectConfig{
 				"user_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"date": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.DateTime),
-				},
-				"starting_location": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"destination": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"trip_purpose": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"start_odometer": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Int),
-				},
-				"end_odometer": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Int),
-				},
-				"tolls": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Float),
-				},
-				"parking": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Float),
+				"request": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(MileageInputType),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -47,39 +27,40 @@ var MileageMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !isOK {
 					panic("must enter a valid user id")
 				}
-				date, dateisOK := p.Args["date"].(time.Time)
+				mileageArgs := p.Args["request"].(map[string]interface{})
+				date, dateisOK := mileageArgs["date"].(time.Time)
 				if !dateisOK {
 					panic("must enter a valid date")
 				}
-				start, startisOK := p.Args["starting_location"].(string)
+				start, startisOK := mileageArgs["starting_location"].(string)
 				if !startisOK {
 					panic("must enter a valid starting location")
 				}
-				destination, destinationisOK := p.Args["destination"].(string)
+				destination, destinationisOK := mileageArgs["destination"].(string)
 				if !destinationisOK {
 					panic("must enter a valid destination")
 				}
-				purpose, purposeisOK := p.Args["trip_purpose"].(string)
+				purpose, purposeisOK := mileageArgs["trip_purpose"].(string)
 				if !purposeisOK {
 					panic("must enter a valid trip purpose")
 				}
-				start_odo, start_odoisOK := p.Args["start_odometer"].(int64)
+				start_odo, start_odoisOK := mileageArgs["start_odometer"].(int)
 				if !start_odoisOK {
 					panic("must enter a valid starting odometer")
 				}
-				end_odo, end_odoisOK := p.Args["end_odometer"].(int64)
+				end_odo, end_odoisOK := mileageArgs["end_odometer"].(int)
 				if !end_odoisOK {
 					panic("must enter a valid end odometer")
 				}
-				tolls, tollsisOK := p.Args["tolls"].(float64)
+				tolls, tollsisOK := mileageArgs["tolls"].(float64)
 				if !tollsisOK {
 					panic("must enter a valid tolls amount")
 				}
-				parking, parkingisOK := p.Args["parking"].(float64)
+				parking, parkingisOK := mileageArgs["parking"].(float64)
 				if !parkingisOK {
 					panic("must enter a valid parking amount")
 				}
-				mileage_req := &Mileage_Request{
+				mileage_req := &r.Mileage_Request{
 					Date:              date,
 					Starting_Location: start,
 					Destination:       destination,
@@ -88,6 +69,10 @@ var MileageMutations = graphql.NewObject(graphql.ObjectConfig{
 					End_Odometer:      end_odo,
 					Tolls:             tolls,
 					Parking:           parking,
+				}
+				exists, _ := mileage_req.Exists(userID, date, start_odo, end_odo)
+				if exists {
+					return nil, errors.New("mileage request already created")
 				}
 				mileage_req.Create(userID)
 				return mileage_req, nil

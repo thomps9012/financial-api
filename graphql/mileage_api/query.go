@@ -3,7 +3,7 @@ package mileage_api
 import (
 	"context"
 	conn "financial-api/m/db"
-	. "financial-api/m/models/requests"
+	r "financial-api/m/models/requests"
 	"financial-api/m/models/user"
 	"time"
 
@@ -12,13 +12,13 @@ import (
 )
 
 var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
+	Name: "MileageQueries",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
-			Type:        MileageOverviewType,
+			Type:        graphql.NewList(MileageOverviewType),
 			Description: "Gather overview information for all mileage requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var mileage_req Mileage_Overview
+				var mileage_req r.Mileage_Overview
 				results, err := mileage_req.FindAll()
 				if err != nil {
 					panic(err)
@@ -26,8 +26,8 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"monthly_mileage": &graphql.Field{
-			Type:        AggMonthlyMileageType,
+		"monthly_summary": &graphql.Field{
+			Type:        graphql.NewList(AggMonthlyMileageType),
 			Description: "Aggregate and gather all mileage requests for a given month and year",
 			Args: graphql.FieldConfigArgument{
 				"month": &graphql.ArgumentConfig{
@@ -50,7 +50,7 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				var records []Monthly_Mileage_Overview
+				var records []r.Monthly_Mileage_Overview
 				for users.Next(context.TODO()) {
 					var user user.User
 					decode_err := users.Decode(&user)
@@ -61,7 +61,7 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 					if err != nil {
 						panic(err)
 					}
-					user_record := &Monthly_Mileage_Overview{
+					user_record := &r.Monthly_Mileage_Overview{
 						User_ID:       user.ID,
 						Name:          user.Name,
 						Month:         time.Month(month),
@@ -86,7 +86,7 @@ var MileageQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var milage_req Mileage_Request
+				var milage_req r.Mileage_Request
 				mileage_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid request id")

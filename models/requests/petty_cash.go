@@ -68,7 +68,7 @@ func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 	first_action := &Action{
 		ID:         uuid.NewString(),
 		User_ID:    user_id,
-		Status:     PENDING,
+		Status:     "PENDING",
 		Created_At: time.Now(),
 	}
 	p.Action_History = append(p.Action_History, *first_action)

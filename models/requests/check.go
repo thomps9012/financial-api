@@ -17,7 +17,7 @@ type Address struct {
 	Street   string `json:"street" bson:"street"`
 	City     string `json:"city" bson:"city"`
 	State    string `json:"state" bson:"state"`
-	Zip_Code int64  `json:"zip" bson:"zip"`
+	Zip_Code int    `json:"zip" bson:"zip"`
 }
 
 type Vendor struct {
@@ -95,7 +95,7 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	first_action := &Action{
 		ID:         uuid.NewString(),
 		User_ID:    user_id,
-		Status:     PENDING,
+		Status:     "PENDING",
 		Created_At: time.Now(),
 	}
 	c.Action_History = append(c.Action_History, *first_action)

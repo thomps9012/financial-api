@@ -65,11 +65,11 @@ type Mileage_Request struct {
 	Starting_Location string    `json:"starting_location" bson:"starting_location"`
 	Destination       string    `json:"destination" bson:"destination"`
 	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose"`
-	Start_Odometer    int64     `json:"start_odometer" bson:"start_odometer"`
-	End_Odometer      int64     `json:"end_odometer" bson:"end_odometer"`
+	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer"`
+	End_Odometer      int       `json:"end_odometer" bson:"end_odometer"`
 	Tolls             float64   `json:"tolls" bson:"tolls"`
 	Parking           float64   `json:"parking" bson:"parking"`
-	Trip_Mileage      int64     `json:"trip_mileage" bson:"trip_mileage"`
+	Trip_Mileage      int       `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
@@ -117,7 +117,7 @@ type Address struct {
 	Street   string `json:"street" bson:"street"`
 	City     string `json:"city" bson:"city"`
 	State    string `json:"state" bson:"state"`
-	Zip_Code int64  `json:"zip" bson:"zip"`
+	Zip_Code int    `json:"zip" bson:"zip"`
 }
 
 type Vendor struct {
@@ -154,7 +154,7 @@ type User_Monthly_Mileage struct {
 	Vehicles      []Vehicle  `json:"vehicles" bson:"vehicles"`
 	Month         time.Month `json:"month" bson:"month"`
 	Year          int        `json:"year" bson:"year"`
-	Mileage       int64      `json:"mileage" bson:"mileage"`
+	Mileage       int        `json:"mileage" bson:"mileage"`
 	Tolls         float64    `json:"tolls" bson:"tolls"`
 	Parking       float64    `json:"parking" bson:"parking"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
@@ -403,7 +403,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 	if err != nil {
 		panic(err)
 	}
-	var mileage int64
+	var mileage int
 	tolls := 0.0
 	parking := 0.0
 	reimbursement := 0.0
