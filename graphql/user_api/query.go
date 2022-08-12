@@ -9,6 +9,18 @@ import (
 var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Query",
 	Fields: graphql.Fields{
+		"all": &graphql.Field{
+			Type:        graphql.NewList(UserType),
+			Description: "Gather basic information for all users",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				results, err := user.Findall()
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
+		},
 		"overview": &graphql.Field{
 			Type:        UserType,
 			Description: "Gather overview information for a user (all requests, and basic info)",

@@ -309,6 +309,20 @@ func (u *User) FindByID(user_id string) (User, error) {
 	}
 	return user, nil
 }
+func (u *User) Findall() ([]User, error) {
+	collection := conn.Db.Collection("users")
+	var userArr []User
+	cursor, err := collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var user User
+		cursor.Decode(&user)
+		userArr = append(userArr, user)
+	}
+	return userArr, nil
+}
 
 func (u *User) FindMgrID(user_id string) (string, error) {
 	collection := conn.Db.Collection("users")
