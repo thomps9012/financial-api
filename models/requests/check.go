@@ -219,7 +219,7 @@ func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_
 	collection := conn.Db.Collection("check_requests")
 	var filter bson.D
 	if start_date != "" && end_date != "" {
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start_date}}, {Key: "date", Value: bson.M{"$lte": end_date}}}
 	} else {
 		filter = bson.D{{Key: "user_id", Value: user_id}}
 	}

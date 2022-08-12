@@ -24,37 +24,37 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"user_requests": &graphql.Field{
-			Type:        AggUserCheckReq,
-			Description: "Aggregate and gather all check requests for a given user",
-			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-				"start_date": &graphql.ArgumentConfig{
-					Type:         graphql.DateTime,
-					DefaultValue: "",
-				},
-				"end_date": &graphql.ArgumentConfig{
-					Type:         graphql.DateTime,
-					DefaultValue: "",
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var check_request r.User_Check_Overview
-				user_id, isOk := p.Args["user_id"].(string)
-				if !isOk {
-					panic("must enter a valid user id")
-				}
-				start_date := p.Args["start_date"].(string)
-				end_date := p.Args["end_date"].(string)
-				results, err := check_request.FindByUser(user_id, start_date, end_date)
-				if err != nil {
-					panic(err)
-				}
-				return results, nil
-			},
-		},
+		// "user_requests": &graphql.Field{
+		// 	Type:        AggUserCheckReq,
+		// 	Description: "Aggregate and gather all check requests for a given user",
+		// 	Args: graphql.FieldConfigArgument{
+		// 		"user_id": &graphql.ArgumentConfig{
+		// 			Type: graphql.NewNonNull(graphql.ID),
+		// 		},
+		// 		"start_date": &graphql.ArgumentConfig{
+		// 			Type:         graphql.DateTime,
+		// 			DefaultValue: "",
+		// 		},
+		// 		"end_date": &graphql.ArgumentConfig{
+		// 			Type:         graphql.DateTime,
+		// 			DefaultValue: "",
+		// 		},
+		// 	},
+		// 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		// 		var check_request r.User_Check_Overview
+		// 		user_id, isOk := p.Args["user_id"].(string)
+		// 		if !isOk {
+		// 			panic("must enter a valid user id")
+		// 		}
+		// 		start_date := p.Args["start_date"].(string)
+		// 		end_date := p.Args["end_date"].(string)
+		// 		results, err := check_request.FindByUser(user_id, start_date, end_date)
+		// 		if err != nil {
+		// 			panic(err)
+		// 		}
+		// 		return results, nil
+		// 	},
+		// },
 		"grant_requests": &graphql.Field{
 			Type:        AggGrantCheckReq,
 			Description: "Aggregate and gather all check requests for a given grant",
