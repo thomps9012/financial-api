@@ -5,7 +5,6 @@ import (
 	conn "financial-api/m/db"
 	grant "financial-api/m/models/grants"
 	user "financial-api/m/models/user"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,14 +51,19 @@ type Grant_Petty_Cash struct {
 	Total_Amount float64     `json:"total_amount" bson:"total_amount"`
 }
 
-func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
+func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Time) (bool, error) {
 	var petty_cash_req Petty_Cash_Request
 	collection := conn.Db.Collection("petty_cash_requests")
 	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: p.Date}, {Key: "amount", Value: p.Amount}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
-	if err == nil {
-		return "", fmt.Errorf("duplicate petty cash request")
+	if err != nil {
+		return false, err
 	}
+	return true, nil
+}
+
+func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) {
+	collection := conn.Db.Collection("petty_cash_requests")
 	p.ID = uuid.NewString()
 	p.Created_At = time.Now()
 	p.Is_Active = true
@@ -72,20 +76,24 @@ func (p *Petty_Cash_Request) Create(user_id string) (string, error) {
 		Created_At: time.Now(),
 	}
 	p.Action_History = append(p.Action_History, *first_action)
+	_, err := collection.InsertOne(context.TODO(), *p)
+	if err != nil {
+		panic(err)
+	}
 	var req_user user.User
 	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
 	if mgr_find_err != nil {
-		panic(err)
+		panic(mgr_find_err)
 	}
 	var manager user.User
 	update_user, update_err := manager.AddNotification(p.ID, manager_id)
 	if update_err != nil {
-		panic(err)
+		panic(update_err)
 	}
 	if !update_user {
-		return "", err
+		return Petty_Cash_Request{}, update_err
 	}
-	return p.ID, nil
+	return *p, nil
 }
 
 func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, user_id string) (bool, error) {

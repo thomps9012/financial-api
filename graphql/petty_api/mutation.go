@@ -1,6 +1,7 @@
 package petty_api
 
 import (
+	"errors"
 	r "financial-api/m/models/requests"
 	"time"
 
@@ -30,7 +31,7 @@ var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 				"receipts": &graphql.ArgumentConfig{
-					Type: &graphql.List{OfType: graphql.String},
+					Type: graphql.NewList(graphql.String),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -44,6 +45,18 @@ var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
 				user_id, isOk := p.Args["user_id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
+				}
+				amount, okAmount := p.Args["amount"].(float64)
+				if !okAmount {
+					panic("must enter a valid amount")
+				}
+				date, okdate := p.Args["date"].(time.Time)
+				if !okdate {
+					panic("must enter a valid date")
+				}
+				exists, _ := petty_cash_req.Exists(user_id, amount, date)
+				if exists {
+					return nil, errors.New("duplicate petty cash request")
 				}
 				petty_cash_req.Create(user_id)
 				return petty_cash_req, nil
