@@ -296,16 +296,22 @@ func (u *User) RemoveVehicle(user_id string, vehicle_id string) (bool, error) {
 	return true, nil
 }
 
-func (u *User) Deactivate(user_id string) (bool, error) {
+func (u *User) Deactivate(user_id string) (User, error) {
+	var user User
 	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$set", Value: bson.M{"is_active": false}}})
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	update := bson.D{{Key: "$set", Value: bson.M{"is_active": false}}}
+	upsert := true
+	after := options.After
+	opt := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
 	if err != nil {
 		panic(err)
 	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
+	return user, nil
 }
 
 func (u *User) FindByID(user_id string) (User, error) {

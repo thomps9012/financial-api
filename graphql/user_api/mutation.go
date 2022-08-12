@@ -75,6 +75,27 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				return result, nil
 			},
 		},
+		"deactivate": &graphql.Field{
+			Type:        UserType,
+			Description: "Deactivates a user by setting the status to inactive",
+			Args: graphql.FieldConfigArgument{
+				"user_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_id, idOK := p.Args["user_id"].(string)
+				if !idOK {
+					panic("you must enter a valid user id")
+				}
+				var user u.User
+				result, err := user.Deactivate(user_id)
+				if err != nil {
+					panic(err)
+				}
+				return result, nil
+			},
+		},
 		"add_vehicle": &graphql.Field{
 			Type:        VehicleType,
 			Description: "Allow a user to add a vehicle to their account",
