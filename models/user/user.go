@@ -85,7 +85,7 @@ type User struct {
 	InComplete_Actions []string  `json:"incomplete_actions" bson:"incomplete_actions"`
 	Manager_ID         string    `json:"manager_id" bson:"manager_id"`
 	Is_Active          bool      `json:"is_active" bson:"is_active"`
-	Role               Role      `json:"role" bson:"role"`
+	Role               string    `json:"role" bson:"role"`
 }
 
 type Manager struct {
@@ -180,7 +180,7 @@ type User_Agg_Check_Requests struct {
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
-func setManagerID(email string, employee_role Role) string {
+func setManagerID(email string, employee_role string) string {
 	var manager_id string
 	managers := []Manager{
 		{"b771af77-bffe-495a-8777-56ef9a4a1f46", []string{"emp1@norainc.org", "emp65@norainc.org"}},
@@ -198,7 +198,7 @@ func setManagerID(email string, employee_role Role) string {
 	var finance = "cbaf2ee1-79d7-40da-bb4c-a6017d4fb705"
 	N_A := "N/A"
 	switch employee_role {
-	case EMPLOYEE:
+	case "EMPLOYEE":
 		for i := range managers {
 			var employeesArr = managers[i].Employees
 			for s := range employeesArr {
@@ -207,7 +207,7 @@ func setManagerID(email string, employee_role Role) string {
 				}
 			}
 		}
-	case MANAGER:
+	case "MANAGER":
 		for i := range executives {
 			var employeesArr = executives[i].Employees
 			for s := range employeesArr {
@@ -216,7 +216,7 @@ func setManagerID(email string, employee_role Role) string {
 				}
 			}
 		}
-	case EXECUTIVE:
+	case "EXECUTIVE":
 		manager_id = finance
 	default:
 		manager_id = N_A
@@ -224,7 +224,7 @@ func setManagerID(email string, employee_role Role) string {
 	return manager_id
 }
 
-func (u *User) Create(email string, role Role) (User, error) {
+func (u *User) Create(email string, role string) (User, error) {
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	var user User
@@ -237,6 +237,8 @@ func (u *User) Create(email string, role Role) (User, error) {
 	u.Last_Login = time.Now()
 	u.Is_Active = true
 	u.Email = email
+	u.Vehicles = []Vehicle{}
+	u.InComplete_Actions = []string{}
 	manager_id := setManagerID(email, role)
 	u.Manager_ID = manager_id
 	_, err := collection.InsertOne(context.TODO(), u)
@@ -304,6 +306,7 @@ func (u *User) FindByID(user_id string) (User, error) {
 	var user User
 	filter := bson.D{{Key: "_id", Value: user_id}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	user.Role = string(user.Role)
 	if err != nil {
 		panic(err)
 	}

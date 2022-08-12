@@ -40,8 +40,7 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !roleOK {
 					panic("user must have an active role")
 				}
-				parsedRole := user.ParseRole(role)
-				result, err := user.Create(email, parsedRole)
+				result, err := user.Create(email, role)
 				if err != nil {
 					panic(err)
 				}

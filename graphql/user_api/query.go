@@ -22,6 +22,7 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"overview": &graphql.Field{
+			// need to build out a new type to encompass all request information
 			Type:        UserType,
 			Description: "Gather overview information for a user (all requests, and basic info)",
 			Args: graphql.FieldConfigArgument{
