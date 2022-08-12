@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // possible expanison after org chart release
@@ -248,20 +249,25 @@ func (u *User) Create(email string, role string) (User, error) {
 	return *u, nil
 }
 
-func (u *User) Login(email string) (bool, error) {
+func (u *User) Login(email string) (User, error) {
+	var user User
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
-	result, err := collection.UpdateOne(context.TODO(), filter, bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}})
+	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
+	upsert := true
+	after := options.After
+	opt := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
 	if err != nil {
 		panic(err)
 	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
+	return user, nil
 }
 
-func (u *User) AddVehicle(name string, description string, user_id string) (string, error) {
+func (u *User) AddVehicle(user_id string, name string, description string) (string, error) {
 	collection := conn.Db.Collection("users")
 	vehicle := &Vehicle{
 		ID:          uuid.NewString(),
@@ -272,12 +278,13 @@ func (u *User) AddVehicle(name string, description string, user_id string) (stri
 	if err != nil {
 		panic(err)
 	}
+	println(result.ModifiedCount)
 	if result.ModifiedCount == 0 {
 		return "", err
 	}
 	return vehicle.ID, nil
 }
-func (u *User) RemoveVehicle(vehicle_id string, user_id string) (bool, error) {
+func (u *User) RemoveVehicle(user_id string, vehicle_id string) (bool, error) {
 	collection := conn.Db.Collection("users")
 	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"vehicles": bson.M{"_id": vehicle_id}}}})
 	if err != nil {

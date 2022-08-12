@@ -104,6 +104,7 @@ var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 				}
 				var user u.User
 				result, err := user.AddVehicle(user_id, name, description)
+				println(result)
 				if err != nil {
 					panic(err)
 				}
