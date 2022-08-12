@@ -20,6 +20,23 @@ const (
 	EXECUTIVE Role = "EXECUTIVE"
 )
 
+func (u User) ParseRole(role string) Role {
+	var roleParse Role
+	switch role {
+	case "EMPLOYEE":
+		roleParse = EMPLOYEE
+	case "MANAGER":
+		roleParse = MANAGER
+	case "FINANCE":
+		roleParse = FINANCE
+	case "EXECUTIVE":
+		roleParse = EXECUTIVE
+	default:
+		roleParse = EMPLOYEE
+	}
+	return roleParse
+}
+
 type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
@@ -166,16 +183,19 @@ type User_Agg_Check_Requests struct {
 func setManagerID(email string, employee_role Role) string {
 	var manager_id string
 	managers := []Manager{
-		{"test1", []string{"id1", "id2", "id3", "id4", "id5"}},
-		{"test2", []string{"id6", "id7", "id8", "id9", "id10"}},
-		{"test3", []string{"id11", "id12", "id13", "id14", "id15"}},
+		{"b771af77-bffe-495a-8777-56ef9a4a1f46", []string{"emp1@norainc.org", "emp65@norainc.org"}},
+		{"5960679a-d2f3-475b-b142-00650f8f0ebf", []string{"emp7@norainc.org", "emp87@norainc.org"}},
+		{"46092af5-a989-4977-9da8-ca7c84132421", []string{"emp9@norainc.org", "emp10@norainc.org"}},
+		{"5e6288d5-9219-4c75-87cf-cdc53fde3958", []string{"emp19@norainc.org", "emp13@norainc.org"}},
+		{"29fc8292-8051-4f41-873c-d74bb7241e43", []string{"emp39@norainc.org", "emp52@norainc.org"}},
+		{"12b243ea-5654-4b53-92ad-f6f056fd86fe", []string{"emp4S9@norainc.org", "emp99@norainc.org"}},
 	}
 	executives := []Manager{
-		{"test4", []string{"id16", "id22", "id32", "id41", "id35"}},
-		{"test5", []string{"id66", "id57", "id84", "id92", "id101"}},
-		{"test6", []string{"id161", "id312", "id123", "id149", "id915"}},
+		{"68125e1f-21c1-4f60-aab0-8efff5dc158e", []string{"manager1@norainc.org", "manager5@norainc.org"}},
+		{"cde4638b-4c33-4015-85fc-b0dd106a4b6b", []string{"manager2@norainc.org", "manager6@norainc.org"}},
+		{"acbe6899-200f-4185-8624-b31e32c42b44", []string{"manager3@norainc.org", "manager4@norainc.org"}},
 	}
-	var finance = "finance_id"
+	var finance = "cbaf2ee1-79d7-40da-bb4c-a6017d4fb705"
 	N_A := "N/A"
 	switch employee_role {
 	case EMPLOYEE:
@@ -189,10 +209,10 @@ func setManagerID(email string, employee_role Role) string {
 		}
 	case MANAGER:
 		for i := range executives {
-			var employeesArr = managers[i].Employees
+			var employeesArr = executives[i].Employees
 			for s := range employeesArr {
 				if employeesArr[s] == email {
-					manager_id = managers[i].ID
+					manager_id = executives[i].ID
 				}
 			}
 		}
@@ -216,12 +236,9 @@ func (u *User) Create(email string, role Role) (User, error) {
 	u.Role = role
 	u.Last_Login = time.Now()
 	u.Is_Active = true
-	if role != EXECUTIVE {
-		manager_id := setManagerID(email, role)
-		u.Manager_ID = manager_id
-	} else {
-		u.Manager_ID = "N/A"
-	}
+	u.Email = email
+	manager_id := setManagerID(email, role)
+	u.Manager_ID = manager_id
 	_, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {
 		panic(err)
