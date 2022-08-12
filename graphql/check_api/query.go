@@ -13,7 +13,7 @@ var CheckQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "CheckQueries",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
-			Type:        CheckReqOverviewType,
+			Type:        graphql.NewList(CheckReqOverviewType),
 			Description: "Gather overview information for all check requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var check_request r.Check_Request_Overview

@@ -13,7 +13,7 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "PettyCashQueries",
 	Fields: graphql.Fields{
 		"overview": &graphql.Field{
-			Type:        PettyCashOverviewType,
+			Type:        graphql.NewList(PettyCashOverviewType),
 			Description: "Gather overview information for all petty cash requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var petty_cash_overview r.Petty_Cash_Overview
