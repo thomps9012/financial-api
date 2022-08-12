@@ -112,6 +112,26 @@ var AggUserPettyCash = graphql.NewObject(
 	},
 )
 
+var PettyCashInput = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "PettyCashInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"amount": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"date": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"receipts": &graphql.InputObjectFieldConfig{
+				Type: &graphql.List{OfType: graphql.String},
+			},
+		},
+	},
+)
+
 var AggGrantPettyCashReq = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "AggregateGrantPettyCash",

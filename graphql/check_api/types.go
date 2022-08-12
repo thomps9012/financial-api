@@ -53,7 +53,7 @@ var AddressType = graphql.NewObject(
 	},
 )
 
-var CheckRequestInputType = graphql.NewInputObject(
+var CheckRequestInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "CheckRequestInput",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -79,7 +79,7 @@ var CheckRequestInputType = graphql.NewInputObject(
 	},
 )
 
-var VendorInputType = graphql.NewInputObject(
+var VendorInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "VendorInput",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -105,6 +105,12 @@ var VendorType = graphql.NewObject(
 		},
 	},
 )
+
+type PurchaseInputStruct struct {
+	grant_line_item string
+	description     string
+	amount          float64
+}
 
 var PurchaseInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{

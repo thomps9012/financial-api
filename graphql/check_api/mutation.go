@@ -3,6 +3,7 @@ package check_api
 import (
 	"errors"
 	r "financial-api/m/models/requests"
+	"fmt"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -19,10 +20,10 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"vendor": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(VendorInputType),
+					Type: graphql.NewNonNull(VendorInput),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(CheckRequestInputType),
+					Type: graphql.NewNonNull(CheckRequestInput),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -40,17 +41,27 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 					Address: *vendor_address,
 				}
 				checkReqArgs := p.Args["request"].(map[string]interface{})
-				purchases_input := checkReqArgs["purchases"].(map[string]interface{})
+				purchases_input := checkReqArgs["purchases"].([]interface{})
 				var purchases []r.Purchase
 				var order_total = 0.0
-				for range purchases_input {
+				for _, purchase_item_obj := range purchases_input {
+					fmt.Printf("%s\n", purchase_item_obj)
+					purchase_item := purchase_item_obj.(map[string]interface{})
+					amount := purchase_item["amount"].(float64)
+					description := purchase_item["description"].(string)
+					grant_line_item := purchase_item["grant_line_item"].(string)
 					purchase := &r.Purchase{
-						Grant_Line_Item: purchases_input["line_item"].(string),
-						Description:     purchases_input["description"].(string),
-						Amount:          purchases_input["amount"].(float64),
+						Grant_Line_Item: grant_line_item,
+						Description:     description,
+						Amount:          amount,
 					}
-					order_total += purchases_input["amount"].(float64)
+					order_total += amount
 					purchases = append(purchases, *purchase)
+				}
+				receiptArgs := checkReqArgs["receipts"].([]interface{})
+				var receipts []string
+				for item := range receiptArgs {
+					receipts = append(receipts, receiptArgs[item].(string))
 				}
 				check_request := &r.Check_Request{
 					Date:        checkReqArgs["date"].(time.Time),
@@ -59,7 +70,7 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 					Grant_ID:    checkReqArgs["grant_id"].(string),
 					Purchases:   purchases,
 					Order_Total: order_total,
-					Receipts:    checkReqArgs["receipts"].([]string),
+					Receipts:    receipts,
 					Credit_Card: checkReqArgs["credit_card"].(string),
 				}
 				user_id, isOk := p.Args["user_id"].(string)

@@ -54,14 +54,14 @@ func main() {
 	pettyCashHandler := handler.New(&handler.Config{
 		Schema:     &pettyCashSchema,
 		Pretty:     true,
-		GraphiQL:   false,
-		Playground: true,
+		GraphiQL:   true,
+		Playground: false,
 	})
 	checkRequestHandler := handler.New(&handler.Config{
 		Schema:     &checkRequestSchema,
 		Pretty:     true,
-		GraphiQL:   false,
-		Playground: true,
+		GraphiQL:   true,
+		Playground: false,
 	})
 	http.Handle("/user", userHandler)
 	http.Handle("/mileage", mileageHandler)

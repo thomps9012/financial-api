@@ -21,38 +21,43 @@ var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"amount": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Float),
-				},
-				"date": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.DateTime),
-				},
-				"description": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"receipts": &graphql.ArgumentConfig{
-					Type: graphql.NewList(graphql.String),
+				"request": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(PettyCashInput),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				petty_cash_req := &r.Petty_Cash_Request{
-					Date:        p.Args["date"].(time.Time),
-					Grant_ID:    p.Args["grant_id"].(string),
-					Amount:      p.Args["amount"].(float64),
-					Description: p.Args["description"].(string),
-					Receipts:    p.Args["receipts"].([]string),
-				}
 				user_id, isOk := p.Args["user_id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				amount, okAmount := p.Args["amount"].(float64)
+				println(user_id)
+				grant_id, grantOK := p.Args["grant_id"].(string)
+				if !grantOK {
+					panic("must enter a valid grant")
+				}
+				requestArgs := p.Args["request"].(map[string]interface{})
+				amount, okAmount := requestArgs["amount"].(float64)
 				if !okAmount {
 					panic("must enter a valid amount")
 				}
-				date, okdate := p.Args["date"].(time.Time)
+				date, okdate := requestArgs["date"].(time.Time)
 				if !okdate {
 					panic("must enter a valid date")
+				}
+				receipts, receiptsOK := requestArgs["receipts"].([]string)
+				if !receiptsOK {
+					panic("must enter a valid receipt item")
+				}
+				description, descriptionOK := requestArgs["description"].(string)
+				if !descriptionOK {
+					panic("must enter a valid description")
+				}
+				petty_cash_req := &r.Petty_Cash_Request{
+					Date:        date,
+					Grant_ID:    grant_id,
+					Amount:      amount,
+					Description: description,
+					Receipts:    receipts,
 				}
 				exists, _ := petty_cash_req.Exists(user_id, amount, date)
 				if exists {
