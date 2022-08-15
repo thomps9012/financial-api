@@ -121,7 +121,7 @@ var UserPurchaseType = graphql.NewObject(
 
 var UserOverviewType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "UserOverview",
+		Name: "UserOverviewType",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
@@ -135,14 +135,84 @@ var UserOverviewType = graphql.NewObject(
 			"role": &graphql.Field{
 				Type: RoleType,
 			},
+			"incomplete_action_count": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"last_login": &graphql.Field{
+				Type: graphql.DateTime,
+			},
 			"mileage_requests": &graphql.Field{
-				Type: graphql.NewList(UserMileageOverview),
+				Type: AggUserMileage,
 			},
 			"check_requests": &graphql.Field{
-				Type: graphql.NewList(UserCheckReqOverview),
+				Type: AggUserChecks,
 			},
 			"petty_cash_requests": &graphql.Field{
-				Type: graphql.NewList(UserPettyCashOverview),
+				Type: AggUserPettyCash,
+			},
+		},
+	},
+)
+
+var AggUserMileage = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AggUserMileage",
+		Fields: graphql.Fields{
+			"vehicles": &graphql.Field{
+				Type: graphql.NewList(VehicleType),
+			},
+			"mileage": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"tolls": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"parking": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"reimbursement": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.ID),
+			},
+		},
+	},
+)
+var AggUserChecks = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AggUserChecks",
+		Fields: graphql.Fields{
+			"total_amount": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"receipts": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"vendors": &graphql.Field{
+				Type: graphql.NewList(UserVendorType),
+			},
+			"purchases": &graphql.Field{
+				Type: graphql.NewList(UserPurchaseType),
+			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+		},
+	},
+)
+var AggUserPettyCash = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AggUserPettyCash",
+		Fields: graphql.Fields{
+			"total_amount": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"receipts": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
 			},
 		},
 	},
@@ -243,6 +313,7 @@ var UserCheckReqOverview = graphql.NewObject(
 		},
 	},
 )
+
 var UserType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",

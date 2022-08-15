@@ -22,8 +22,7 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"overview": &graphql.Field{
-			// need to build out a new type to encompass all request information
-			Type:        UserType,
+			Type:        UserOverviewType,
 			Description: "Gather overview information for a user (all requests, and basic info)",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
@@ -36,11 +35,34 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				userRes, err := user.FindByID(user_id)
+				user, userErr := user.FindByID(user_id)
+				if userErr != nil {
+					panic(userErr)
+				}
+				check_requests, err := user.AggregateChecks(user_id, "", "")
 				if err != nil {
 					panic(err)
 				}
-				return userRes, nil
+				mileage, mileageErr := user.FindMileage(user_id)
+				if mileageErr != nil {
+					panic(mileageErr)
+				}
+				pettyCash, pettyCashErr := user.FindPettyCash(user_id)
+				if pettyCashErr != nil {
+					panic(pettyCashErr)
+				}
+				return u.User_Overview{
+					ID:                      user_id,
+					Name:                    user.Name,
+					Last_Login:              user.Last_Login,
+					Is_Active:               user.Is_Active,
+					Role:                    user.Role,
+					Manager_ID:              user.Manager_ID,
+					Incomplete_Action_Count: len(user.InComplete_Actions),
+					Check_Requests:          check_requests,
+					Mileage_Requests:        mileage,
+					Petty_Cash_Requests:     pettyCash,
+				}, nil
 			},
 		},
 		"monthly_mileage": &graphql.Field{
