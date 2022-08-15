@@ -74,7 +74,7 @@ type Grant_Check_Overview struct {
 	Grant        grant.Grant `json:"grant" bson:"grant"`
 	Vendors      []Vendor    `json:"vendors" bson:"vendors"`
 	Total_Amount float64     `json:"total_amount" bson:"total_amount"`
-	Credit_Cards string      `json:"credit_cards" bson:"credit_cards"`
+	Credit_Cards []string    `json:"credit_cards" bson:"credit_cards"`
 	Last_Request time.Time   `json:"last_request" bson:"last_request"`
 }
 
@@ -182,21 +182,28 @@ func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 		panic(err)
 	}
 	for cursor.Next(context.TODO()) {
+		println("hit cursor")
 		var user user.User
 		var grant grant.Grant
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
+			println("decode error")
 			panic(decode_err)
 		}
+		println("grant ID", check_req.Grant_ID)
 		grant_info, grant_err := grant.Find(check_req.Grant_ID)
 		if grant_err != nil {
+			println("grant error")
 			panic(grant_err)
 		}
+		println("user ID", check_req.User_ID)
 		user_info, user_err := user.FindByID(check_req.User_ID)
 		if user_err != nil {
+			println("user error")
 			panic(user_err)
 		}
+		println(check_req.ID)
 		check_overview := &Check_Request_Overview{
 			ID:             check_req.ID,
 			User_ID:        check_req.User_ID,
@@ -279,15 +286,25 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		34, 25, 72, 01, 0, time.UTC)
 	total_amount := 0.0
 	var vendors []Vendor
+	var credit_cards []string
+	var exists = make(map[string]bool)
+	var vendorExists = make(map[Vendor]bool)
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		vendors = append(vendors, check_req.Vendor)
+		if !vendorExists[check_req.Vendor] {
+			vendors = append(vendors, check_req.Vendor)
+			vendorExists[check_req.Vendor] = true
+		}
 		if check_req.Date.After(last_request) {
 			last_request = check_req.Date
+		}
+		if !exists[check_req.Credit_Card] {
+			credit_cards = append(credit_cards, check_req.Credit_Card)
+			exists[check_req.Credit_Card] = true
 		}
 		total_amount += check_req.Order_Total
 	}
@@ -295,6 +312,7 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		Grant_ID:     grant_id,
 		Grant:        grant_info,
 		Vendors:      vendors,
+		Credit_Cards: credit_cards,
 		Last_Request: last_request,
 		Total_Amount: total_amount,
 	}

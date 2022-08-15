@@ -37,6 +37,7 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+
 	conn.InitDB()
 	defer conn.CloseDB()
 	userHandler := handler.New(&handler.Config{
