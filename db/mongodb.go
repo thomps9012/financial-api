@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -13,7 +14,7 @@ var Db *mongo.Database
 
 func InitDB() {
 	// change on production
-	ATLAS_URI := "mongodb+srv://spars01:H0YXCAGHoUihHcSZ@cluster0.wuezj.mongodb.net/TEST_finance_records?retryWrites=true&w=majority"
+	ATLAS_URI := os.Getenv("ATLAS_URI")
 	clientOptions := options.Client().ApplyURI(ATLAS_URI)
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -31,7 +32,7 @@ func InitDB() {
 	fmt.Println("Connected to MongoDB!")
 
 	// change on production
-	const dbName = "TEST_finance_records"
+	dbName := os.Getenv("DB_NAME")
 	Db = client.Database(dbName)
 }
 
