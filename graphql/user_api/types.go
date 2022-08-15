@@ -106,9 +106,6 @@ var UserPurchaseType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "UserPurchase",
 		Fields: graphql.Fields{
-			"grant_id": &graphql.Field{
-				Type: graphql.String,
-			},
 			"grant_line_item": &graphql.Field{
 				Type: graphql.String,
 			},
