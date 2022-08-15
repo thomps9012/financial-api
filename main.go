@@ -42,14 +42,14 @@ func main() {
 	userHandler := handler.New(&handler.Config{
 		Schema:     &userSchema,
 		Pretty:     true,
-		GraphiQL:   false,
-		Playground: true,
+		GraphiQL:   true,
+		Playground: false,
 	})
 	mileageHandler := handler.New(&handler.Config{
 		Schema:     &mileageSchema,
 		Pretty:     true,
-		GraphiQL:   false,
-		Playground: true,
+		GraphiQL:   true,
+		Playground: false,
 	})
 	pettyCashHandler := handler.New(&handler.Config{
 		Schema:     &pettyCashSchema,

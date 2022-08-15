@@ -4,6 +4,7 @@ import (
 	"errors"
 	r "financial-api/m/models/requests"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -53,9 +54,10 @@ var CheckRequestMutations = graphql.NewObject(graphql.ObjectConfig{
 					purchase := &r.Purchase{
 						Grant_Line_Item: grant_line_item,
 						Description:     description,
-						Amount:          amount,
+						Amount:          (math.Round(amount*100) / 100),
 					}
-					order_total += amount
+					order_total += (math.Round(amount*100) / 100)
+					order_total = math.Round(order_total*100) / 100
 					purchases = append(purchases, *purchase)
 				}
 				receiptArgs := checkReqArgs["receipts"].([]interface{})
