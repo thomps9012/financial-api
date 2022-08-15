@@ -17,7 +17,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/heroku"
+	"golang.org/x/oauth2/google"
 )
 
 const defaultPort = "8080"
@@ -45,7 +45,7 @@ var (
 	oauthConfig = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_OAUTH_ID"),
 		ClientSecret: os.Getenv("GOOGLE_OAUTH_SECRET"),
-		Endpoint:     heroku.Endpoint,
+		Endpoint:     google.Endpoint,
 		RedirectURL:  "http://" + os.Getenv("HEROKU_APP_NAME") + "herokuapp.com/.auth/login/google/callback",
 	}
 
