@@ -79,13 +79,11 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// update this to reflect google api
 	session, err := store.Get(r, "tundra-oauth")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// update this to reflect google api
 	session.Values["tundra-oauth"] = token
 	if err := session.Save(r, w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -95,19 +93,16 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleUser(w http.ResponseWriter, r *http.Request) {
-	// update this to reflect google api
 	session, err := store.Get(r, "tundra-oauth")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// update this to reflect google api
 	token, ok := session.Values["tundra-oauth"].(*oauth2.Token)
 	if !ok {
 		http.Error(w, "Unable to assert token", http.StatusInternalServerError)
 		return
 	}
-	// update this to reflect google api
 	client := oauthConfig.Client(context.Background(), token)
 	resp, err := client.Get("./auth/userinfo.email")
 	if err != nil {
@@ -116,7 +111,7 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 	d := json.NewDecoder(resp.Body)
-	var account struct { // See https://devcenter.heroku.com/articles/platform-api-reference#account
+	var account struct {
 		Email string `json:"email"`
 	}
 	if err := d.Decode(&account); err != nil {

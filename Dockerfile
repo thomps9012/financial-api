@@ -7,6 +7,6 @@ RUN go build
 FROM alpine
 RUN adduser -S -D -H -h /app appuser
 USER appuser
-COPY --from=builder /build/prevention_productivity /app/
+COPY --from=builder /build/financial-api /app/
 WORKDIR /app
 CMD ["./financial-api"]
