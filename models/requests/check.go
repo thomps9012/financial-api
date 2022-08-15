@@ -287,7 +287,7 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		if enderr != nil {
 			panic(err)
 		}
-		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start}}, {Key: "$lte", Value: bson.M{"date": end}}}
+		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
 	} else {
 		filter = bson.D{{Key: "grant_id", Value: grant_id}}
 	}

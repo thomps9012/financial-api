@@ -444,7 +444,7 @@ func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Month
 	end_month := month + 1
 	start_date := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
 	end_date := time.Date(year, time.Month(end_month), 0, 0, 0, 0, 0, time.UTC)
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start_date}}, {Key: "date", Value: bson.M{"$lte": end_date}}}
 	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		panic(err)
@@ -488,7 +488,7 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		if enderr != nil {
 			panic(err)
 		}
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start}}, {Key: "$lte", Value: bson.M{"date": end}}}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
 	} else {
 		filter = bson.D{{Key: "user_id", Value: user_id}}
 	}
