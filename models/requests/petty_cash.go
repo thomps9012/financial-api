@@ -241,8 +241,17 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
 	if start_date != "" && end_date != "" {
-		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start}}, {Key: "$lte", Value: bson.M{"date": end}}}
 	} else {
 		filter = bson.D{{Key: "grant_id", Value: grant_id}}
 	}

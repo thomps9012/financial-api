@@ -225,8 +225,17 @@ func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_date string) (User_Check_Overview, error) {
 	collection := conn.Db.Collection("check_requests")
 	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
 	if start_date != "" && end_date != "" {
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start_date}}, {Key: "date", Value: bson.M{"$lte": end_date}}}
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
 	} else {
 		filter = bson.D{{Key: "user_id", Value: user_id}}
 	}
@@ -268,8 +277,17 @@ func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_
 func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Check_Overview, error) {
 	collection := conn.Db.Collection("check_requests")
 	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
 	if start_date != "" && end_date != "" {
-		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "$gte", Value: bson.M{"date": start}}, {Key: "$lte", Value: bson.M{"date": end}}}
 	} else {
 		filter = bson.D{{Key: "grant_id", Value: grant_id}}
 	}

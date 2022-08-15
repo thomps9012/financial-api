@@ -478,8 +478,17 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		panic(err)
 	}
 	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
 	if start_date != "" && end_date != "" {
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start_date}}, {Key: "$lte", Value: bson.M{"date": end_date}}}
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "$gte", Value: bson.M{"date": start}}, {Key: "$lte", Value: bson.M{"date": end}}}
 	} else {
 		filter = bson.D{{Key: "user_id", Value: user_id}}
 	}

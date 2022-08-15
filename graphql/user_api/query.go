@@ -86,11 +86,11 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"start_date": &graphql.ArgumentConfig{
-					Type:         graphql.DateTime,
+					Type:         graphql.String,
 					DefaultValue: "",
 				},
 				"end_date": &graphql.ArgumentConfig{
-					Type:         graphql.DateTime,
+					Type:         graphql.String,
 					DefaultValue: "",
 				},
 			},

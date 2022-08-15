@@ -119,7 +119,7 @@ func CheckBulkInsert(userID_array []string) ([]string, error) {
 			Credit_Card:    "N/A",
 			Created_At:     time.Now(),
 			Action_History: []r.Action{},
-			Current_Status: r.PENDING,
+			Current_Status: "PENDING",
 			Is_Active:      true,
 		}
 		result, err := collection.InsertOne(context.TODO(), check_req)
@@ -144,7 +144,7 @@ func PettyBulkInsert(userID_array []string) ([]string, error) {
 			Receipts:       []string{},
 			Created_At:     time.Now(),
 			Action_History: []r.Action{},
-			Current_Status: r.PENDING,
+			Current_Status: "PENDING",
 			Is_Active:      true,
 		}
 		result, err := collection.InsertOne(context.TODO(), cash_req)
