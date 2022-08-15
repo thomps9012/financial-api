@@ -46,7 +46,7 @@ var (
 		ClientID:     os.Getenv("GOOGLE_OAUTH_ID"),
 		ClientSecret: os.Getenv("GOOGLE_OAUTH_SECRET"),
 		Endpoint:     google.Endpoint,
-		Scopes:       []string{"./auth/userinfo.email", "./auth/userinfo.profile"},
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 		RedirectURL:  "http://" + os.Getenv("HEROKU_APP_NAME") + "herokuapp.com/.auth/login/google/callback",
 	}
 
