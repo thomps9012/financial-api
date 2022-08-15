@@ -18,7 +18,6 @@ func InitDB() {
 	clientOptions := options.Client().ApplyURI(ATLAS_URI)
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
-
 	if err != nil {
 		log.Fatal("this is the client err", err)
 	}
