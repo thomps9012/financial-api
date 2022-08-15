@@ -61,21 +61,23 @@ type Check_Request_Overview struct {
 	Is_Active      bool        `json:"is_active" bson:"is_active"`
 }
 type User_Check_Overview struct {
-	User_ID      string    `json:"user_id" bson:"user_id"`
-	User         user.User `json:"user" bson:"user"`
-	Vendors      []Vendor  `json:"vendors" bson:"vendors"`
-	Total_Amount float64   `json:"total_amount" bson:"total_amount"`
-	Credit_Cards string    `json:"credit_cards" bson:"credit_cards"`
-	Last_Request time.Time `json:"last_request" bson:"last_request"`
+	User_ID         string    `json:"user_id" bson:"user_id"`
+	User            user.User `json:"user" bson:"user"`
+	Vendors         []Vendor  `json:"vendors" bson:"vendors"`
+	Total_Amount    float64   `json:"total_amount" bson:"total_amount"`
+	Credit_Cards    string    `json:"credit_cards" bson:"credit_cards"`
+	Last_Request    time.Time `json:"last_request" bson:"last_request"`
+	Last_Request_ID string    `json:"last_request_id" bson:"last_request_id"`
 }
 
 type Grant_Check_Overview struct {
-	Grant_ID     string      `json:"grant_id" bson:"grant_id"`
-	Grant        grant.Grant `json:"grant" bson:"grant"`
-	Vendors      []Vendor    `json:"vendors" bson:"vendors"`
-	Total_Amount float64     `json:"total_amount" bson:"total_amount"`
-	Credit_Cards []string    `json:"credit_cards" bson:"credit_cards"`
-	Last_Request time.Time   `json:"last_request" bson:"last_request"`
+	Grant_ID        string      `json:"grant_id" bson:"grant_id"`
+	Grant           grant.Grant `json:"grant" bson:"grant"`
+	Vendors         []Vendor    `json:"vendors" bson:"vendors"`
+	Total_Amount    float64     `json:"total_amount" bson:"total_amount"`
+	Credit_Cards    []string    `json:"credit_cards" bson:"credit_cards"`
+	Last_Request    time.Time   `json:"last_request" bson:"last_request"`
+	Last_Request_ID string      `json:"last_request_id" bson:"last_request_id"`
 }
 
 func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) (bool, error) {
@@ -248,10 +250,11 @@ func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_
 	if user_err != nil {
 		panic(user_err)
 	}
-	last_request := time.Date(2020, time.April,
+	last_request := time.Date(2000, time.April,
 		34, 25, 72, 01, 0, time.UTC)
 	total_amount := 0.0
 	var vendors []Vendor
+	last_request_id := ""
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
@@ -261,15 +264,17 @@ func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_
 		vendors = append(vendors, check_req.Vendor)
 		if check_req.Date.After(last_request) {
 			last_request = check_req.Date
+			last_request_id = check_req.ID
 		}
 		total_amount += check_req.Order_Total
 	}
 	check_overview := &User_Check_Overview{
-		User_ID:      user_id,
-		User:         user_info,
-		Vendors:      vendors,
-		Last_Request: last_request,
-		Total_Amount: total_amount,
+		User_ID:         user_id,
+		User:            user_info,
+		Vendors:         vendors,
+		Last_Request:    last_request,
+		Last_Request_ID: last_request_id,
+		Total_Amount:    total_amount,
 	}
 	return *check_overview, nil
 }
@@ -300,9 +305,10 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 	if grant_err != nil {
 		panic(grant_err)
 	}
-	last_request := time.Date(2020, time.April,
+	last_request := time.Date(2000, time.April,
 		34, 25, 72, 01, 0, time.UTC)
 	total_amount := 0.0
+	last_request_id := ""
 	var vendors []Vendor
 	var credit_cards []string
 	var exists = make(map[string]bool)
@@ -319,6 +325,7 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		}
 		if check_req.Date.After(last_request) {
 			last_request = check_req.Date
+			last_request_id = check_req.ID
 		}
 		if !exists[check_req.Credit_Card] {
 			credit_cards = append(credit_cards, check_req.Credit_Card)
@@ -327,12 +334,13 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		total_amount += check_req.Order_Total
 	}
 	check_overview := &Grant_Check_Overview{
-		Grant_ID:     grant_id,
-		Grant:        grant_info,
-		Vendors:      vendors,
-		Credit_Cards: credit_cards,
-		Last_Request: last_request,
-		Total_Amount: total_amount,
+		Grant_ID:        grant_id,
+		Grant:           grant_info,
+		Vendors:         vendors,
+		Credit_Cards:    credit_cards,
+		Last_Request:    last_request,
+		Last_Request_ID: last_request_id,
+		Total_Amount:    total_amount,
 	}
 	return *check_overview, nil
 }

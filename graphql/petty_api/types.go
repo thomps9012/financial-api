@@ -17,14 +17,8 @@ var PettyCashType = graphql.NewObject(
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
 			},
-			"user": &graphql.Field{
-				Type: u.UserType,
-			},
 			"grant_id": &graphql.Field{
 				Type: graphql.ID,
-			},
-			"grant": &graphql.Field{
-				Type: g.GrantType,
 			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
@@ -105,6 +99,9 @@ var AggUserPettyCash = graphql.NewObject(
 			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
 			},
+			"last_request_id": &graphql.Field{
+				Type: graphql.String,
+			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
@@ -144,6 +141,9 @@ var AggGrantPettyCashReq = graphql.NewObject(
 			},
 			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
+			},
+			"last_request_id": &graphql.Field{
+				Type: graphql.String,
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,

@@ -262,6 +262,9 @@ var AggGrantCheckReq = graphql.NewObject(
 			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
 			},
+			"last_request_id": &graphql.Field{
+				Type: graphql.String,
+			},
 		},
 	},
 )

@@ -40,17 +40,19 @@ type Petty_Cash_Overview struct {
 }
 
 type User_Petty_Cash struct {
-	User_ID      string    `json:"user_id" bson:"user_id"`
-	User         user.User `json:"user" bson:"user"`
-	Last_Request time.Time `json:"last_request" bson:"last_request"`
-	Total_Amount float64   `json:"total_amount" bson:"total_amount"`
+	User_ID         string    `json:"user_id" bson:"user_id"`
+	User            user.User `json:"user" bson:"user"`
+	Last_Request    time.Time `json:"last_request" bson:"last_request"`
+	Last_Request_ID string    `json:"last_request_id" bson:"last_request_id"`
+	Total_Amount    float64   `json:"total_amount" bson:"total_amount"`
 }
 
 type Grant_Petty_Cash struct {
-	Grant_ID     string      `json:"grant_id" bson:"grant_id"`
-	Grant        grant.Grant `json:"grant" bson:"grant"`
-	Last_Request time.Time   `json:"last_request" bson:"last_request"`
-	Total_Amount float64     `json:"total_amount" bson:"total_amount"`
+	Grant_ID        string      `json:"grant_id" bson:"grant_id"`
+	Grant           grant.Grant `json:"grant" bson:"grant"`
+	Last_Request    time.Time   `json:"last_request" bson:"last_request"`
+	Last_Request_ID string      `json:"last_request_id" bson:"last_request_id"`
+	Total_Amount    float64     `json:"total_amount" bson:"total_amount"`
 }
 
 func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Time) (bool, error) {
@@ -218,6 +220,7 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 	total_amount := 0.0
 	last_request := time.Date(2000, time.April,
 		34, 25, 72, 01, 0, time.UTC)
+	last_request_id := ""
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
 		decode_err := cursor.Decode(&petty_cash_req)
@@ -226,15 +229,17 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 		}
 		if petty_cash_req.Date.After(last_request) {
 			last_request = petty_cash_req.Date
+			last_request_id = petty_cash_req.ID
 		}
 		total_amount += math.Round(petty_cash_req.Amount*100) / 100
 		total_amount = math.Round(total_amount*100) / 100
 	}
 	petty_cash_overview := &User_Petty_Cash{
-		User_ID:      user_id,
-		User:         user_info,
-		Last_Request: last_request,
-		Total_Amount: total_amount,
+		User_ID:         user_id,
+		User:            user_info,
+		Last_Request:    last_request,
+		Last_Request_ID: last_request_id,
+		Total_Amount:    total_amount,
 	}
 	return *petty_cash_overview, nil
 }
@@ -265,8 +270,9 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 		panic(grant_err)
 	}
 	total_amount := 0.0
-	last_request := time.Date(2020, time.April,
+	last_request := time.Date(2000, time.April,
 		34, 25, 72, 01, 0, time.UTC)
+	var last_request_id string
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
 		decode_err := cursor.Decode(&petty_cash_req)
@@ -275,14 +281,16 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 		}
 		if petty_cash_req.Date.After(last_request) {
 			last_request = petty_cash_req.Date
+			last_request_id = petty_cash_req.ID
 		}
 		total_amount += petty_cash_req.Amount
 	}
 	petty_cash_overview := &Grant_Petty_Cash{
-		Grant_ID:     grant_id,
-		Grant:        grant_info,
-		Last_Request: last_request,
-		Total_Amount: total_amount,
+		Grant_ID:        grant_id,
+		Grant:           grant_info,
+		Last_Request:    last_request,
+		Last_Request_ID: last_request_id,
+		Total_Amount:    total_amount,
 	}
 	return *petty_cash_overview, nil
 }
