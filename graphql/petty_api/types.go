@@ -105,6 +105,9 @@ var AggUserPettyCash = graphql.NewObject(
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
 		},
 	},
 )
@@ -147,6 +150,9 @@ var AggGrantPettyCashReq = graphql.NewObject(
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
+			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
 			},
 		},
 	},

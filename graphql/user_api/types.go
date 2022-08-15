@@ -371,6 +371,9 @@ var UserCheckRequests = graphql.NewObject(
 			"receipts": &graphql.Field{
 				Type: graphql.NewList(graphql.String),
 			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
 		},
 	},
 )

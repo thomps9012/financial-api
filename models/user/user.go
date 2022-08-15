@@ -178,6 +178,7 @@ type User_Agg_Check_Requests struct {
 	Vendors      []Vendor   `json:"vendors" bson:"vendors"`
 	Purchases    []Purchase `json:"purchases" bson:"purchases"`
 	Receipts     []string   `json:"receipts" bson:"receipts"`
+	Request_IDS  []string   `json:"request_ids" bson:"request_ids"`
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
@@ -500,13 +501,19 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 	var vendors []Vendor
 	var receipts []string
 	var purchases []Purchase
+	var requestIDs []string
+	var vendorExists = make(map[Vendor]bool)
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		vendors = append(vendors, check_req.Vendor)
+		requestIDs = append(requestIDs, check_req.ID)
+		if !vendorExists[check_req.Vendor] {
+			vendors = append(vendors, check_req.Vendor)
+			vendorExists[check_req.Vendor] = true
+		}
 		purchases = append(purchases, check_req.Purchases...)
 		receipts = append(receipts, check_req.Receipts...)
 		total_amount += check_req.Order_Total
@@ -519,6 +526,7 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		Total_Amount: total_amount,
 		Vendors:      vendors,
 		Purchases:    purchases,
+		Request_IDS:  requestIDs,
 		Receipts:     receipts,
 	}, nil
 }

@@ -265,6 +265,9 @@ var AggGrantCheckReq = graphql.NewObject(
 			"last_request_id": &graphql.Field{
 				Type: graphql.String,
 			},
+			"request_ids": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
 		},
 	},
 )
