@@ -5,6 +5,7 @@ import (
 	conn "financial-api/m/db"
 	grant "financial-api/m/models/grants"
 	user "financial-api/m/models/user"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -191,8 +192,17 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date string) (User_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
 	if start_date != "" && end_date != "" {
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start_date}}, {Key: "date", Value: bson.M{"$lte": end_date}}}
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
 	} else {
 		filter = bson.D{{Key: "user_id", Value: user_id}}
 	}
@@ -206,7 +216,7 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 		panic(user_err)
 	}
 	total_amount := 0.0
-	last_request := time.Date(2020, time.April,
+	last_request := time.Date(2000, time.April,
 		34, 25, 72, 01, 0, time.UTC)
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
@@ -217,7 +227,8 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 		if petty_cash_req.Date.After(last_request) {
 			last_request = petty_cash_req.Date
 		}
-		total_amount += petty_cash_req.Amount
+		total_amount += math.Round(petty_cash_req.Amount*100) / 100
+		total_amount = math.Round(total_amount*100) / 100
 	}
 	petty_cash_overview := &User_Petty_Cash{
 		User_ID:      user_id,
