@@ -30,6 +30,7 @@ type Petty_Cash_Overview struct {
 	User_ID        string      `json:"user_id" bson:"user_id"`
 	User           user.User   `json:"user" bson:"user"`
 	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
+	Amount         float64     `json:"amount" bson:"amount"`
 	Grant          grant.Grant `json:"grant" bson:"grant"`
 	Date           time.Time   `json:"date" bson:"date"`
 	Created_At     time.Time   `json:"created_at" bson:"created_at"`
@@ -175,6 +176,7 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 			User:           user_info,
 			Grant_ID:       petty_cash_req.Grant_ID,
 			Grant:          grant_info,
+			Amount:         petty_cash_req.Amount,
 			Date:           petty_cash_req.Date,
 			Current_Status: petty_cash_req.Current_Status,
 			Created_At:     petty_cash_req.Created_At,
