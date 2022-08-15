@@ -1,8 +1,8 @@
 package petty_api
 
 import (
-	u "financial-api/m/graphql/user_api"
-	g "financial-api/m/models/grants"
+	u "financial-api/graphql/user_api"
+	g "financial-api/models/grants"
 
 	"github.com/graphql-go/graphql"
 )

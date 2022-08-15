@@ -2,9 +2,9 @@ package requests
 
 import (
 	"context"
-	conn "financial-api/m/db"
-	grant "financial-api/m/models/grants"
-	user "financial-api/m/models/user"
+	conn "financial-api/db"
+	grant "financial-api/models/grants"
+	user "financial-api/models/user"
 	"time"
 
 	"github.com/google/uuid"

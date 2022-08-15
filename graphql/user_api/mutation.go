@@ -1,7 +1,7 @@
 package user_api
 
 import (
-	u "financial-api/m/models/user"
+	u "financial-api/models/user"
 	"regexp"
 
 	"github.com/graphql-go/graphql"

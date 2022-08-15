@@ -2,7 +2,7 @@ package mileage_api
 
 import (
 	"errors"
-	r "financial-api/m/models/requests"
+	r "financial-api/models/requests"
 	"time"
 
 	"github.com/graphql-go/graphql"

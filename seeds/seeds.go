@@ -2,9 +2,9 @@ package seeds
 
 import (
 	"context"
-	. "financial-api/m/Db"
-	r "financial-api/m/models/requests"
-	u "financial-api/m/models/user"
+	. "financial-api/Db"
+	r "financial-api/models/requests"
+	u "financial-api/models/user"
 	"time"
 
 	"github.com/google/uuid"

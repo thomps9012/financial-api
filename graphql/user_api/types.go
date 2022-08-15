@@ -1,7 +1,7 @@
 package user_api
 
 import (
-	g "financial-api/m/models/grants"
+	g "financial-api/models/grants"
 
 	"github.com/graphql-go/graphql"
 )

@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	conn "financial-api/m/db"
+	conn "financial-api/db"
 	"fmt"
 	"time"
 

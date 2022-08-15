@@ -2,9 +2,9 @@ package mileage_api
 
 import (
 	"context"
-	conn "financial-api/m/db"
-	r "financial-api/m/models/requests"
-	"financial-api/m/models/user"
+	conn "financial-api/db"
+	r "financial-api/models/requests"
+	"financial-api/models/user"
 	"time"
 
 	"github.com/graphql-go/graphql"

@@ -9,4 +9,4 @@ RUN adduser -S -D -H -h /app appuser
 USER appuser
 COPY --from=builder /build/prevention_productivity /app/
 WORKDIR /app
-CMD ["./financial-api/m"]
+CMD ["./financial-api"]

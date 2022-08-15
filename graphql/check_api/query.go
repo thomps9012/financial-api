@@ -2,8 +2,8 @@ package check_api
 
 import (
 	"context"
-	conn "financial-api/m/db"
-	r "financial-api/m/models/requests"
+	conn "financial-api/db"
+	r "financial-api/models/requests"
 
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"

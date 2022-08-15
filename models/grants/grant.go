@@ -2,7 +2,7 @@ package grant
 
 import (
 	"context"
-	conn "financial-api/m/db"
+	conn "financial-api/db"
 	"fmt"
 
 	"github.com/graphql-go/graphql"

@@ -1,7 +1,7 @@
 package mileage_api
 
 import (
-	u "financial-api/m/graphql/user_api"
+	u "financial-api/graphql/user_api"
 
 	"github.com/graphql-go/graphql"
 )

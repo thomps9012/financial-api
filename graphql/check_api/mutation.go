@@ -2,7 +2,7 @@ package check_api
 
 import (
 	"errors"
-	r "financial-api/m/models/requests"
+	r "financial-api/models/requests"
 	"fmt"
 	"math"
 	"time"

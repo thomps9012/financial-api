@@ -3,8 +3,8 @@ package requests
 import (
 	"context"
 	"errors"
-	conn "financial-api/m/db"
-	user "financial-api/m/models/user"
+	conn "financial-api/db"
+	user "financial-api/models/user"
 	"fmt"
 	"time"
 
