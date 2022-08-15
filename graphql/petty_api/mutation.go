@@ -44,9 +44,13 @@ var PettyCashMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !okdate {
 					panic("must enter a valid date")
 				}
-				receipts, receiptsOK := requestArgs["receipts"].([]string)
+				receiptArgs, receiptsOK := requestArgs["receipts"].([]interface{})
 				if !receiptsOK {
 					panic("must enter a valid receipt item")
+				}
+				var receipts []string
+				for item := range receiptArgs {
+					receipts = append(receipts, receiptArgs[item].(string))
 				}
 				description, descriptionOK := requestArgs["description"].(string)
 				if !descriptionOK {

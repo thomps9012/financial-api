@@ -21,7 +21,7 @@ type Petty_Cash_Request struct {
 	Receipts       []string  `json:"receipts" bson:"receipts"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Action_History []Action  `json:"action_history" bson:"action_history"`
-	Current_Status Status    `json:"current_status" bson:"current_status"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -33,7 +33,7 @@ type Petty_Cash_Overview struct {
 	Grant          grant.Grant `json:"grant" bson:"grant"`
 	Date           time.Time   `json:"date" bson:"date"`
 	Created_At     time.Time   `json:"created_at" bson:"created_at"`
-	Current_Status Status      `json:"current_status" bson:"current_status"`
+	Current_Status string      `json:"current_status" bson:"current_status"`
 	Is_Active      bool        `json:"is_active" bson:"is_active"`
 }
 
@@ -67,7 +67,7 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	p.ID = uuid.NewString()
 	p.Created_At = time.Now()
 	p.Is_Active = true
-	p.Current_Status = PENDING
+	p.Current_Status = "PENDING"
 	p.User_ID = user_id
 	first_action := &Action{
 		ID:         uuid.NewString(),
@@ -108,7 +108,7 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, user_id string) 
 		panic("you are not the user who created this request")
 	}
 	current_status := petty_cash_req.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
+	if current_status != "PENDING" && current_status != "REJECTED" {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
@@ -133,7 +133,7 @@ func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) 
 		panic("you are not the user who created this request")
 	}
 	current_status := petty_cash_req.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
+	if current_status != "PENDING" && current_status != "REJECTED" {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
