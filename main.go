@@ -18,7 +18,6 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
-	"golang.org/x/oauth2/google"
 )
 
 const defaultPort = "8080"
