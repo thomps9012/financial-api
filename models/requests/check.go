@@ -43,7 +43,7 @@ type Check_Request struct {
 	Created_At     time.Time  `json:"created_at" bson:"created_at"`
 	User_ID        string     `json:"user_id" bson:"user_id"`
 	Action_History []Action   `json:"action_history" bson:"action_history"`
-	Current_Status Status     `json:"current_status" bson:"current_status"`
+	Current_Status string     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
 
@@ -56,7 +56,7 @@ type Check_Request_Overview struct {
 	Date           time.Time   `json:"date" bson:"date"`
 	Vendor         Vendor      `json:"vendor" bson:"vendor"`
 	Order_Total    float64     `json:"order_total" bson:"order_total"`
-	Current_Status Status      `json:"current_status" bson:"current_status"`
+	Current_Status string      `json:"current_status" bson:"current_status"`
 	Created_At     time.Time   `json:"created_at" bson:"created_at"`
 	Is_Active      bool        `json:"is_active" bson:"is_active"`
 }
@@ -95,7 +95,7 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	c.Created_At = time.Now()
 	c.Is_Active = true
 	c.User_ID = user_id
-	c.Current_Status = PENDING
+	c.Current_Status = "PENDING"
 	first_action := &Action{
 		ID:         uuid.NewString(),
 		User_ID:    user_id,
@@ -136,7 +136,7 @@ func (c *Check_Request) Update(request Check_Request, user_id string) (bool, err
 		panic("you are not the user who created this request")
 	}
 	current_status := check_request.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
+	if current_status != "PENDING" && current_status != "REJECTED" {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
@@ -161,7 +161,7 @@ func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, err
 		panic("you are not the user who created this request")
 	}
 	current_status := check_request.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
+	if current_status != "PENDING" && current_status != "REJECTED" {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
