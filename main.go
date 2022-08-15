@@ -46,7 +46,7 @@ var (
 		ClientSecret: os.Getenv("GOOGLE_OAUTH_SECRET"),
 		Endpoint:     google.Endpoint,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
-		RedirectURL:  "https://agile-tundra-78417herokuapp.com/auth/google/callback",
+		RedirectURL:  "http://" + os.Getenv("HEROKU_APP_NAME") + "herokuapp.com/auth/google/callback",
 	}
 
 	stateToken = os.Getenv("HEROKU_APP_NAME")
@@ -63,6 +63,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, `<html><body><a href="/auth/google">Sign In with Google</a></body></html>`)
 }
 
+// edit this
 func handleAuth(w http.ResponseWriter, r *http.Request) {
 	url := oauthConfig.AuthCodeURL(stateToken)
 	http.Redirect(w, r, url, http.StatusFound)
@@ -91,20 +92,6 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/user", http.StatusFound)
 }
-
-// possible second option
-// // Redirect user to Google's consent page to ask for permission
-// 	// for the scopes specified above.
-// 	url := conf.AuthCodeURL("state")
-// 	fmt.Printf("Visit the URL for the auth dialog: %v", url)
-
-// 	// Handle the exchange code to initiate a transport.
-// 	tok, err := conf.Exchange(oauth2.NoContext, "authorization-code")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	client := conf.Client(oauth2.NoContext, tok)
-// 	client.Get("...")
 
 func handleUser(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "tundra-oauth")
