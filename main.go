@@ -122,7 +122,7 @@ func main() {
 		google.New(os.Getenv("GOOGLE_OAUTH_ID"), os.Getenv("GOOGLE_OAUTH_SECRET"), "https://"+os.Getenv("HEROKU_APP_NAME")+"herokuapp.com/auth/google/callback", "email", "profile"),
 	)
 	path := pat.New()
-	path.Get("/auth/${provider}/callback", func(res http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/auth/${provider}/callback", func(res http.ResponseWriter, req *http.Request) {
 
 		user, err := gothic.CompleteUserAuth(res, req)
 		if err != nil {
@@ -133,11 +133,11 @@ func main() {
 		t.Execute(res, user)
 		// fmt.Fprintf(`<html><body><h1>Hello %s\n</h1><br /><h2>Below are some of the available APIs for the application</h2><br/><a href="/user_api">User Management API</a><br/><a href="/mileage_api">Mileage Request API</a><br/><a href="/petty_cash_api">Petty Cash API</a><br/><a href="/check_request_api">Check Request API</a></body></html>`, user)
 	})
-	path.Get("/auth/{provider}", func(res http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/auth/{provider}", func(res http.ResponseWriter, req *http.Request) {
 		gothic.BeginAuthHandler(res, req)
 	})
 
-	path.Get("/", func(res http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
 		t, _ := template.ParseFiles("templates/index.html")
 		t.Execute(res, false)
 	})
@@ -178,5 +178,5 @@ func main() {
 	http.Handle("/mileage_api", mileageHandler)
 	http.Handle("/petty_cash_api", pettyCashHandler)
 	http.Handle("/check_request_api", checkRequestHandler)
-	http.ListenAndServe(":"+port, path)
+	http.ListenAndServe(":"+port, nil)
 }
