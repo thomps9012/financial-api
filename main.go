@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-chi/chi"
+	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
@@ -33,26 +35,6 @@ var checkRequestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 })
 
 func main() {
-	// ctx := context.Background()
-
-	// redirectURL := os.Getenv("OAUTH_CALLBACK")
-	// if redirectURL == "" {
-	// 	redirectURL = "https://" + os.Getenv("HEROKU_APP_NAME") + "herokuapp.com/auth/google/callback"
-	// }
-	// config := &oauth2.Config{
-	// 	ClientID:     os.Getenv("GOOGLE_OAUTH_ID"),
-	// 	ClientSecret: os.Getenv("GOOGLE_OAUTH_SECRET"),
-	// 	Endpoint:     google.Endpoint,
-	// 	Scopes:       []string{"email", "profile"},
-	// 	RedirectURL:  redirectURL,
-	// }
-	// authURL := config.AuthCodeURL("state")
-	// fmt.Printf("Follow the link to obtain an auth code: %s", authURL)
-	// token, err := config.Exchange(ctx, "authorization-code")
-	// if err != nil {
-	// 	log.Fatal("config.Exchange: %v", err)
-	// }
-	// client := config.Client(oauth2.NoContext, token)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -83,9 +65,13 @@ func main() {
 		GraphiQL:   true,
 		Playground: false,
 	})
-	http.Handle("/user_api", userHandler)
-	http.Handle("/mileage_api", mileageHandler)
-	http.Handle("/petty_cash_api", pettyCashHandler)
-	http.Handle("/check_request_api", checkRequestHandler)
-	http.ListenAndServe(":"+port, nil)
+	router := chi.NewRouter()
+	router.Handle("/user_api", userHandler)
+	router.Handle("/mileage_api", mileageHandler)
+	router.Handle("/petty_cash_api", pettyCashHandler)
+	router.Handle("/check_request_api", checkRequestHandler)
+	originsOK := handlers.AllowedOrigins([]string{"*"})
+	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
+	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
+	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(router))
 }
