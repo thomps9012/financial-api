@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
@@ -121,7 +120,6 @@ func main() {
 	goth.UseProviders(
 		google.New(os.Getenv("GOOGLE_OAUTH_ID"), os.Getenv("GOOGLE_OAUTH_SECRET"), "https://"+os.Getenv("HEROKU_APP_NAME")+"herokuapp.com/auth/google/callback", "email", "profile"),
 	)
-	path := pat.New()
 	http.HandleFunc("/auth/${provider}/callback", func(res http.ResponseWriter, req *http.Request) {
 
 		user, err := gothic.CompleteUserAuth(res, req)
