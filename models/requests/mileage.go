@@ -27,7 +27,7 @@ type Mileage_Request struct {
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
-	Current_Status    Status    `json:"current_status" bson:"current_status"`
+	Current_Status    string    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -39,7 +39,7 @@ type Mileage_Overview struct {
 	Trip_Mileage   int       `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
-	Current_Status Status    `json:"current_status" bson:"current_status"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -75,7 +75,7 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	m.Created_At = time.Now()
 	m.Is_Active = true
 	m.User_ID = user_id
-	m.Current_Status = PENDING
+	m.Current_Status = "PENDING"
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
 	first_action := &Action{
 		ID:         uuid.NewString(),
@@ -119,7 +119,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool,
 		panic("you are not the user who created this request")
 	}
 	current_status := m.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
+	if current_status != "PENDING" && current_status != "REJECTED" {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
@@ -144,7 +144,7 @@ func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool,
 		panic("you are not the user who created this request")
 	}
 	current_status := m.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
+	if current_status != "PENDING" && current_status != "REJECTED" {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)

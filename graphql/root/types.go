@@ -1,7 +1,6 @@
 package root
 
 import (
-	u "financial-api/graphql/user_api"
 	g "financial-api/models/grants"
 
 	"github.com/graphql-go/graphql"
@@ -184,10 +183,10 @@ var CheckRequestType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"action_history": &graphql.Field{
-				Type: graphql.NewList(u.ActionType),
+				Type: graphql.NewList(ActionType),
 			},
 			"current_status": &graphql.Field{
-				Type: u.StatusType,
+				Type: StatusType,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -207,7 +206,7 @@ var CheckReqOverviewType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"user": &graphql.Field{
-				Type: u.UserType,
+				Type: UserType,
 			},
 			"grant_id": &graphql.Field{
 				Type: graphql.ID,
@@ -228,7 +227,7 @@ var CheckReqOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"current_status": &graphql.Field{
-				Type: u.StatusType,
+				Type: StatusType,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -301,10 +300,10 @@ var PettyCashType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"action_history": &graphql.Field{
-				Type: graphql.NewList(u.ActionType),
+				Type: graphql.NewList(ActionType),
 			},
 			"current_status": &graphql.Field{
-				Type: u.StatusType,
+				Type: StatusType,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -324,7 +323,7 @@ var PettyCashOverviewType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"user": &graphql.Field{
-				Type: u.UserType,
+				Type: UserType,
 			},
 			"grant_id": &graphql.Field{
 				Type: graphql.ID,
@@ -342,7 +341,7 @@ var PettyCashOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"current_status": &graphql.Field{
-				Type: u.StatusType,
+				Type: StatusType,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -359,7 +358,7 @@ var AggUserPettyCash = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"user": &graphql.Field{
-				Type: u.UserType,
+				Type: UserType,
 			},
 			"last_request": &graphql.Field{
 				Type: graphql.DateTime,
@@ -465,9 +464,6 @@ var MileageType = graphql.NewObject(
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
 			},
-			"user": &graphql.Field{
-				Type: u.UserType,
-			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
 			},
@@ -502,10 +498,10 @@ var MileageType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"action_history": &graphql.Field{
-				Type: graphql.NewList(u.ActionType),
+				Type: graphql.NewList(ActionType),
 			},
 			"current_status": &graphql.Field{
-				Type: u.StatusType,
+				Type: StatusType,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -524,7 +520,7 @@ var MileageOverviewType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"user": &graphql.Field{
-				Type: u.UserType,
+				Type: UserType,
 			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
@@ -539,7 +535,7 @@ var MileageOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"current_status": &graphql.Field{
-				Type: u.StatusType,
+				Type: StatusType,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,

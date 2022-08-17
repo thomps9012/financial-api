@@ -97,7 +97,7 @@ func Reject(request_id string, manager_id string, request_type Request_Type) (bo
 	if err != nil {
 		panic(err)
 	}
-	milage_req.Current_Status = REJECTED
+	milage_req.Current_Status = "REJECTED"
 	// now adding a notification to the original user who made the request
 	var user user.User
 	update_user, update_err := user.AddNotification(milage_req.ID, milage_req.User_ID)
