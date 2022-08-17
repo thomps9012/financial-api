@@ -174,7 +174,7 @@ func MileageBulkInsert(userID_array []string) ([]string, error) {
 			Reimbursement:     12.5,
 			Created_At:        time.Now(),
 			Action_History:    []r.Action{},
-			Current_Status:    r.PENDING,
+			Current_Status:    "PENDING",
 			Is_Active:         true,
 		}
 		result, err := collection.InsertOne(context.TODO(), mileage_req)
