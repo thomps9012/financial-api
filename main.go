@@ -2,10 +2,11 @@ package main
 
 import (
 	conn "financial-api/db"
-	c "financial-api/graphql/check_api"
-	m "financial-api/graphql/mileage_api"
-	p "financial-api/graphql/petty_api"
-	u "financial-api/graphql/user_api"
+	// c "financial-api/graphql/check_api"
+	// m "financial-api/graphql/mileage_api"
+	// p "financial-api/graphql/petty_api"
+	// u "financial-api/graphql/user_api"
+	r "financial-api/graphql/root"
 	"net/http"
 	"os"
 
@@ -17,21 +18,26 @@ import (
 
 const defaultPort = "8080"
 
-var userSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    u.UserQueries,
-	Mutation: u.UserMutations,
-})
-var mileageSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    m.MileageQueries,
-	Mutation: m.MileageMutations,
-})
-var pettyCashSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    p.PettyCashQueries,
-	Mutation: p.PettyCashMutations,
-})
-var checkRequestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    c.CheckQueries,
-	Mutation: c.CheckRequestMutations,
+// var userSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+// 	Query:    u.UserQueries,
+// 	Mutation: u.UserMutations,
+// })
+// var mileageSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+// 	Query:    m.MileageQueries,
+// 	Mutation: m.MileageMutations,
+// })
+// var pettyCashSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+// 	Query:    p.PettyCashQueries,
+// 	Mutation: p.PettyCashMutations,
+// })
+// var checkRequestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+// 	Query:    c.CheckQueries,
+// 	Mutation: c.CheckRequestMutations,
+// })
+
+var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query:    r.RootQueries,
+	Mutation: r.RootMutations,
 })
 
 func main() {
@@ -41,35 +47,42 @@ func main() {
 	}
 	conn.InitDB()
 	defer conn.CloseDB()
-	userHandler := handler.New(&handler.Config{
-		Schema:     &userSchema,
-		Pretty:     true,
-		GraphiQL:   true,
-		Playground: false,
-	})
-	mileageHandler := handler.New(&handler.Config{
-		Schema:     &mileageSchema,
-		Pretty:     true,
-		GraphiQL:   true,
-		Playground: false,
-	})
-	pettyCashHandler := handler.New(&handler.Config{
-		Schema:     &pettyCashSchema,
-		Pretty:     true,
-		GraphiQL:   true,
-		Playground: false,
-	})
-	checkRequestHandler := handler.New(&handler.Config{
-		Schema:     &checkRequestSchema,
+	// userHandler := handler.New(&handler.Config{
+	// 	Schema:     &userSchema,
+	// 	Pretty:     true,
+	// 	GraphiQL:   true,
+	// 	Playground: false,
+	// })
+	// mileageHandler := handler.New(&handler.Config{
+	// 	Schema:     &mileageSchema,
+	// 	Pretty:     true,
+	// 	GraphiQL:   true,
+	// 	Playground: false,
+	// })
+	// pettyCashHandler := handler.New(&handler.Config{
+	// 	Schema:     &pettyCashSchema,
+	// 	Pretty:     true,
+	// 	GraphiQL:   true,
+	// 	Playground: false,
+	// })
+	// checkRequestHandler := handler.New(&handler.Config{
+	// 	Schema:     &checkRequestSchema,
+	// 	Pretty:     true,
+	// 	GraphiQL:   true,
+	// 	Playground: false,
+	// })
+	rootRequestHandler := handler.New(&handler.Config{
+		Schema:     &rootSchema,
 		Pretty:     true,
 		GraphiQL:   true,
 		Playground: false,
 	})
 	router := chi.NewRouter()
-	router.Handle("/user_api", userHandler)
-	router.Handle("/mileage_api", mileageHandler)
-	router.Handle("/petty_cash_api", pettyCashHandler)
-	router.Handle("/check_request_api", checkRequestHandler)
+	router.Handle("/graphql", rootRequestHandler)
+	// router.Handle("/user_api", userHandler)
+	// router.Handle("/mileage_api", mileageHandler)
+	// router.Handle("/petty_cash_api", pettyCashHandler)
+	// router.Handle("/check_request_api", checkRequestHandler)
 	originsOK := handlers.AllowedOrigins([]string{"*"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
