@@ -56,12 +56,13 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 						panic(err)
 					}
 					return result, nil
+				} else {
+					result, err := user.Login(userInfo.ID)
+					if err != nil {
+						panic(err)
+					}
+					return result, nil
 				}
-				result, err := user.Login(userInfo.ID)
-				if err != nil {
-					panic(err)
-				}
-				return result, nil
 			},
 		},
 		"deactivate_user": &graphql.Field{
