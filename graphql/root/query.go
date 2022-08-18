@@ -3,6 +3,7 @@ package root
 import (
 	"context"
 	conn "financial-api/db"
+	auth "financial-api/middleware"
 	r "financial-api/models/requests"
 	u "financial-api/models/user"
 	"time"
@@ -28,6 +29,14 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
+				}
+				ctx := context.Background()
+				userRole := auth.ForRole(ctx)
+				userID := auth.ForID(ctx)
+				if userRole == "EMPLOYEE" {
+					if userID != user_id {
+						panic("You are unauthorized to view this user's information")
+					}
 				}
 				user, userErr := user.FindByID(user_id)
 				if userErr != nil {

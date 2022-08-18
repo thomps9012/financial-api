@@ -1,7 +1,9 @@
 package root
 
 import (
+	"context"
 	"errors"
+	auth "financial-api/middleware"
 	r "financial-api/models/requests"
 	u "financial-api/models/user"
 	"fmt"
@@ -77,6 +79,14 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you must enter a valid user id")
 				}
 				var user u.User
+				ctx := context.Background()
+				userRole := auth.ForRole(ctx)
+				userID := auth.ForID(ctx)
+				if userRole == "EMPLOYEE" {
+					if userID != user_id {
+						panic("You are unauthorized to deactivate this user")
+					}
+				}
 				result, err := user.Deactivate(user_id)
 				if err != nil {
 					panic(err)
@@ -99,6 +109,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx := context.Background()
+				userID := auth.ForID(ctx)
+				if userID == "" {
+					panic("You are not logged in")
+				}
 				user_id, idOK := p.Args["user_id"].(string)
 				if !idOK {
 					panic("you must enter a valid user id")
@@ -136,6 +151,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx := context.Background()
+				userID := auth.ForID(ctx)
+				if userID == "" {
+					panic("You are not logged in")
+				}
 				user_id, idOK := p.Args["user_id"].(string)
 				if !idOK {
 					panic("you must enter a valid user id")
@@ -165,6 +185,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx := context.Background()
+				userID := auth.ForID(ctx)
+				if userID == "" {
+					panic("You are not logged in")
+				}
 				userID, isOK := p.Args["user_id"].(string)
 				if !isOK {
 					panic("must enter a valid user id")
@@ -236,6 +261,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx := context.Background()
+				userID := auth.ForID(ctx)
+				if userID == "" {
+					panic("You are not logged in")
+				}
 				user_id, isOk := p.Args["user_id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
@@ -297,6 +327,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx := context.Background()
+				userID := auth.ForID(ctx)
+				if userID == "" {
+					panic("You are not logged in")
+				}
 				vendor_input := p.Args["vendor"].(map[string]interface{})
 				vendor_address_input := vendor_input["address"].(map[string]interface{})
 				vendor_address := &r.Address{
