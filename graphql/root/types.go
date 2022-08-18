@@ -34,13 +34,13 @@ var UserDetailType = graphql.NewObject(graphql.ObjectConfig{
 			Type: graphql.DateTime,
 		},
 		"mileage_requests": &graphql.Field{
-			Type: graphql.NewList(MileageType),
+			Type: AggUserMileage,
 		},
 		"check_requests": &graphql.Field{
-			Type: graphql.NewList(CheckRequestType),
+			Type: AggUserChecks,
 		},
 		"petty_cash_requests": &graphql.Field{
-			Type: graphql.NewList(PettyCashType),
+			Type: AggUserPettyCash,
 		},
 	},
 })
@@ -747,13 +747,13 @@ var UserOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"mileage_requests": &graphql.Field{
-				Type: graphql.NewList(MileageType),
+				Type: AggUserMileage,
 			},
 			"check_requests": &graphql.Field{
-				Type: graphql.NewList(CheckRequestType),
+				Type: AggUserChecks,
 			},
 			"petty_cash_requests": &graphql.Field{
-				Type: graphql.NewList(PettyCashType),
+				Type: AggUserPettyCash,
 			},
 		},
 	},

@@ -45,7 +45,7 @@ var PettyCashQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOK {
 					panic("need to enter a valid user id")
 				}
-				var user_petty_cash r.User_Petty_Cash
+				var user_petty_cash r.Petty_Cash_Request
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
 				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)
