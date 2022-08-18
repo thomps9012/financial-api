@@ -2,9 +2,7 @@ package user
 
 import (
 	"context"
-	"errors"
 	conn "financial-api/db"
-	auth "financial-api/middleware"
 	"math"
 	"time"
 
@@ -399,11 +397,7 @@ func (u *User) FindByID(user_id string) (User, error) {
 	}
 	return user, nil
 }
-func (u *User) Findall(ctx context.Context) ([]User, error) {
-	userID := auth.ForID(ctx)
-	if userID == "" {
-		return nil, errors.New("Not logged in")
-	}
+func (u *User) Findall() ([]User, error) {
 	collection := conn.Db.Collection("users")
 	var userArr []User
 	cursor, err := collection.Find(context.TODO(), bson.D{})

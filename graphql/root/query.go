@@ -2,6 +2,7 @@ package root
 
 import (
 	"context"
+	"errors"
 	conn "financial-api/db"
 	auth "financial-api/middleware"
 	r "financial-api/models/requests"
@@ -73,7 +74,11 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gather basic information for all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
-				results, err := user.Findall(p.Context)
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
+				results, err := user.Findall()
 				if err != nil {
 					panic(err)
 				}
