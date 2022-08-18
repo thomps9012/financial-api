@@ -79,7 +79,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you must enter a valid user id")
 				}
 				var user u.User
-				ctx := context.Background()
+				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
 				userRole := auth.ForRole(ctx)
 				userID := auth.ForID(ctx)
 				if userRole == "EMPLOYEE" {
@@ -109,7 +109,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.Background()
+				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
 				userID := auth.ForID(ctx)
 				if userID == "" {
 					panic("You are not logged in")
@@ -151,7 +151,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.Background()
+				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
 				userID := auth.ForID(ctx)
 				if userID == "" {
 					panic("You are not logged in")
@@ -185,7 +185,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.Background()
+				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
 				userID := auth.ForID(ctx)
 				if userID == "" {
 					panic("You are not logged in")
@@ -261,7 +261,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.Background()
+				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
 				userID := auth.ForID(ctx)
 				if userID == "" {
 					panic("You are not logged in")
@@ -327,7 +327,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.Background()
+				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
 				userID := auth.ForID(ctx)
 				if userID == "" {
 					panic("You are not logged in")
