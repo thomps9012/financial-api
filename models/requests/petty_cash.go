@@ -40,12 +40,11 @@ type Petty_Cash_Overview struct {
 }
 
 type User_Petty_Cash struct {
-	User_ID         string    `json:"user_id" bson:"user_id"`
-	User            user.User `json:"user" bson:"user"`
-	Total_Amount    float64   `json:"total_amount" bson:"total_amount"`
-	Request_IDS     []string  `json:"request_ids" bson:"request_ids"`
-	Last_Request    time.Time `json:"last_request" bson:"last_request"`
-	Last_Request_ID string    `json:"last_request_id" bson:"last_request_id"`
+	User_ID      string               `json:"user_id" bson:"user_id"`
+	User         user.User            `json:"user" bson:"user"`
+	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
+	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
+	Last_Request Petty_Cash_Request   `json:"last_request" bson:"last_request"`
 }
 
 type Grant_Petty_Cash struct {
@@ -193,7 +192,7 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 }
 
 // refactor inputs to start and end dates to allow for flexibility in data search
-func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date string) (User_Petty_Cash, error) {
+func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_date string) (User_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
 	layout := "2006-01-02T15:04:05.000Z"
@@ -220,31 +219,29 @@ func (u *User_Petty_Cash) FindByUser(user_id string, start_date string, end_date
 		panic(user_err)
 	}
 	total_amount := 0.0
-	last_request := time.Date(2000, time.April,
+	last_request_date := time.Date(2000, time.April,
 		34, 25, 72, 01, 0, time.UTC)
-	last_request_id := ""
-	var requestIDs []string
+	var last_request Petty_Cash_Request
+	var requests []Petty_Cash_Request
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
 		decode_err := cursor.Decode(&petty_cash_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		requestIDs = append(requestIDs, petty_cash_req.ID)
-		if petty_cash_req.Date.After(last_request) {
-			last_request = petty_cash_req.Date
-			last_request_id = petty_cash_req.ID
+		requests = append(requests, petty_cash_req)
+		if petty_cash_req.Date.After(last_request_date) {
+			last_request = petty_cash_req
 		}
 		total_amount += math.Round(petty_cash_req.Amount*100) / 100
 		total_amount = math.Round(total_amount*100) / 100
 	}
 	petty_cash_overview := &User_Petty_Cash{
-		User_ID:         user_id,
-		User:            user_info,
-		Total_Amount:    total_amount,
-		Request_IDS:     requestIDs,
-		Last_Request:    last_request,
-		Last_Request_ID: last_request_id,
+		User_ID:      user_id,
+		User:         user_info,
+		Total_Amount: total_amount,
+		Requests:     requests,
+		Last_Request: last_request,
 	}
 	return *petty_cash_overview, nil
 }

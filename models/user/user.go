@@ -4,6 +4,7 @@ import (
 	"context"
 	conn "financial-api/db"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,16 +40,30 @@ func (u User) ParseRole(role string) Role {
 }
 
 type User_Overview struct {
-	ID                      string                  `json:"id" bson:"_id"`
-	Manager_ID              string                  `json:"manager_id" bson:"manager_id"`
-	Name                    string                  `json:"name" bson:"name"`
-	Last_Login              time.Time               `json:"last_login" bson:"last_login"`
-	Is_Active               bool                    `json:"is_active" bson:"is_active"`
-	Role                    string                  `json:"role" bson:"role"`
-	Incomplete_Action_Count int                     `json:"incomplete_action_count" bson:"incomplete_action_count"`
-	Mileage_Requests        User_Agg_Mileage        `json:"mileage_requests" bson:"mileage_requests"`
-	Check_Requests          User_Agg_Check_Requests `json:"check_requests" bson:"check_requests"`
-	Petty_Cash_Requests     User_Agg_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
+	ID                      string              `json:"id" bson:"_id"`
+	Manager_ID              string              `json:"manager_id" bson:"manager_id"`
+	Name                    string              `json:"name" bson:"name"`
+	Last_Login              time.Time           `json:"last_login" bson:"last_login"`
+	Is_Active               bool                `json:"is_active" bson:"is_active"`
+	Role                    string              `json:"role" bson:"role"`
+	Incomplete_Action_Count int                 `json:"incomplete_action_count" bson:"incomplete_action_count"`
+	Mileage_Requests        User_Mileage        `json:"mileage_requests" bson:"mileage_requests"`
+	Check_Requests          User_Check_Requests `json:"check_requests" bson:"check_requests"`
+	Petty_Cash_Requests     User_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
+}
+
+type User_Detail struct {
+	ID                      string              `json:"id" bson:"_id"`
+	Manager_ID              string              `json:"manager_id" bson:"manager_id"`
+	Name                    string              `json:"name" bson:"name"`
+	Role                    string              `json:"role" bson:"role"`
+	Vehicles                []Vehicle           `json:"vehicles" bson:"vehicles"`
+	Last_Login              time.Time           `json:"last_login" bson:"last_login"`
+	Incomplete_Actions      []string            `json:"incomplete_actions" bson:"incomplete_actions"`
+	Incomplete_Action_Count int                 `json:"incomplete_action_count" bson:"incomplete_action_count"`
+	Mileage_Requests        User_Mileage        `json:"mileage_requests" bson:"mileage_requests"`
+	Check_Requests          User_Check_Requests `json:"check_requests" bson:"check_requests"`
+	Petty_Cash_Requests     User_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
 }
 
 type Petty_Cash_Request struct {
@@ -173,18 +188,21 @@ type User_Monthly_Mileage struct {
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
 }
-type User_Agg_Mileage struct {
-	Vehicles      []Vehicle `json:"vehicles" bson:"vehicles"`
-	Mileage       int       `json:"mileage" bson:"mileage"`
-	Tolls         float64   `json:"tolls" bson:"tolls"`
-	Parking       float64   `json:"parking" bson:"parking"`
-	Reimbursement float64   `json:"reimbursement" bson:"reimbursement"`
-	Request_IDS   []string  `json:"request_ids" bson:"request_ids"`
+type User_Mileage struct {
+	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
+	Mileage       int               `json:"mileage" bson:"mileage"`
+	Tolls         float64           `json:"tolls" bson:"tolls"`
+	Parking       float64           `json:"parking" bson:"parking"`
+	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
+	Requests      []Mileage_Request `json:"requests" bson:"requests"`
+	Last_Request  Mileage_Request   `json:"last_request" bson:"last_request"`
 }
-type User_Agg_Petty_Cash struct {
-	Total_Amount float64  `json:"total_amount" bson:"total_amount"`
-	Receipts     []string `json:"receipts" bson:"receipts"`
-	Request_IDS  []string `json:"request_ids" bson:"request_ids"`
+type User_Petty_Cash struct {
+	User_ID      string               `json:"user_id" bson:"user_id"`
+	User         User                 `json:"user" bson:"user"`
+	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
+	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
+	Last_Request Petty_Cash_Request   `json:"last_request" bson:"last_request"`
 }
 type User_Monthly_Petty_Cash struct {
 	ID           string     `json:"id" bson:"_id"`
@@ -196,16 +214,17 @@ type User_Monthly_Petty_Cash struct {
 	Receipts     []string   `json:"receipts" bson:"receipts"`
 }
 
-type User_Agg_Check_Requests struct {
-	ID           string     `json:"id" bson:"_id"`
-	Name         string     `json:"name" bson:"name"`
-	Start_Date   string     `json:"start_date" bson:"start_date"`
-	End_Date     string     `json:"end_date" bson:"end_date"`
-	Total_Amount float64    `json:"total_amount" bson:"total_amount"`
-	Vendors      []Vendor   `json:"vendors" bson:"vendors"`
-	Purchases    []Purchase `json:"purchases" bson:"purchases"`
-	Receipts     []string   `json:"receipts" bson:"receipts"`
-	Request_IDS  []string   `json:"request_ids" bson:"request_ids"`
+type User_Check_Requests struct {
+	ID           string          `json:"id" bson:"_id"`
+	Name         string          `json:"name" bson:"name"`
+	Start_Date   string          `json:"start_date" bson:"start_date"`
+	End_Date     string          `json:"end_date" bson:"end_date"`
+	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
+	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
+	Purchases    []Purchase      `json:"purchases" bson:"purchases"`
+	Receipts     []string        `json:"receipts" bson:"receipts"`
+	Requests     []Check_Request `json:"requests" bson:"requests"`
+	Last_Request Check_Request   `json:"last_request" bson:"last_request"`
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
@@ -501,7 +520,7 @@ func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Month
 	}, nil
 }
 
-func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (User_Agg_Check_Requests, error) {
+func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (User_Check_Requests, error) {
 	collection := conn.Db.Collection("check_requests")
 	var user User
 	result, err := user.FindByID(user_id)
@@ -531,7 +550,10 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 	var vendors []Vendor
 	var receipts []string
 	var purchases []Purchase
-	var requestIDs []string
+	var requests []Check_Request
+	var last_request Check_Request
+	last_request_date := time.Date(2000, time.April,
+		34, 25, 72, 01, 0, time.UTC)
 	var vendorExists = make(map[Vendor]bool)
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
@@ -539,7 +561,10 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		requestIDs = append(requestIDs, check_req.ID)
+		if check_req.Date.After(last_request_date) {
+			last_request = check_req
+		}
+		requests = append(requests, check_req)
 		if !vendorExists[check_req.Vendor] {
 			vendors = append(vendors, check_req.Vendor)
 			vendorExists[check_req.Vendor] = true
@@ -548,7 +573,7 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		receipts = append(receipts, check_req.Receipts...)
 		total_amount += check_req.Order_Total
 	}
-	return User_Agg_Check_Requests{
+	return User_Check_Requests{
 		ID:           user_id,
 		Name:         result.Name,
 		Start_Date:   start_date,
@@ -556,12 +581,13 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		Total_Amount: total_amount,
 		Vendors:      vendors,
 		Purchases:    purchases,
-		Request_IDS:  requestIDs,
+		Requests:     requests,
+		Last_Request: last_request,
 		Receipts:     receipts,
 	}, nil
 }
 
-func (u *User) FindMileage(user_id string) (User_Agg_Mileage, error) {
+func (u *User) FindMileage(user_id string) (User_Mileage, error) {
 	collection := conn.Db.Collection("mileage_requests")
 	var user User
 	result, err := user.FindByID(user_id)
@@ -577,30 +603,37 @@ func (u *User) FindMileage(user_id string) (User_Agg_Mileage, error) {
 	tolls := 0.0
 	parking := 0.0
 	reimbursement := 0.0
-	var request_ids []string
+	var requests []Mileage_Request
+	last_request_date := time.Date(2000, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	var last_request Mileage_Request
 	for cursor.Next(context.TODO()) {
 		var mileage_req Mileage_Request
 		decode_err := cursor.Decode(&mileage_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		request_ids = append(request_ids, mileage_req.ID)
+		if mileage_req.Date.After(last_request_date) {
+			last_request = mileage_req
+		}
+		requests = append(requests, mileage_req)
 		mileage += mileage_req.Trip_Mileage
 		tolls += mileage_req.Tolls
 		parking += mileage_req.Parking
 		reimbursement += mileage_req.Reimbursement
 	}
-	return User_Agg_Mileage{
+	return User_Mileage{
 		Vehicles:      result.Vehicles,
 		Mileage:       mileage,
 		Parking:       parking,
 		Tolls:         tolls,
 		Reimbursement: reimbursement,
-		Request_IDS:   request_ids,
+		Requests:      requests,
+		Last_Request:  last_request,
 	}, nil
 }
 
-func (u *User) FindPettyCash(user_id string) (User_Agg_Petty_Cash, error) {
+func (u *User) FindPettyCash(user_id string) (User_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	cursor, err := collection.Find(context.TODO(), filter)
@@ -608,21 +641,27 @@ func (u *User) FindPettyCash(user_id string) (User_Agg_Petty_Cash, error) {
 		panic(err)
 	}
 	total_amount := 0.0
-	var receipts []string
-	var requestIDs []string
+	last_request_date := time.Date(2000, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	var last_request Petty_Cash_Request
+	var requests []Petty_Cash_Request
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
 		decode_err := cursor.Decode(&petty_cash_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		requestIDs = append(requestIDs, petty_cash_req.ID)
-		receipts = append(receipts, petty_cash_req.Receipts...)
-		total_amount += petty_cash_req.Amount
+		requests = append(requests, petty_cash_req)
+		if petty_cash_req.Date.After(last_request_date) {
+			last_request = petty_cash_req
+		}
+		total_amount += math.Round(petty_cash_req.Amount*100) / 100
+		total_amount = math.Round(total_amount*100) / 100
 	}
-	return User_Agg_Petty_Cash{
+	return User_Petty_Cash{
 		Total_Amount: total_amount,
-		Request_IDS:  requestIDs,
-		Receipts:     receipts,
+		Requests:     requests,
+		Last_Request: last_request,
+		User_ID:      user_id,
 	}, nil
 }

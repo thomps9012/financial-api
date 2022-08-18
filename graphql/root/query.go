@@ -15,6 +15,52 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootQueries",
 	Fields: graphql.Fields{
 		// user queries
+		"me": &graphql.Field{
+			Type:        UserDetailType,
+			Description: "Gather Information for a specific user on login",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				user_id, isOk := p.Args["id"].(string)
+				if !isOk {
+					panic("must enter a valid user id")
+				}
+				filter := bson.D{{Key: "user_id", Value: user_id}}
+				userCollection := conn.Db.Collection("users")
+				err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
+				if err != nil {
+					panic(err)
+				}
+				petty_cash_reqs, petty_err := user.FindPettyCash(user_id)
+				if petty_err != nil {
+					panic(err)
+				}
+				mileage_reqs, mileage_err := user.FindMileage(user_id)
+				if mileage_err != nil {
+					panic(err)
+				}
+				check_reqs, check_err := user.AggregateChecks(user_id, "", "")
+				if check_err != nil {
+					panic(err)
+				}
+				return &u.User_Detail{
+					ID:                      user.ID,
+					Name:                    user.Name,
+					Manager_ID:              user.Manager_ID,
+					Incomplete_Actions:      user.InComplete_Actions,
+					Incomplete_Action_Count: len(user.InComplete_Actions),
+					Last_Login:              user.Last_Login,
+					Vehicles:                user.Vehicles,
+					Mileage_Requests:        mileage_reqs,
+					Check_Requests:          check_reqs,
+					Petty_Cash_Requests:     petty_cash_reqs,
+				}, nil
+			},
+		},
 		"all_users": &graphql.Field{
 			Type:        graphql.NewList(UserType),
 			Description: "Gather basic information for all users",
@@ -288,7 +334,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOK {
 					panic("need to enter a valid user id")
 				}
-				var user_petty_cash r.User_Petty_Cash
+				var user_petty_cash r.Petty_Cash_Request
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
 				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)

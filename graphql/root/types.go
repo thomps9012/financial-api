@@ -6,6 +6,45 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+var UserDetailType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "UserDetail",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.ID,
+		},
+		"manager_id": &graphql.Field{
+			Type: graphql.ID,
+		},
+		"name": &graphql.Field{
+			Type: graphql.String,
+		},
+		"role": &graphql.Field{
+			Type: RoleType,
+		},
+		"vehicles": &graphql.Field{
+			Type: graphql.NewList(VehicleType),
+		},
+		"incomplete_actions": &graphql.Field{
+			Type: graphql.NewList(graphql.String),
+		},
+		"incomplete_action_count": &graphql.Field{
+			Type: graphql.Int,
+		},
+		"last_login": &graphql.Field{
+			Type: graphql.DateTime,
+		},
+		"mileage_requests": &graphql.Field{
+			Type: graphql.NewList(MileageType),
+		},
+		"check_requests": &graphql.Field{
+			Type: graphql.NewList(CheckRequestType),
+		},
+		"petty_cash_requests": &graphql.Field{
+			Type: graphql.NewList(PettyCashType),
+		},
+	},
+})
+
 var AddressInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "VendorAddressInput",
@@ -360,8 +399,11 @@ var AggUserPettyCash = graphql.NewObject(
 			"receipts": &graphql.Field{
 				Type: graphql.NewList(graphql.String),
 			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
+			"requests": &graphql.Field{
+				Type: graphql.NewList(PettyCashType),
+			},
+			"last_request": &graphql.Field{
+				Type: PettyCashType,
 			},
 		},
 	},
@@ -705,13 +747,13 @@ var UserOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"mileage_requests": &graphql.Field{
-				Type: AggUserMileage,
+				Type: graphql.NewList(MileageType),
 			},
 			"check_requests": &graphql.Field{
-				Type: AggUserChecks,
+				Type: graphql.NewList(CheckRequestType),
 			},
 			"petty_cash_requests": &graphql.Field{
-				Type: AggUserPettyCash,
+				Type: graphql.NewList(PettyCashType),
 			},
 		},
 	},
@@ -736,8 +778,11 @@ var AggUserMileage = graphql.NewObject(
 			"reimbursement": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.ID),
+			"requests": &graphql.Field{
+				Type: graphql.NewList(MileageType),
+			},
+			"last_request": &graphql.Field{
+				Type: MileageType,
 			},
 		},
 	},
@@ -758,8 +803,11 @@ var AggUserChecks = graphql.NewObject(
 			"purchases": &graphql.Field{
 				Type: graphql.NewList(UserPurchaseType),
 			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
+			"requests": &graphql.Field{
+				Type: graphql.NewList(CheckRequestType),
+			},
+			"last_requests": &graphql.Field{
+				Type: CheckRequestType,
 			},
 		},
 	},
