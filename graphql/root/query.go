@@ -26,6 +26,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				var user u.User
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
@@ -95,6 +99,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
@@ -145,6 +153,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
@@ -186,6 +198,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid user id")
 				}
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
 				results, err := user.AggregateChecks(user_id, start_date, end_date)
@@ -200,6 +216,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewList(MileageOverviewType),
 			Description: "Gather overview information for all mileage requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				var mileage_req r.Mileage_Overview
 				results, err := mileage_req.FindAll()
 				if err != nil {
@@ -220,6 +240,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				month, validMo := p.Args["month"].(int)
 				if !validMo {
 					panic("must enter a valid month")
@@ -269,6 +293,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				var milage_req r.Mileage_Request
 				mileage_id, isOk := p.Args["id"].(string)
 				if !isOk {
@@ -287,6 +315,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gather overview information for all petty cash requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var petty_cash_overview r.Petty_Cash_Overview
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				results, err := petty_cash_overview.FindAll()
 				if err != nil {
 					panic(err)
@@ -311,6 +343,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				grant_id, isOK := p.Args["grant_id"].(string)
 				if !isOK {
 					panic("need to enter a valid grant id")
@@ -342,6 +378,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				user_id, isOK := p.Args["user_id"].(string)
 				if !isOK {
 					panic("need to enter a valid user id")
@@ -365,6 +405,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				request_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid check request id")
@@ -384,6 +428,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewList(CheckReqOverviewType),
 			Description: "Gather overview information for all check requests, and basic info",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				var check_request r.Check_Request_Overview
 				results, err := check_request.FindAll()
 				if err != nil {
@@ -409,6 +457,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				var check_request r.Grant_Check_Overview
 				grant_id, isOk := p.Args["grant_id"].(string)
 				if !isOk {
@@ -432,6 +484,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
+				}
 				request_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid check request id")

@@ -31,7 +31,7 @@ func main() {
 		Schema:     &rootSchema,
 		Pretty:     true,
 		GraphiQL:   true,
-		Playground: false,
+		Playground: true,
 	})
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
