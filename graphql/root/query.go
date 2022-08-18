@@ -2,6 +2,7 @@ package root
 
 import (
 	"context"
+	"errors"
 	conn "financial-api/db"
 	auth "financial-api/middleware"
 	r "financial-api/models/requests"
@@ -75,7 +76,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				var user u.User
 				userID := auth.ForID(p.Context)
 				if userID == "" {
-					panic("You are not logged in")
+					errors.New("Not logged in")
 				}
 				results, err := user.Findall()
 				if err != nil {
