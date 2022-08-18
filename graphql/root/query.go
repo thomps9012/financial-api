@@ -73,6 +73,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gather basic information for all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
+				userID := auth.ForID(p.Context)
+				if userID == "" {
+					panic("You are not logged in")
+				}
 				results, err := user.Findall()
 				if err != nil {
 					panic(err)
