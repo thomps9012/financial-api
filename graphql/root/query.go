@@ -29,23 +29,21 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				filter := bson.D{{Key: "user_id", Value: user_id}}
-				userCollection := conn.Db.Collection("users")
-				err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
-				if err != nil {
-					panic(err)
+				user, userErr := user.FindByID(user_id)
+				if userErr != nil {
+					panic(userErr)
 				}
 				petty_cash_reqs, petty_err := user.FindPettyCash(user_id)
 				if petty_err != nil {
-					panic(err)
+					panic(petty_err)
 				}
 				mileage_reqs, mileage_err := user.FindMileage(user_id)
 				if mileage_err != nil {
-					panic(err)
+					panic(mileage_err)
 				}
 				check_reqs, check_err := user.AggregateChecks(user_id, "", "")
 				if check_err != nil {
-					panic(err)
+					panic(check_err)
 				}
 				return &u.User_Detail{
 					ID:                      user.ID,
