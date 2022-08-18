@@ -28,7 +28,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 				"id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {

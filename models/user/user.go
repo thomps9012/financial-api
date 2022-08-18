@@ -272,27 +272,27 @@ func setManagerID(email string, employee_role string) string {
 }
 func setRole(email string) string {
 	var employee_role string
-	employees := []string{"test1@norainc.org", "test2@norainc.org"}
+	employees := []string{"emp1@norainc.org", "emp65@norainc.org"}
 	for i := range employees {
 		if employees[i] == email {
 			employee_role = "EMPLOYEE"
 		}
 	}
-	managers := []string{"test1@norainc.org", "test2@norainc.org", "sthompson@norainc.org"}
+	managers := []string{"manager1@norainc.org", "manager2@norainc.org", "sthompson@norainc.org"}
 	for i := range managers {
 		if managers[i] == email {
 			employee_role = "MANAGER"
 		}
 
 	}
-	finance_team := []string{"test1@norainc.org", "test2@norainc.org"}
+	finance_team := []string{"finance1@norainc.org", "finance1@norainc.org"}
 	for i := range finance_team {
 		if finance_team[i] == email {
 			employee_role = "FINANCE"
 		}
 
 	}
-	executives := []string{"test1@norainc.org", "test2@norainc.org"}
+	executives := []string{"exec1@norainc.org", "exec2@norainc.org"}
 	for i := range executives {
 		if executives[i] == email {
 			employee_role = "EXECUTIVE"
