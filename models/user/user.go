@@ -101,7 +101,7 @@ type Mileage_Request struct {
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
-	Current_Status    Status    `json:"current_status" bson:"current_status"`
+	Current_Status    string    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
