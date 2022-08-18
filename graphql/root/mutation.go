@@ -1,7 +1,6 @@
 package root
 
 import (
-	"context"
 	"errors"
 	auth "financial-api/middleware"
 	r "financial-api/models/requests"
@@ -79,9 +78,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you must enter a valid user id")
 				}
 				var user u.User
-				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
-				userRole := auth.ForRole(ctx)
-				userID := auth.ForID(ctx)
+				userRole := auth.ForRole(p.Context)
+				userID := auth.ForID(p.Context)
 				if userRole == "EMPLOYEE" {
 					if userID != user_id {
 						panic("You are unauthorized to deactivate this user")
@@ -109,8 +107,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
-				userID := auth.ForID(ctx)
+				userID := auth.ForID(p.Context)
 				if userID == "" {
 					panic("You are not logged in")
 				}
@@ -151,8 +148,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
-				userID := auth.ForID(ctx)
+				userID := auth.ForID(p.Context)
 				if userID == "" {
 					panic("You are not logged in")
 				}
@@ -185,8 +181,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
-				userID := auth.ForID(ctx)
+				userID := auth.ForID(p.Context)
 				if userID == "" {
 					panic("You are not logged in")
 				}
@@ -261,8 +256,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
-				userID := auth.ForID(ctx)
+				userID := auth.ForID(p.Context)
 				if userID == "" {
 					panic("You are not logged in")
 				}
@@ -327,8 +321,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := context.WithValue(context.Background(), "middleware", auth.Middleware())
-				userID := auth.ForID(ctx)
+				userID := auth.ForID(p.Context)
 				if userID == "" {
 					panic("You are not logged in")
 				}
