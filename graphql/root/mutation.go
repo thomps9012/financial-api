@@ -16,9 +16,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootMutations",
 	Fields: graphql.Fields{
 		// user mutations
-		"create_user": &graphql.Field{
-			Type:        UserType,
-			Description: "Create a new user on initial sign up",
+		"sign_in": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Either creates a new user or logs a user in based on their account history",
 			Args: graphql.FieldConfigArgument{
 				"email": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -26,55 +26,37 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"role": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(RoleType),
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				email, isOk := p.Args["email"].(string)
-				if !isOk {
-					panic("must enter a valid email")
+				email, okEmail := p.Args["email"].(string)
+				if !okEmail {
+					panic(okEmail)
 				}
 				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
 				if !emailCheck {
 					panic("must have a Northern Ohio Recovery Association Email to register")
 				}
-				user := &u.User{
-					Name: p.Args["name"].(string),
+				name, okName := p.Args["name"].(string)
+				if !okName {
+					panic(okName)
 				}
-				role, roleOK := p.Args["role"].(string)
-				if !roleOK {
-					panic("user must have an active role")
-				}
-				result, err := user.Create(email, role)
-				if err != nil {
-					panic(err)
-				}
-				return result, nil
-			},
-		},
-		"login_user": &graphql.Field{
-			Type:        UserType,
-			Description: "Login a user and gather basic information about them",
-			Args: graphql.FieldConfigArgument{
-				"email": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"name": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				email, isOk := p.Args["email"].(string)
-				if !isOk {
-					panic("must enter a valid email")
-				}
-				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
-				if !emailCheck {
-					panic("must have a Northern Ohio Recovery Association Email to register")
+				id, okID := p.Args["id"].(string)
+				if !okID {
+					panic(okID)
 				}
 				var user u.User
-				result, err := user.Login(email)
+				userInfo, findErr := user.FindByID(id)
+				if findErr != nil {
+					result, err := user.Create(id, name, email)
+					if err != nil {
+						panic(err)
+					}
+					return result, nil
+				}
+				result, err := user.Login(userInfo.ID)
 				if err != nil {
 					panic(err)
 				}

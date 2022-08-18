@@ -10,43 +10,43 @@ import (
 var UserMutations = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Mutations",
 	Fields: graphql.Fields{
-		"create": &graphql.Field{
-			Type:        UserType,
-			Description: "Create a new user on initial sign up",
-			Args: graphql.FieldConfigArgument{
-				"email": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"name": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"role": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(RoleType),
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				email, isOk := p.Args["email"].(string)
-				if !isOk {
-					panic("must enter a valid email")
-				}
-				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
-				if !emailCheck {
-					panic("must have a Northern Ohio Recovery Association Email to register")
-				}
-				user := &u.User{
-					Name: p.Args["name"].(string),
-				}
-				role, roleOK := p.Args["role"].(string)
-				if !roleOK {
-					panic("user must have an active role")
-				}
-				result, err := user.Create(email, role)
-				if err != nil {
-					panic(err)
-				}
-				return result, nil
-			},
-		},
+		// "create": &graphql.Field{
+		// 	Type:        UserType,
+		// 	Description: "Create a new user on initial sign up",
+		// 	Args: graphql.FieldConfigArgument{
+		// 		"email": &graphql.ArgumentConfig{
+		// 			Type: graphql.NewNonNull(graphql.String),
+		// 		},
+		// 		"name": &graphql.ArgumentConfig{
+		// 			Type: graphql.NewNonNull(graphql.String),
+		// 		},
+		// 		"role": &graphql.ArgumentConfig{
+		// 			Type: graphql.NewNonNull(RoleType),
+		// 		},
+		// 	},
+		// 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		// 		email, isOk := p.Args["email"].(string)
+		// 		if !isOk {
+		// 			panic("must enter a valid email")
+		// 		}
+		// 		emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
+		// 		if !emailCheck {
+		// 			panic("must have a Northern Ohio Recovery Association Email to register")
+		// 		}
+		// 		user := &u.User{
+		// 			Name: p.Args["name"].(string),
+		// 		}
+		// 		role, roleOK := p.Args["role"].(string)
+		// 		if !roleOK {
+		// 			panic("user must have an active role")
+		// 		}
+		// 		result, err := user.Create(id, name, email)
+		// 		if err != nil {
+		// 			panic(err)
+		// 		}
+		// 		return result, nil
+		// 	},
+		// },
 		"login": &graphql.Field{
 			Type:        UserType,
 			Description: "Login a user and gather basic information about them",

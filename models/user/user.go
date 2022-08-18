@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	conn "financial-api/db"
-	"fmt"
 	"math"
 	"time"
 
@@ -271,24 +270,50 @@ func setManagerID(email string, employee_role string) string {
 	}
 	return manager_id
 }
-
-func (u *User) Create(email string, role string) (User, error) {
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "email", Value: email}}
-	var user User
-	findErr := collection.FindOne(context.TODO(), filter).Decode(&user)
-	if findErr == nil {
-		return *u, fmt.Errorf("account already created")
+func setRole(email string) string {
+	var employee_role string
+	employees := []string{"test1@norainc.org", "test2@norainc.org"}
+	for i := range employees {
+		if employees[i] == email {
+			employee_role = "EMPLOYEE"
+		}
 	}
-	u.ID = uuid.NewString()
-	u.Role = role
+	managers := []string{"test1@norainc.org", "test2@norainc.org", "sthompson@norainc.org"}
+	for i := range managers {
+		if managers[i] == email {
+			employee_role = "MANAGER"
+		}
+
+	}
+	finance_team := []string{"test1@norainc.org", "test2@norainc.org"}
+	for i := range finance_team {
+		if finance_team[i] == email {
+			employee_role = "FINANCE"
+		}
+
+	}
+	executives := []string{"test1@norainc.org", "test2@norainc.org"}
+	for i := range executives {
+		if executives[i] == email {
+			employee_role = "EXECUTIVE"
+		}
+	}
+	return employee_role
+}
+func (u *User) Create(id string, name string, email string) (User, error) {
+	collection := conn.Db.Collection("users")
+	u.ID = id
+	u.Name = name
+	u.Email = email
 	u.Last_Login = time.Now()
 	u.Is_Active = true
 	u.Email = email
 	u.Vehicles = []Vehicle{}
 	u.InComplete_Actions = []string{}
+	role := setRole(email)
 	manager_id := setManagerID(email, role)
 	u.Manager_ID = manager_id
+	u.Role = role
 	_, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {
 		panic(err)
@@ -296,10 +321,10 @@ func (u *User) Create(email string, role string) (User, error) {
 	return *u, nil
 }
 
-func (u *User) Login(email string) (User, error) {
+func (u *User) Login(id string) (User, error) {
 	var user User
 	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "email", Value: email}}
+	filter := bson.D{{Key: "_id", Value: id}}
 	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
 	upsert := true
 	after := options.After

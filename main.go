@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	auth "financial-api/middleware"
+
 	"github.com/go-chi/chi"
 	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
@@ -34,6 +36,9 @@ func main() {
 	})
 	router := chi.NewRouter()
 	router.Handle("/graphql", rootRequestHandler)
+	router.Route("/graphql", func(router chi.Router) {
+		router.Use(auth.Middleware())
+	})
 	originsOK := handlers.AllowedOrigins([]string{"*"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})

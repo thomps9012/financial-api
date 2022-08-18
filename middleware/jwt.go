@@ -1,65 +1,49 @@
 package middleware
 
-// import (
-// 	"context"
-// 	"log"
-// 	"net/http"
-// 	"net/url"
-// 	"os"
-// 	"time"
+import (
+	"fmt"
+	"log"
+	"os"
+	"time"
 
-// 	"github.com/auth0/go-jwt-middleware/v2/jwks"
-// 	"github.com/auth0/go-jwt-middleware/v2/validator"
-// )
+	"github.com/dgrijalva/jwt-go"
+)
 
-// type CustomClaims struct {
-// 	Scope string `json:"scope" bson:"scope"`
-// 	Email string `json:"email" bson:"email"`
-// 	Name  string `json:"name" bson:"name"`
-// }
+var jwtKey = []byte(os.Getenv("JWT_KEY"))
 
-// func (c CustomClaims) Validate(ctx context.Context) error {
-// 	// can add in email validation here
-// 	return nil
-// }
+type Claims struct {
+	id   string
+	role string
+	jwt.StandardClaims
+}
 
-// func EnsureValidToken() func(next http.Handler) http.Handler {
-// 	issuerURL, err := url.Parse("https://" + os.Getenv(("AUTH0_DOMAIN")+"/"))
-// 	if err != nil {
-// 		log.Fatalf("Failed to parse the issuer url: %v", err)
-// 	}
-// 	provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
+func GenerateToken(id string, role string) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = id
+	claims["role"] = role
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		log.Fatal("Error while signing JWT")
+		return "", err
+	}
+	return tokenString, nil
+}
 
-// 	jwtValidator, err := validator.New(
-// 		provider.KeyFunc,
-// 		validator.RS256,
-// 		issuerURL.String(),
-// 		[]string{os.Getenv("AUTH0_AUDIENCE")},
-// 		// validator.WithCusomClaims(
-// 		// 	func() validator.CustomClaims {
-// 		// 		return &CustomClaims{}
-// 		// 	},
-// 		// ),
-// 		validator.WithAllowedClockSkew(time.Minute),
-// 	)
-// 	if err != nil {
-// 		log.Fatalf("Failed to set up the jwt validator")
-// 	}
-
-// 	errorHandler := func(w http.ResponseWriter, r *http.Request, err error) {
-// 		log.Printf("Encountered error while validating JWT: %v", err)
-
-// 		w.Header().Set("Content-Type", "application/json")
-// 		w.WriteHeader(http.StatusUnauthorized)
-// 		w.Write([]byte(`{"message": "Failed to validate JWT."}`))
-// 	}
-
-// 	// middleware := jwtmiddleware.New(
-// 	// 	jwtValidator.ValidateToken,
-// 	// 	jwtmiddleware.WithErrorHandler(errorHandler),
-// 	// )
-
-// 	return func(next http.Handler) http.Handler {
-// 		return middleware.CheckJWT(next)
-// 	}
-// }
+func ParseToken(tokenString string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		var info = map[string]interface{}{
+			"id":   claims["id"].(string),
+			"role": claims["role"].(string),
+		}
+		return info, nil
+	}
+	return nil, fmt.Errorf("Invalid Token")
+}
