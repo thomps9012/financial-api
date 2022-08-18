@@ -107,9 +107,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				userID := auth.ForID(p.Context)
-				if userID == "" {
-					panic("You are not logged in")
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
 				}
 				user_id, idOK := p.Args["user_id"].(string)
 				if !idOK {
@@ -148,9 +148,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				userID := auth.ForID(p.Context)
-				if userID == "" {
-					panic("You are not logged in")
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
 				}
 				user_id, idOK := p.Args["user_id"].(string)
 				if !idOK {
@@ -181,9 +181,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				userID := auth.ForID(p.Context)
-				if userID == "" {
-					panic("You are not logged in")
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
 				}
 				userID, isOK := p.Args["user_id"].(string)
 				if !isOK {
@@ -256,9 +256,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				userID := auth.ForID(p.Context)
-				if userID == "" {
-					panic("You are not logged in")
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
 				}
 				user_id, isOk := p.Args["user_id"].(string)
 				if !isOk {
@@ -321,9 +321,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				userID := auth.ForID(p.Context)
-				if userID == "" {
-					panic("You are not logged in")
+				user_info := p.Context.Value("user")
+				if user_info == nil {
+					return nil, errors.New("Not logged in")
 				}
 				vendor_input := p.Args["vendor"].(map[string]interface{})
 				vendor_address_input := vendor_input["address"].(map[string]interface{})
