@@ -20,42 +20,25 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		"me": &graphql.Field{
 			Type:        UserDetailType,
 			Description: "Gather Information for a specific user on login",
-			Args: graphql.FieldConfigArgument{
-				"id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return nil, errors.New("Not logged in")
-				}
 				var user u.User
-				user_id, isOk := p.Args["id"].(string)
-				if !isOk {
-					panic("must enter a valid user id")
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
 				}
-				ctx := context.Background()
-				userRole := auth.ForRole(ctx)
-				userID := auth.ForID(ctx)
-				if userRole == "EMPLOYEE" {
-					if userID != user_id {
-						panic("You are unauthorized to view this user's information")
-					}
-				}
-				user, userErr := user.FindByID(user_id)
+				user, userErr := user.FindContextID(p.Context)
 				if userErr != nil {
 					panic(userErr)
 				}
-				petty_cash_reqs, petty_err := user.FindPettyCash(user_id)
+				petty_cash_reqs, petty_err := user.FindPettyCash(user.ID)
 				if petty_err != nil {
 					panic(petty_err)
 				}
-				mileage_reqs, mileage_err := user.FindMileage(user_id)
+				mileage_reqs, mileage_err := user.FindMileage(user.ID)
 				if mileage_err != nil {
 					panic(mileage_err)
 				}
-				check_reqs, check_err := user.AggregateChecks(user_id, "", "")
+				check_reqs, check_err := user.AggregateChecks(user.ID, "", "")
 				if check_err != nil {
 					panic(check_err)
 				}
@@ -78,11 +61,15 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gather basic information for all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
-				// user_info := p.Context.Value("user")
-				// if user_info == nil {
-				// 	return p.Context, errors.New("Not logged in")
-				// }
-				results, err := user.Findall(p.Context)
+				isAdmin := user.CheckAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
+				}
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				results, err := user.Findall()
 				if err != nil {
 					panic(err)
 				}
@@ -110,6 +97,10 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
+				}
+				isAdmin := user.CheckAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
 				}
 				user, userErr := user.FindByID(user_id)
 				if userErr != nil {

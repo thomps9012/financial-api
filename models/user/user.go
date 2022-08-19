@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	conn "financial-api/db"
 	auth "financial-api/middleware"
 	"math"
@@ -397,6 +396,35 @@ func (u *User) Deactivate(user_id string) (User, error) {
 	return user, nil
 }
 
+func (u *User) FindContextID(ctx context.Context) (User, error) {
+	user_id := auth.ForID(ctx)
+	collection := conn.Db.Collection("users")
+	var user User
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	user.Role = string(user.Role)
+	if err != nil {
+		panic(err)
+	}
+	return user, nil
+}
+
+func (u *User) CheckAdmin(ctx context.Context) bool {
+	user_role := auth.ForRole(ctx)
+	if user_role == "EMPLOYEE" {
+		return false
+	}
+	return true
+}
+
+func (u *User) LoggedIn(ctx context.Context) bool {
+	user_id := auth.ForID(ctx)
+	if user_id == "" {
+		return false
+	}
+	return true
+}
+
 func (u *User) FindByID(user_id string) (User, error) {
 	collection := conn.Db.Collection("users")
 	var user User
@@ -408,15 +436,7 @@ func (u *User) FindByID(user_id string) (User, error) {
 	}
 	return user, nil
 }
-func (u *User) Findall(ctx context.Context) ([]User, error) {
-	user_id := auth.ForID(ctx)
-	if user_id == "" {
-		return nil, errors.New("not logged in")
-	}
-	user_role := auth.ForRole(ctx)
-	if user_role == "EMPLOYEE" {
-		return nil, errors.New("you are not authorized to view this information")
-	}
+func (u *User) Findall() ([]User, error) {
 	collection := conn.Db.Collection("users")
 	var userArr []User
 	cursor, err := collection.Find(context.TODO(), bson.D{})
