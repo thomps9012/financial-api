@@ -413,6 +413,10 @@ func (u *User) Findall(ctx context.Context) ([]User, error) {
 	if user_id == "" {
 		return nil, errors.New("not logged in")
 	}
+	user_role := auth.ForRole(ctx)
+	if user_role == "EMPLOYEE" {
+		return nil, errors.New("you are not authorized to view this information")
+	}
 	collection := conn.Db.Collection("users")
 	var userArr []User
 	cursor, err := collection.Find(context.TODO(), bson.D{})
