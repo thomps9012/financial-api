@@ -80,7 +80,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				var user u.User
 				user_info := p.Context.Value("user")
 				if user_info == nil {
-					return nil, errors.New("Not logged in")
+					return p.Context, errors.New("Not logged in")
 				}
 				results, err := user.Findall()
 				if err != nil {
