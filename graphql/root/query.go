@@ -78,15 +78,19 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gather basic information for all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return p.Context, errors.New("Not logged in")
-				}
-				results, err := user.Findall()
+				// user_info := p.Context.Value("user")
+				// if user_info == nil {
+				// 	return p.Context, errors.New("Not logged in")
+				// }
+				results, err := user.Findall(p.Context)
 				if err != nil {
 					panic(err)
 				}
 				return results, nil
+			},
+			Subscribe: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx := auth.Middleware()
+				return ctx, nil
 			},
 		},
 		"user_overview": &graphql.Field{

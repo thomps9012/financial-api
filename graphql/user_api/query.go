@@ -14,7 +14,7 @@ var UserQueries = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gather basic information for all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
-				results, err := user.Findall()
+				results, err := user.Findall(p.Context)
 				if err != nil {
 					panic(err)
 				}
