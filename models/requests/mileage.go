@@ -14,6 +14,7 @@ import (
 
 type Mileage_Request struct {
 	ID                string    `json:"id" bson:"_id"`
+	Grant_ID          string    `json:"grant_id" bson:"grant_id"`
 	User_ID           string    `json:"user_id" bson:"user_id"`
 	Date              time.Time `json:"date" bson:"date"`
 	Starting_Location string    `json:"starting_location" bson:"starting_location"`
@@ -33,6 +34,7 @@ type Mileage_Request struct {
 
 type Mileage_Overview struct {
 	ID             string    `json:"id" bson:"_id"`
+	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
 	User           user.User `json:"user" bson:"user"`
 	Date           time.Time `json:"date" bson:"date"`
@@ -45,6 +47,7 @@ type Mileage_Overview struct {
 
 type Monthly_Mileage_Overview struct {
 	User_ID       string     `json:"user_id" bson:"user_id"`
+	Grant_IDS     []string   `json:"grant_id" bson:"grant_id"`
 	Name          string     `json:"name" bson:"name"`
 	Month         time.Month `json:"month" bson:"month"`
 	Year          int        `json:"year" bson:"year"`
@@ -187,6 +190,7 @@ func (m *Mileage_Overview) FindAll() ([]Mileage_Overview, error) {
 		}
 		mileage_overview := &Mileage_Overview{
 			ID:             mileage_req.ID,
+			Grant_ID:       mileage_req.Grant_ID,
 			User_ID:        mileage_req.User_ID,
 			User:           user_info,
 			Date:           mileage_req.Date,

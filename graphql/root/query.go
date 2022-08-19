@@ -287,6 +287,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						panic(err)
 					}
 					user_record := &r.Monthly_Mileage_Overview{
+						Grant_IDS:     user_mileage.Grant_IDS,
 						User_ID:       user.ID,
 						Name:          user.Name,
 						Month:         time.Month(month),

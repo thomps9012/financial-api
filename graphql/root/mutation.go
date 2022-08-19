@@ -180,6 +180,9 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        MileageType,
 			Description: "Creates a new mileage request for a given user",
 			Args: graphql.FieldConfigArgument{
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
 				"request": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(MileageInputType),
 				},
@@ -193,6 +196,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				user, userErr := user.FindContextID(p.Context)
 				if userErr != nil {
 					panic(userErr)
+				}
+				grant_id, grantOK := p.Args["grant_id"].(string)
+				if !grantOK {
+					panic("must enter a valid grant id")
 				}
 				mileageArgs := p.Args["request"].(map[string]interface{})
 				date, dateisOK := mileageArgs["date"].(time.Time)
@@ -229,6 +236,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				}
 				mileage_req := &r.Mileage_Request{
 					Date:              date,
+					Grant_ID:          grant_id,
 					Starting_Location: start,
 					Destination:       destination,
 					Trip_Purpose:      purpose,
