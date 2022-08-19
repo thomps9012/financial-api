@@ -82,15 +82,19 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
 				user_id, idOK := p.Args["user_id"].(string)
 				if !idOK {
 					panic("you must enter a valid user id")
 				}
-				var user u.User
-				userRole := auth.ForRole(p.Context)
-				userID := auth.ForID(p.Context)
-				if userRole == "EMPLOYEE" {
-					if userID != user_id {
+				isAdmin := user.CheckAdmin(p.Context)
+				contextuser, _ := user.FindContextID(p.Context)
+				if !isAdmin {
+					if contextuser.ID != user_id {
 						panic("You are unauthorized to deactivate this user")
 					}
 				}
@@ -105,9 +109,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        VehicleType,
 			Description: "Allow a user to add a vehicle to their account",
 			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
@@ -116,13 +117,14 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return nil, errors.New("Not logged in")
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
 				}
-				user_id, idOK := p.Args["user_id"].(string)
-				if !idOK {
-					panic("you must enter a valid user id")
+				user, userErr := user.FindContextID(p.Context)
+				if userErr != nil {
+					panic(userErr)
 				}
 				name, nameOK := p.Args["name"].(string)
 				if !nameOK {
@@ -132,8 +134,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !descriptionOK {
 					panic("you must enter a valid vehicle description")
 				}
-				var user u.User
-				result, err := user.AddVehicle(user_id, name, description)
+				result, err := user.AddVehicle(user.ID, name, description)
 				println(result)
 				if err != nil {
 					panic(err)
@@ -149,28 +150,25 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.Boolean,
 			Description: "Allow a user to remove a vehicle from their account",
 			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
 				"vehicle_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return nil, errors.New("Not logged in")
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
 				}
-				user_id, idOK := p.Args["user_id"].(string)
-				if !idOK {
-					panic("you must enter a valid user id")
+				user, userErr := user.FindContextID(p.Context)
+				if userErr != nil {
+					panic(userErr)
 				}
 				vehicle_id, vehicle_idOK := p.Args["vehicle_id"].(string)
 				if !vehicle_idOK {
 					panic("you must enter a valid vehicle id")
 				}
-				var user u.User
-				result, err := user.RemoveVehicle(user_id, vehicle_id)
+				result, err := user.RemoveVehicle(user.ID, vehicle_id)
 				if err != nil {
 					panic(err)
 				}
@@ -182,21 +180,19 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        MileageType,
 			Description: "Creates a new mileage request for a given user",
 			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
 				"request": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(MileageInputType),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return nil, errors.New("Not logged in")
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
 				}
-				userID, isOK := p.Args["user_id"].(string)
-				if !isOK {
-					panic("must enter a valid user id")
+				user, userErr := user.FindContextID(p.Context)
+				if userErr != nil {
+					panic(userErr)
 				}
 				mileageArgs := p.Args["request"].(map[string]interface{})
 				date, dateisOK := mileageArgs["date"].(time.Time)
@@ -241,11 +237,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Tolls:             tolls,
 					Parking:           parking,
 				}
-				exists, _ := mileage_req.Exists(userID, date, start_odo, end_odo)
+				exists, _ := mileage_req.Exists(user.ID, date, start_odo, end_odo)
 				if exists {
 					return nil, errors.New("mileage request already created")
 				}
-				mileage_req.Create(userID)
+				mileage_req.Create(user.ID)
 				return mileage_req, nil
 			},
 		},
@@ -254,9 +250,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        PettyCashType,
 			Description: "Creates a new petty cash request for a given user",
 			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
@@ -265,15 +258,15 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return nil, errors.New("Not logged in")
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
 				}
-				user_id, isOk := p.Args["user_id"].(string)
-				if !isOk {
-					panic("must enter a valid user id")
+				user, userErr := user.FindContextID(p.Context)
+				if userErr != nil {
+					panic(userErr)
 				}
-				println(user_id)
 				grant_id, grantOK := p.Args["grant_id"].(string)
 				if !grantOK {
 					panic("must enter a valid grant")
@@ -306,11 +299,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Description: description,
 					Receipts:    receipts,
 				}
-				exists, _ := petty_cash_req.Exists(user_id, amount, date)
+				exists, _ := petty_cash_req.Exists(user.ID, amount, date)
 				if exists {
 					return nil, errors.New("duplicate petty cash request")
 				}
-				petty_cash_req.Create(user_id)
+				petty_cash_req.Create(user.ID)
 				return petty_cash_req, nil
 			},
 		},
@@ -319,20 +312,29 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        CheckRequestType,
 			Description: "Creates a new check request for a given user",
 			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
 				"vendor": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(VendorInput),
+				},
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(CheckRequestInput),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_info := p.Context.Value("user")
-				if user_info == nil {
-					return nil, errors.New("Not logged in")
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				user, userErr := user.FindContextID(p.Context)
+				if userErr != nil {
+					panic(userErr)
+				}
+				grant_id, grantOK := p.Args["grant_id"].(string)
+				if !grantOK {
+					panic("must enter a valid grant")
 				}
 				vendor_input := p.Args["vendor"].(map[string]interface{})
 				vendor_address_input := vendor_input["address"].(map[string]interface{})
@@ -375,21 +377,17 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Date:        checkReqArgs["date"].(time.Time),
 					Vendor:      *vendor,
 					Description: checkReqArgs["description"].(string),
-					Grant_ID:    checkReqArgs["grant_id"].(string),
+					Grant_ID:    grant_id,
 					Purchases:   purchases,
 					Order_Total: order_total,
 					Receipts:    receipts,
 					Credit_Card: checkReqArgs["credit_card"].(string),
 				}
-				user_id, isOk := p.Args["user_id"].(string)
-				if !isOk {
-					panic("must enter a user id")
-				}
-				exists, _ := check_request.Exists(user_id, vendor.Name, order_total, check_request.Date)
+				exists, _ := check_request.Exists(user.ID, vendor.Name, order_total, check_request.Date)
 				if exists {
 					return nil, errors.New("check request already created")
 				}
-				check_request.Create(user_id)
+				check_request.Create(user.ID)
 				return check_request, nil
 			},
 		},

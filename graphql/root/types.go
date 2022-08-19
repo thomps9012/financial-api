@@ -101,9 +101,6 @@ var CheckRequestInput = graphql.NewInputObject(
 			"description": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
 			},
-			"grant_id": &graphql.InputObjectFieldConfig{
-				Type: graphql.NewNonNull(graphql.ID),
-			},
 			"purchases": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(&graphql.List{OfType: PurchaseInputType}),
 			},
