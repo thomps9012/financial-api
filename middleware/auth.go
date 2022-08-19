@@ -19,19 +19,19 @@ type contextInfo struct {
 func Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			header := r.Header.Get("Authorization")
-			if header == "" {
+			token, tokenErr := r.Cookie("Authorization")
+			if tokenErr != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
-			tokenString := header
-			token, err := ParseToken(tokenString)
+			tokenString := token.Value
+			tokenParsed, err := ParseToken(tokenString)
 			if err != nil {
 				http.Error(w, "Invalid token", http.StatusForbidden)
 				return
 			}
-			id := token["id"].(string)
-			role := token["role"].(string)
+			id := tokenParsed["id"].(string)
+			role := tokenParsed["role"].(string)
 			contextInfo := &contextInfo{id, role}
 			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)
 			r = r.WithContext(ctx)
