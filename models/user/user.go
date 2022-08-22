@@ -136,7 +136,7 @@ const (
 
 type Action struct {
 	ID           string    `json:"id" bson:"_id"`
-	User         User `json:"user" bson:"user`
+	User         User      `json:"user" bson:"user`
 	Request_Type string    `json:"request_type" bson:"request_type"`
 	Request_ID   string    `json:"request_id" bson:"request_id"`
 	Status       string    `json:"status" bson:"status"`
@@ -257,9 +257,11 @@ func setManagerID(email string, employee_role string) string {
 			for s := range employeesArr {
 				if employeesArr[s] == email {
 					manager_id = managers[i].ID
-				} else {
-					manager_id = finance
 				}
+
+			}
+			if manager_id == "" {
+				manager_id = finance
 			}
 		}
 	case "MANAGER":
@@ -268,9 +270,10 @@ func setManagerID(email string, employee_role string) string {
 			for s := range employeesArr {
 				if employeesArr[s] == email {
 					manager_id = executives[i].ID
-				} else {
-					manager_id = finance
 				}
+			}
+			if manager_id == "" {
+				manager_id = finance
 			}
 		}
 	case "EXECUTIVE":
