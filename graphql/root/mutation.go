@@ -401,7 +401,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// action mutations
 		"approve_request": &graphql.Field{
-			Type: graphql.Boolean,
+			Type:        graphql.Boolean,
 			Description: "A method for a manager to approve a financial request",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
@@ -412,11 +412,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				request_id, idOK :=  p.Args["request_id"].(string)
+				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
 				}
-				request_type, typeOk :=  p.Args["request_type"].(string)
+				request_type, typeOk := p.Args["request_type"].(string)
 				if !typeOk {
 					panic("must enter a valid request type")
 				}
@@ -445,7 +445,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"reject_request": &graphql.Field{
-			Type: graphql.Boolean,
+			Type:        graphql.Boolean,
 			Description: "A method for a manager to reject a financial request",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
@@ -456,11 +456,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				request_id, idOK :=  p.Args["request_id"].(string)
+				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
 				}
-				request_type, typeOk :=  p.Args["request_type"].(string)
+				request_type, typeOk := p.Args["request_type"].(string)
 				if !typeOk {
 					panic("must enter a valid request type")
 				}
@@ -483,16 +483,44 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return rejectReq, nil
 			},
 		},
-		"clear_notification": &graphql.Field{
-			Type: graphql.Boolean,
-			Description: "A method for a user to clear a notification that has been dealt with",
+		"archive_request": &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "A method for a manager to reject a financial request",
 			Args: graphql.FieldConfigArgument{
-				"item_id":  &graphql.ArgumentConfig{
+				"request_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"request_type": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				item_id, idOK :=  p.Args["item_id"].(string)
+				request_id, idOK := p.Args["request_id"].(string)
+				if !idOK {
+					panic("must enter a valid request id")
+				}
+				request_type, typeOk := p.Args["request_type"].(string)
+				if !typeOk {
+					panic("must enter a valid request type")
+				}
+				var action r.Action
+				archiveReq, archiveErr := action.Archive(request_id, request_type)
+				if archiveErr != nil {
+					panic(archiveErr)
+				}
+				return archiveReq, nil
+			},
+		},
+		"clear_notification": &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "A method for a user to clear a notification that has been dealt with",
+			Args: graphql.FieldConfigArgument{
+				"item_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				item_id, idOK := p.Args["item_id"].(string)
 				if !idOK {
 					panic("must enter a valid action id")
 				}
@@ -505,11 +533,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if clearErr != nil {
 					panic(clearErr)
 				}
-				return notificationClear, nil	
+				return notificationClear, nil
 			},
 		},
 		"clear_all_notifications": &graphql.Field{
-			Type: graphql.Boolean,
+			Type:        graphql.Boolean,
 			Description: "A method for a user to clear all of their notifications",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
