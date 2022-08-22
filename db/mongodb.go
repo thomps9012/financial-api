@@ -13,8 +13,6 @@ import (
 var Db *mongo.Database
 func InitDB() {
 	// change on production
-	os.Setenv("ATLAS_URI", "mongodb+srv://spars01:H0YXCAGHoUihHcSZ@cluster0.wuezj.mongodb.net/TEST_finance_records?retryWrites=true&w=majority")
-	os.Setenv("DB_NAME", "TEST_finance_records")
 	ATLAS_URI := os.Getenv("ATLAS_URI")
 	clientOptions := options.Client().ApplyURI(ATLAS_URI)
 
