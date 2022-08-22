@@ -59,7 +59,7 @@ type User_Detail struct {
 	Role                    string              `json:"role" bson:"role"`
 	Vehicles                []Vehicle           `json:"vehicles" bson:"vehicles"`
 	Last_Login              time.Time           `json:"last_login" bson:"last_login"`
-	Incomplete_Actions      []string            `json:"incomplete_actions" bson:"incomplete_actions"`
+	Incomplete_Actions      []Action            `json:"incomplete_actions" bson:"incomplete_actions"`
 	Incomplete_Action_Count int                 `json:"incomplete_action_count" bson:"incomplete_action_count"`
 	Mileage_Requests        User_Mileage        `json:"mileage_requests" bson:"mileage_requests"`
 	Check_Requests          User_Check_Requests `json:"check_requests" bson:"check_requests"`
@@ -112,7 +112,7 @@ type User struct {
 	Name               string    `json:"name" bson:"name"`
 	Last_Login         time.Time `json:"last_login" bson:"last_login"`
 	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
-	InComplete_Actions []string  `json:"incomplete_actions" bson:"incomplete_actions"`
+	InComplete_Actions []Action  `json:"incomplete_actions" bson:"incomplete_actions"`
 	Manager_ID         string    `json:"manager_id" bson:"manager_id"`
 	Is_Active          bool      `json:"is_active" bson:"is_active"`
 	Role               string    `json:"role" bson:"role"`
@@ -135,10 +135,12 @@ const (
 )
 
 type Action struct {
-	ID         string    `json:"id" bson:"_id"`
-	User_ID    string    `json:"user_id" bson:"user_id"`
-	Status     Status    `json:"status" bson:"status"`
-	Created_At time.Time `json:"created_at" bson:"created_at"`
+	ID           string    `json:"id" bson:"_id"`
+	User         User `json:"user" bson:"user`
+	Request_Type string    `json:"request_type" bson:"request_type"`
+	Request_ID   string    `json:"request_id" bson:"request_id"`
+	Status       string    `json:"status" bson:"status"`
+	Created_At   time.Time `json:"created_at" bson:"created_at"`
 }
 
 type Address struct {
@@ -230,6 +232,7 @@ type User_Check_Requests struct {
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
+// double check two lower functions for manager id and manager role
 func setManagerID(email string, employee_role string) string {
 	var manager_id string
 	managers := []Manager{
@@ -254,6 +257,8 @@ func setManagerID(email string, employee_role string) string {
 			for s := range employeesArr {
 				if employeesArr[s] == email {
 					manager_id = managers[i].ID
+				} else {
+					manager_id = finance
 				}
 			}
 		}
@@ -263,6 +268,8 @@ func setManagerID(email string, employee_role string) string {
 			for s := range employeesArr {
 				if employeesArr[s] == email {
 					manager_id = executives[i].ID
+				} else {
+					manager_id = finance
 				}
 			}
 		}
@@ -312,7 +319,7 @@ func (u *User) Create(id string, name string, email string) (User, error) {
 	u.Is_Active = true
 	u.Email = email
 	u.Vehicles = []Vehicle{}
-	u.InComplete_Actions = []string{}
+	u.InComplete_Actions = []Action{}
 	role := setRole(email)
 	manager_id := setManagerID(email, role)
 	u.Manager_ID = manager_id
@@ -464,9 +471,9 @@ func (u *User) FindMgrID(user_id string) (string, error) {
 	return user.Manager_ID, nil
 }
 
-func (u *User) AddNotification(item_id string, user_id string) (bool, error) {
+func (u *User) AddNotification(item Action, user_id string) (bool, error) {
 	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": item_id}}})
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": item}}})
 	if err != nil {
 		panic(err)
 	}

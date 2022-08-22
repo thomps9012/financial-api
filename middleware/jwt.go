@@ -3,13 +3,14 @@ package middleware
 import (
 	"fmt"
 	"log"
-	"os"
+	// "os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte(os.Getenv("JWT_KEY"))
+// var jwtKey = []byte(os.Getenv("JWT_KEY"))
+var jwtKey = []byte("15cbe07571a61d35917e62a42f5e76c7")
 
 type Claims struct {
 	id   string

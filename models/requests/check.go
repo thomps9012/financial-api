@@ -95,6 +95,15 @@ func (c *Check_Request) Exists(user_id string, vendor_name string, order_total f
 
 func (c *Check_Request) Create(user_id string) (string, error) {
 	collection := conn.Db.Collection("check_requests")
+	var req_user user.User
+	requestor, request_err := req_user.FindByID(user_id)
+	if request_err != nil {
+		panic(request_err)
+	}
+	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
+	if mgr_find_err != nil {
+		panic(mgr_find_err)
+	}
 	c.ID = uuid.NewString()
 	c.Created_At = time.Now()
 	c.Is_Active = true
@@ -102,7 +111,9 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	c.Current_Status = "PENDING"
 	first_action := &Action{
 		ID:         uuid.NewString(),
-		User_ID:    user_id,
+		User: 		requestor,
+		Request_Type: "check_requests",
+		Request_ID: c.ID,
 		Status:     "PENDING",
 		Created_At: time.Now(),
 	}
@@ -111,14 +122,9 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	var req_user user.User
-	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
-	if mgr_find_err != nil {
-		panic(mgr_find_err)
-	}
 	// add in extra validation based on org chart here
 	var manager user.User
-	update_user, update_err := manager.AddNotification(c.ID, manager_id)
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
 	if update_err != nil {
 		panic(update_err)
 	}

@@ -73,6 +73,15 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	fmt.Printf("%s\n", m.Date)
 	collection := conn.Db.Collection("mileage_requests")
+	var req_user user.User
+	manager_id, mgr_find_err := req_user.FindMgrID(m.User_ID)
+	if mgr_find_err != nil {
+		panic(mgr_find_err)
+	}
+	requestor, req_find_err := req_user.FindByID(m.User_ID)
+	if req_find_err != nil {
+		panic(req_find_err)
+	}
 	var currentMileageRate = 62.5
 	m.ID = uuid.NewString()
 	m.Created_At = time.Now()
@@ -82,7 +91,9 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
 	first_action := &Action{
 		ID:         uuid.NewString(),
-		User_ID:    user_id,
+		User: 		requestor,
+		Request_Type: "mileage_requests",
+		Request_ID: m.ID,
 		Status:     "PENDING",
 		Created_At: time.Now(),
 	}
@@ -93,13 +104,9 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	var req_user user.User
-	manager_id, mgr_find_err := req_user.FindMgrID(m.User_ID)
-	if mgr_find_err != nil {
-		panic(mgr_find_err)
-	}
+	
 	var manager user.User
-	update_user, update_err := manager.AddNotification(m.ID, manager_id)
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
 	if update_err != nil {
 		panic(update_err)
 	}

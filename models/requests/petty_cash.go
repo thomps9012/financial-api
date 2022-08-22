@@ -69,6 +69,11 @@ func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Ti
 
 func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
+	var req_user user.User
+	requestor, request_err := req_user.FindByID(user_id)
+	if request_err != nil {
+		panic(request_err)
+	}
 	p.ID = uuid.NewString()
 	p.Created_At = time.Now()
 	p.Is_Active = true
@@ -76,7 +81,9 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	p.User_ID = user_id
 	first_action := &Action{
 		ID:         uuid.NewString(),
-		User_ID:    user_id,
+		User: 		requestor,
+		Request_Type: "petty_cash_requests",
+		Request_ID: p.ID,
 		Status:     "PENDING",
 		Created_At: time.Now(),
 	}
@@ -85,13 +92,13 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	if err != nil {
 		panic(err)
 	}
-	var req_user user.User
+	
 	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
 	if mgr_find_err != nil {
 		panic(mgr_find_err)
 	}
 	var manager user.User
-	update_user, update_err := manager.AddNotification(p.ID, manager_id)
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
 	if update_err != nil {
 		panic(update_err)
 	}

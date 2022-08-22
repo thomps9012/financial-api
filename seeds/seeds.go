@@ -2,7 +2,7 @@ package seeds
 
 import (
 	"context"
-	. "financial-api/Db"
+	. "financial-api/db"
 	r "financial-api/models/requests"
 	u "financial-api/models/user"
 	"time"

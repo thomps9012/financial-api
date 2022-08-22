@@ -45,6 +45,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return &u.User_Detail{
 					ID:                      user.ID,
 					Name:                    user.Name,
+					Role:                    user.Role,
 					Manager_ID:              user.Manager_ID,
 					Incomplete_Actions:      user.InComplete_Actions,
 					Incomplete_Action_Count: len(user.InComplete_Actions),
