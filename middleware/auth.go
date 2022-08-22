@@ -19,18 +19,12 @@ type contextInfo struct {
 func Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c, err := r.Cookie("next-auth.session-token")
-			if err != nil {
+			header := r.Header.Get("Authorization")
+			if header == "" {
 				next.ServeHTTP(w, r)
 				return
 			}
-			tokenString := c.Value
-			// header := r.Header.Get("Authorization")
-			// if header == "" {
-			// 	next.ServeHTTP(w, r)
-			// 	return
-			// }
-			// tokenString := header
+			tokenString := header
 			token, err := ParseToken(tokenString)
 			if err != nil {
 				http.Error(w, "Invalid token", http.StatusForbidden)
