@@ -399,5 +399,130 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return check_request, nil
 			},
 		},
+		// action mutations
+		"approve_request": &graphql.Field{
+			Type: graphql.Boolean,
+			Description: "A method for a manager to approve a financial request",
+			Args: graphql.FieldConfigArgument{
+				"request_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"request_type": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				request_id, idOK :=  p.Args["request_id"].(string)
+				if !idOK {
+					panic("must enter a valid request id")
+				}
+				request_type, typeOk :=  p.Args["request_type"].(string)
+				if !typeOk {
+					panic("must enter a valid request type")
+				}
+				var user u.User
+				var action r.Action
+				// get request user id from request
+				request, err := action.FindOne(request_id, request_type)
+				if err != nil {
+					panic(err)
+				}
+				// get manager id from context
+				// get manager role from context
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				manager, managerErr := user.FindContextID(p.Context)
+				if managerErr != nil {
+					panic(managerErr)
+				}
+				approveReq, approveErr := action.Approve(request_id, request.User_ID, manager.ID, manager.Role, request_type)
+				if approveErr != nil {
+					panic(approveErr)
+				}
+				return approveReq, nil
+			},
+		},
+		"reject_request": &graphql.Field{
+			Type: graphql.Boolean,
+			Description: "A method for a manager to reject a financial request",
+			Args: graphql.FieldConfigArgument{
+				"request_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"request_type": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				request_id, idOK :=  p.Args["request_id"].(string)
+				if !idOK {
+					panic("must enter a valid request id")
+				}
+				request_type, typeOk :=  p.Args["request_type"].(string)
+				if !typeOk {
+					panic("must enter a valid request type")
+				}
+				var action r.Action
+				var user u.User
+				// get request user id from request
+				request, err := action.FindOne(request_id, request_type)
+				if err != nil {
+					panic(err)
+				}
+				// get manager id from context
+				manager, managerErr := user.FindContextID(p.Context)
+				if managerErr != nil {
+					panic(managerErr)
+				}
+				rejectReq, rejectErr := action.Reject(request_id, request.User_ID, manager.ID, request_type)
+				if rejectErr != nil {
+					panic(rejectErr)
+				}
+				return rejectReq, nil
+			},
+		},
+		"clear_notification": &graphql.Field{
+			Type: graphql.Boolean,
+			Description: "A method for a user to clear a notification that has been dealt with",
+			Args: graphql.FieldConfigArgument{
+				"item_id":  &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				item_id, idOK :=  p.Args["item_id"].(string)
+				if !idOK {
+					panic("must enter a valid action id")
+				}
+				var user u.User
+				userInfo, idErr := user.FindContextID(p.Context)
+				if idErr != nil {
+					panic(idErr)
+				}
+				notificationClear, clearErr := user.ClearNotification(item_id, userInfo.ID)
+				if clearErr != nil {
+					panic(clearErr)
+				}
+				return notificationClear, nil	
+			},
+		},
+		"clear_all_notifications": &graphql.Field{
+			Type: graphql.Boolean,
+			Description: "A method for a user to clear all of their notifications",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				userInfo, idErr := user.FindContextID(p.Context)
+				if idErr != nil {
+					panic(idErr)
+				}
+				notificationClear, clearErr := user.ClearNotifications(userInfo.ID)
+				if clearErr != nil {
+					panic(clearErr)
+				}
+				return notificationClear, nil
+			},
+		},
 	},
 })

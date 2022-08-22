@@ -25,7 +25,7 @@ var UserDetailType = graphql.NewObject(graphql.ObjectConfig{
 			Type: graphql.NewList(VehicleType),
 		},
 		"incomplete_actions": &graphql.Field{
-			Type: graphql.NewList(graphql.String),
+			Type: graphql.NewList(ActionType),
 		},
 		"incomplete_action_count": &graphql.Field{
 			Type: graphql.Int,
@@ -654,6 +654,23 @@ var StatusType = graphql.NewEnum(
 	},
 )
 
+var UserInfoType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "UserInfoType",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"role": &graphql.Field{
+				Type: RoleType,
+			},		
+		},
+	},
+)
+
 var ActionType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "RequestAction",
@@ -661,8 +678,14 @@ var ActionType = graphql.NewObject(
 			"id": &graphql.Field{
 				Type: graphql.String,
 			},
-			"user_id": &graphql.Field{
+			"user": &graphql.Field{
+				Type: UserInfoType,
+			},
+			"request_type": &graphql.Field{
 				Type: graphql.String,
+			},
+			"request_id": &graphql.Field{
+				Type: graphql.ID,
 			},
 			"status": &graphql.Field{
 				Type: StatusType,
@@ -932,7 +955,7 @@ var UserType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"incomplete_actions": &graphql.Field{
-				Type: graphql.NewList(graphql.ID),
+				Type: graphql.NewList(ActionType),
 			},
 			"vehicles": &graphql.Field{
 				Type: graphql.NewList(VehicleType),
