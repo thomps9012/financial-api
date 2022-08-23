@@ -103,8 +103,12 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 	}
 	var manager user.User
 	manager_info, err := manager.FindByID(manager_id)
+	next_manager, findMgrErr := manager.FindMgrID(manager_id)
 	if err != nil {
 		panic(err)
+	}
+	if findMgrErr != nil {
+		panic(findMgrErr)
 	}
 	current_action := &Action{
 		ID:           uuid.NewString(),
@@ -114,14 +118,14 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 		Status:       current_status,
 		Created_At:   time.Now(),
 	}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": manager_id}},{Key: "$set", Value: bson.M{"current_status": current_status}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": next_manager}},{Key: "$set", Value: bson.M{"current_status": current_status}}}
 	// updates the request
 	updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateErr != nil {
 		panic(updateErr)
 	}
 	// adds the item to the manager of the person approving the request
-	_, update_err := manager.AddNotification(user.Action(*current_action), manager_id)
+	_, update_err := manager.AddNotification(user.Action(*current_action), next_manager)
 	if update_err != nil {
 		panic(err)
 	}
