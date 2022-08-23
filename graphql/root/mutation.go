@@ -286,7 +286,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				if result.Current_Status != "PENDING" {
+				if result.Current_Status != "PENDING" || result.Current_Status != "REJECTED" {
 					panic("this request is already being processed")
 				}
 				// add in conditional update of fields based on input
