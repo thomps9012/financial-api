@@ -28,7 +28,7 @@ type Mileage_Request struct {
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
-	Current_User	string		`json:"current_user" bson:"current_user"`
+	Current_User      string    `json:"current_user" bson:"current_user"`
 	Current_Status    string    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
@@ -55,7 +55,7 @@ type Monthly_Mileage_Overview struct {
 	Mileage       int        `json:"mileage" bson:"mileage"`
 	Tolls         float64    `json:"tolls" bson:"tolls"`
 	Parking       float64    `json:"parking" bson:"parking"`
-	Current_User	string		`json:"current_user" bson:"current_user"`
+	Current_User  string     `json:"current_user" bson:"current_user"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
 }
@@ -76,10 +76,6 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	fmt.Printf("%s\n", m.Date)
 	collection := conn.Db.Collection("mileage_requests")
 	var req_user user.User
-	manager_id, mgr_find_err := req_user.FindMgrID(m.User_ID)
-	if mgr_find_err != nil {
-		panic(mgr_find_err)
-	}
 	requestor, req_find_err := req_user.FindByID(m.User_ID)
 	if req_find_err != nil {
 		panic(req_find_err)
@@ -90,26 +86,24 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	m.Is_Active = true
 	m.User_ID = user_id
 	m.Current_Status = "PENDING"
+	m.Current_User = requestor.Manager_ID
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
 	first_action := &Action{
-		ID:         uuid.NewString(),
-		User: 		requestor,
+		ID:           uuid.NewString(),
+		User:         requestor,
 		Request_Type: "mileage_requests",
-		Request_ID: m.ID,
-		Status:     "PENDING",
-		Created_At: time.Now(),
+		Request_ID:   m.ID,
+		Status:       "PENDING",
+		Created_At:   time.Now(),
 	}
-
 	m.Action_History = append(m.Action_History, *first_action)
 	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
 	_, insert_err := collection.InsertOne(context.TODO(), *m)
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	
 	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
-	m.Current_User = manager_id
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
 	if update_err != nil {
 		panic(update_err)
 	}

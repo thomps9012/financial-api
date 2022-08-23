@@ -80,6 +80,7 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	p.Is_Active = true
 	p.Current_Status = "PENDING"
 	p.User_ID = user_id
+	p.Current_User = requestor.Manager_ID
 	first_action := &Action{
 		ID:         uuid.NewString(),
 		User: 		requestor,
@@ -93,14 +94,8 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	if err != nil {
 		panic(err)
 	}
-	
-	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
-	if mgr_find_err != nil {
-		panic(mgr_find_err)
-	}
 	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
-	p.Current_User = manager_id
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
 	if update_err != nil {
 		panic(update_err)
 	}

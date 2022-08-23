@@ -101,15 +101,12 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	if request_err != nil {
 		panic(request_err)
 	}
-	manager_id, mgr_find_err := req_user.FindMgrID(user_id)
-	if mgr_find_err != nil {
-		panic(mgr_find_err)
-	}
 	c.ID = uuid.NewString()
 	c.Created_At = time.Now()
 	c.Is_Active = true
 	c.User_ID = user_id
 	c.Current_Status = "PENDING"
+	c.Current_User = requestor.Manager_ID
 	first_action := &Action{
 		ID:         uuid.NewString(),
 		User: 		requestor,
@@ -125,8 +122,7 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	}
 	// add in extra validation based on org chart here
 	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
-	c.Current_User = manager_id
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
 	if update_err != nil {
 		panic(update_err)
 	}
