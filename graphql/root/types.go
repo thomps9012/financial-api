@@ -633,6 +633,9 @@ var RoleType = graphql.NewEnum(
 			"EXECUTIVE": &graphql.EnumValueConfig{
 				Value: "EXECUTIVE",
 			},
+			"CHIEF": &graphql.EnumValueConfig{
+				Value: "CHIEF",
+			},
 		},
 	},
 )
@@ -675,7 +678,7 @@ var UserInfoType = graphql.NewObject(
 			},
 			"role": &graphql.Field{
 				Type: RoleType,
-			},		
+			},
 		},
 	},
 )
