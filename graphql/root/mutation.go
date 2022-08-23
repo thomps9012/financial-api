@@ -193,7 +193,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				user, userErr := user.FindContextID(p.Context)
+				requestor, userErr := user.FindContextID(p.Context)
 				if userErr != nil {
 					panic(userErr)
 				}
@@ -249,7 +249,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if exists {
 					return nil, errors.New("mileage request already created")
 				}
-				mileage_req.Create(user.ID)
+				mileage_req.Create(requestor)
 				return mileage_req, nil
 			},
 		},

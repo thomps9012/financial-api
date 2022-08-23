@@ -72,19 +72,14 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 	return true, nil
 }
 
-func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
+func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 	fmt.Printf("%s\n", m.Date)
 	collection := conn.Db.Collection("mileage_requests")
-	var req_user user.User
-	requestor, req_find_err := req_user.FindByID(m.User_ID)
-	if req_find_err != nil {
-		panic(req_find_err)
-	}
 	var currentMileageRate = 62.5
 	m.ID = uuid.NewString()
 	m.Created_At = time.Now()
 	m.Is_Active = true
-	m.User_ID = user_id
+	m.User_ID = requestor.ID
 	m.Current_Status = "PENDING"
 	m.Current_User = requestor.Manager_ID
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
