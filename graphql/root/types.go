@@ -955,7 +955,7 @@ var UserType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"role": &graphql.Field{
-				Type: RoleType,
+				Type: graphql.String,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
