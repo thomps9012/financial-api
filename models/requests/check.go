@@ -121,14 +121,14 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 		panic(insert_err)
 	}
 	// add in extra validation based on org chart here
-	// var manager user.User
-	// update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
-	// if update_err != nil {
-	// 	panic(update_err)
-	// }
-	// if !update_user {
-	// 	return "", update_err
-	// }
+	var manager user.User
+	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
+	if update_err != nil {
+		panic(update_err)
+	}
+	if !update_user {
+		return "", update_err
+	}
 	return c.ID, nil
 }
 
