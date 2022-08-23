@@ -253,6 +253,96 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return mileage_req, nil
 			},
 		},
+		"edit_mileage": &graphql.Field{
+			Type:        MileageType,
+			Description: "Allows a user to edit one of their rejected mileage requests",
+			Args: graphql.FieldConfigArgument{
+				"request_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.ID,
+				},
+				"request": &graphql.ArgumentConfig{
+					Type: MileageInputType,
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				request_id, idOK := p.Args["request_id"].(string)
+				if !idOK {
+					panic("must enter a valid mileage id")
+				}
+				var milage_req r.Mileage_Request
+				result, err := milage_req.FindByID(request_id)
+				contextuser, _ := user.FindContextID(p.Context)
+				if contextuser.ID != result.User_ID {
+					panic("you are unauthorized to edit this record")
+				}
+				if err != nil {
+					panic(err)
+				}
+				if result.Current_Status != "PENDING" {
+					panic("this request is already being processed")
+				}
+				// add in conditional update of fields based on input
+				if p.Args["grant_id"] != nil {
+					result.Grant_ID = p.Args["grant_id"].(string)
+				}
+				if p.Args["request"].(map[string]interface{}) != nil {
+					mileageArgs := p.Args["request"].(map[string]interface{})
+					date, dateisOK := mileageArgs["date"].(time.Time)
+					if !dateisOK {
+						panic("must enter a valid date")
+					}
+					start, startisOK := mileageArgs["starting_location"].(string)
+					if !startisOK {
+						panic("must enter a valid starting location")
+					}
+					destination, destinationisOK := mileageArgs["destination"].(string)
+					if !destinationisOK {
+						panic("must enter a valid destination")
+					}
+					purpose, purposeisOK := mileageArgs["trip_purpose"].(string)
+					if !purposeisOK {
+						panic("must enter a valid trip purpose")
+					}
+					start_odo, start_odoisOK := mileageArgs["start_odometer"].(int)
+					if !start_odoisOK {
+						panic("must enter a valid starting odometer")
+					}
+					end_odo, end_odoisOK := mileageArgs["end_odometer"].(int)
+					if !end_odoisOK {
+						panic("must enter a valid end odometer")
+					}
+					tolls, tollsisOK := mileageArgs["tolls"].(float64)
+					if !tollsisOK {
+						panic("must enter a valid tolls amount")
+					}
+					parking, parkingisOK := mileageArgs["parking"].(float64)
+					if !parkingisOK {
+						panic("must enter a valid parking amount")
+					}
+					result.Date = date
+					result.Starting_Location = start
+					result.Destination = destination
+					result.Trip_Purpose = purpose
+					result.Start_Odometer = start_odo
+					result.End_Odometer = end_odo
+					result.Tolls = tolls
+					result.Parking = parking
+				}
+				updatedDoc, updateErr := milage_req.Update(result)
+				if updateErr != nil {
+					panic(updateErr)
+				}
+				return updatedDoc, nil
+			},
+		},
 		// petty cash mutations
 		"create_petty_cash": &graphql.Field{
 			Type:        PettyCashType,
@@ -315,6 +405,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return petty_cash_req, nil
 			},
 		},
+		"edit_petty_cash": &graphql.Field{},
 		// check request mutations
 		"create_check_request": &graphql.Field{
 			Type:        CheckRequestType,
@@ -399,6 +490,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return check_request, nil
 			},
 		},
+		"edit_check_request": &graphql.Field{},
 		// action mutations
 		"approve_request": &graphql.Field{
 			Type:        graphql.Boolean,

@@ -109,29 +109,15 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 
 }
 
-func (m *Mileage_Request) Update(request Mileage_Request, user_id string) (bool, error) {
+func (m *Mileage_Request) Update(request Mileage_Request) (Mileage_Request, error) {
+	var mileage_req Mileage_Request
 	collection := conn.Db.Collection("mileage_requests")
-	var milage_req Mileage_Request
-	filter := bson.D{{Key: "request_id", Value: request.ID}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
+	filter := bson.D{{Key: "_id", Value: request.ID}}
+	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&mileage_req)
 	if err != nil {
 		panic(err)
 	}
-	if milage_req.User_ID != user_id {
-		panic("you are not the user who created this request")
-	}
-	current_status := m.Current_Status
-	if current_status != "PENDING" && current_status != "REJECTED" {
-		panic("this request is already being processed")
-	}
-	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
+	return mileage_req, nil
 }
 
 func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool, error) {
