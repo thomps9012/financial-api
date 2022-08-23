@@ -2,7 +2,7 @@ package requests
 
 import (
 	"context"
-	"errors"
+	// "errors"
 	conn "financial-api/db"
 	user "financial-api/models/user"
 	"fmt"
@@ -102,14 +102,14 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if !update_user {
-		return *m, errors.New("failed to update manager")
-	}
+	// var manager user.User
+	// update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
+	// if update_err != nil {
+	// 	panic(update_err)
+	// }
+	// if !update_user {
+	// 	return *m, errors.New("failed to update manager")
+	// }
 	return *m, nil
 
 }

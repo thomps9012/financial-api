@@ -94,14 +94,14 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	if err != nil {
 		panic(err)
 	}
-	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if !update_user {
-		return Petty_Cash_Request{}, update_err
-	}
+	// var manager user.User
+	// update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
+	// if update_err != nil {
+	// 	panic(update_err)
+	// }
+	// if !update_user {
+	// 	return Petty_Cash_Request{}, update_err
+	// }
 	return *p, nil
 }
 
