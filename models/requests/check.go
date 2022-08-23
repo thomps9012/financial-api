@@ -43,7 +43,7 @@ type Check_Request struct {
 	Created_At     time.Time  `json:"created_at" bson:"created_at"`
 	User_ID        string     `json:"user_id" bson:"user_id"`
 	Action_History []Action   `json:"action_history" bson:"action_history"`
-	Current_User	string		`json:"current_user" bson:"current_user"`
+	Current_User   string     `json:"current_user" bson:"current_user"`
 	Current_Status string     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
@@ -103,12 +103,12 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 	c.Current_Status = "PENDING"
 	c.Current_User = requestor.Manager_ID
 	first_action := &Action{
-		ID:         uuid.NewString(),
-		User: 		requestor,
+		ID:           uuid.NewString(),
+		User:         requestor,
 		Request_Type: "check_requests",
-		Request_ID: c.ID,
-		Status:     "PENDING",
-		Created_At: time.Now(),
+		Request_ID:   c.ID,
+		Status:       "PENDING",
+		Created_At:   time.Now(),
 	}
 	c.Action_History = append(c.Action_History, *first_action)
 	_, insert_err := collection.InsertOne(context.TODO(), *c)
@@ -127,29 +127,15 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 	return c.ID, nil
 }
 
-func (c *Check_Request) Update(request Check_Request, user_id string) (bool, error) {
+func (c *Check_Request) Update(request Check_Request) (Check_Request, error) {
 	collection := conn.Db.Collection("check_requests")
 	var check_request Check_Request
-	filter := bson.D{{Key: "request_id", Value: request.ID}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
+	filter := bson.D{{Key: "_id", Value: request.ID}}
+	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&check_request)
 	if err != nil {
 		panic(err)
 	}
-	if check_request.User_ID != user_id {
-		panic("you are not the user who created this request")
-	}
-	current_status := check_request.Current_Status
-	if current_status != "PENDING" && current_status != "REJECTED" {
-		panic("this request is already being processed")
-	}
-	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
+	return check_request, nil
 }
 
 func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, error) {
@@ -354,4 +340,15 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		Total_Amount:    total_amount,
 	}
 	return *check_overview, nil
+}
+
+func (c *Check_Request) FindByID(check_id string) (Check_Request, error) {
+	collection := conn.Db.Collection("check_requests")
+	var check_req Check_Request
+	filter := bson.D{{Key: "_id", Value: check_id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
+	if err != nil {
+		panic(err)
+	}
+	return check_req, nil
 }

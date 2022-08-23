@@ -255,7 +255,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"edit_mileage": &graphql.Field{
 			Type:        MileageType,
-			Description: "Allows a user to edit one of their rejected mileage requests",
+			Description: "Allows a user to edit one of their rejected or pending mileage requests",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -490,7 +490,102 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return check_request, nil
 			},
 		},
-		"edit_check_request": &graphql.Field{},
+		"edit_check_request": &graphql.Field{
+			Type: CheckRequestType,
+			Description: "Allows a user to edit one of their rejected or pending check requests",
+			Args: graphql.FieldConfigArgument{
+				"request_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"vendor": &graphql.ArgumentConfig{
+					Type: VendorInput,
+				},
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.ID,
+				},
+				"request": &graphql.ArgumentConfig{
+					Type: CheckRequestInput,
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				request_id, idOK := p.Args["request_id"].(string)
+				if !idOK {
+					panic("must enter a valid mileage id")
+				}
+				var check_req r.Check_Request
+				result, err := check_req.FindByID(request_id)
+				contextuser, _ := user.FindContextID(p.Context)
+				if contextuser.ID != result.User_ID {
+					panic("you are unauthorized to edit this record")
+				}
+				if err != nil {
+					panic(err)
+				}
+				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+					panic("this request is already being processed")
+				}
+				if p.Args["grant_id"] != nil {
+					result.Grant_ID = p.Args["grant_id"].(string)
+				}
+				if p.Args["request"].(map[string]interface{}) != nil {
+					checkReqArgs := p.Args["request"].(map[string]interface{})
+				purchases_input := checkReqArgs["purchases"].([]interface{})
+				var purchases []r.Purchase
+				var order_total = 0.0
+				for _, purchase_item_obj := range purchases_input {
+					fmt.Printf("%s\n", purchase_item_obj)
+					purchase_item := purchase_item_obj.(map[string]interface{})
+					amount := purchase_item["amount"].(float64)
+					description := purchase_item["description"].(string)
+					grant_line_item := purchase_item["grant_line_item"].(string)
+					purchase := &r.Purchase{
+						Grant_Line_Item: grant_line_item,
+						Description:     description,
+						Amount:          (math.Round(amount*100) / 100),
+					}
+					order_total += (math.Round(amount*100) / 100)
+					order_total = math.Round(order_total*100) / 100
+					purchases = append(purchases, *purchase)
+				}
+				receiptArgs := checkReqArgs["receipts"].([]interface{})
+				var receipts []string
+				for item := range receiptArgs {
+					receipts = append(receipts, receiptArgs[item].(string))
+				}
+				result.Date = checkReqArgs["date"].(time.Time)
+				result.Description = checkReqArgs["description"].(string)
+				result.Order_Total = order_total
+				result.Receipts = receipts
+				result.Credit_Card = checkReqArgs["credit_card"].(string)
+				}
+				if p.Args["vendor"].(map[string]interface{}) != nil {
+					vendor_input := p.Args["vendor"].(map[string]interface{})
+				vendor_address_input := vendor_input["address"].(map[string]interface{})
+				vendor_address := &r.Address{
+					Website:  vendor_address_input["website"].(string),
+					Street:   vendor_address_input["street"].(string),
+					City:     vendor_address_input["city"].(string),
+					State:    vendor_address_input["state"].(string),
+					Zip_Code: vendor_address_input["zip"].(int),
+				}
+				vendor := r.Vendor{
+					Name:    vendor_input["name"].(string),
+					Address: *vendor_address,
+				}
+				result.Vendor = vendor
+				}
+				updatedDoc, updateErr := check_req.Update(result)
+				if updateErr != nil {
+					panic(updateErr)
+				}
+				return updatedDoc, nil
+			},
+		},
 		// action mutations
 		"approve_request": &graphql.Field{
 			Type:        graphql.Boolean,
