@@ -68,18 +68,13 @@ func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Ti
 	return true, nil
 }
 
-func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) {
+func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
-	var req_user user.User
-	requestor, request_err := req_user.FindByID(user_id)
-	if request_err != nil {
-		panic(request_err)
-	}
 	p.ID = uuid.NewString()
 	p.Created_At = time.Now()
 	p.Is_Active = true
 	p.Current_Status = "PENDING"
-	p.User_ID = user_id
+	p.User_ID = requestor.ID
 	p.Current_User = requestor.Manager_ID
 	first_action := &Action{
 		ID:         uuid.NewString(),

@@ -271,7 +271,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				user, userErr := user.FindContextID(p.Context)
+				requestor, userErr := user.FindContextID(p.Context)
 				if userErr != nil {
 					panic(userErr)
 				}
@@ -307,11 +307,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Description: description,
 					Receipts:    receipts,
 				}
-				exists, _ := petty_cash_req.Exists(user.ID, amount, date)
+				exists, _ := petty_cash_req.Exists(requestor.ID, amount, date)
 				if exists {
 					return nil, errors.New("duplicate petty cash request")
 				}
-				petty_cash_req.Create(user.ID)
+				petty_cash_req.Create(requestor)
 				return petty_cash_req, nil
 			},
 		},
@@ -336,7 +336,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				user, userErr := user.FindContextID(p.Context)
+				requestor, userErr := user.FindContextID(p.Context)
 				if userErr != nil {
 					panic(userErr)
 				}
@@ -391,11 +391,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Receipts:    receipts,
 					Credit_Card: checkReqArgs["credit_card"].(string),
 				}
-				exists, _ := check_request.Exists(user.ID, vendor.Name, order_total, check_request.Date)
+				exists, _ := check_request.Exists(requestor.ID, vendor.Name, order_total, check_request.Date)
 				if exists {
 					return nil, errors.New("check request already created")
 				}
-				check_request.Create(user.ID)
+				check_request.Create(requestor)
 				return check_request, nil
 			},
 		},

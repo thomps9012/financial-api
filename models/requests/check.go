@@ -94,17 +94,12 @@ func (c *Check_Request) Exists(user_id string, vendor_name string, order_total f
 	return true, nil
 }
 
-func (c *Check_Request) Create(user_id string) (string, error) {
+func (c *Check_Request) Create(requestor user.User) (string, error) {
 	collection := conn.Db.Collection("check_requests")
-	var req_user user.User
-	requestor, request_err := req_user.FindByID(user_id)
-	if request_err != nil {
-		panic(request_err)
-	}
 	c.ID = uuid.NewString()
 	c.Created_At = time.Now()
 	c.Is_Active = true
-	c.User_ID = user_id
+	c.User_ID = requestor.ID
 	c.Current_Status = "PENDING"
 	c.Current_User = requestor.Manager_ID
 	first_action := &Action{
