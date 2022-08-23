@@ -127,16 +127,24 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 	// adds the item to the manager of the person approving the request
 	mgrNotified, update_err := manager.AddNotification(user.Action(*current_action), next_manager)
 	if update_err != nil {
-		panic(err)
+		panic(update_err)
 	}
 	if !mgrNotified {
 		panic("error notifying manager")
+	}
+	// clears the manager's notification queue
+	updateCurrentMgr, clearQueueErr := manager.ClearNotification(request_id, manager_id)
+	if clearQueueErr != nil {
+		panic(clearQueueErr)
+	}
+	if !updateCurrentMgr {
+		panic("error clearing manager's notification")
 	}
 	// adds the item to the original request user
 	var request_user user.User
 	update_requestor, requestErr := request_user.AddNotification(user.Action(*current_action), request_user_id)
 	if requestErr != nil {
-		panic(err)
+		panic(requestErr)
 	}
 	return update_requestor, nil
 }
@@ -166,25 +174,40 @@ func (a *Action) Reject(request_id string, request_user_id string, manager_id st
 	if updateDoc == nil {
 		panic("error updating the document")
 	}
+	updateMgr, updateMgrErr := manager.ClearNotification(request_id, manager_id)
+	if updateMgrErr != nil {
+		panic(updateMgrErr)
+	}
+	if !updateMgr {
+		panic("error clearing manager notification")
+	}
 	// now adding a notification to the original user who made the request
 	var request_user user.User
 	update_user, update_err := request_user.AddNotification(user.Action(*current_action), request_user_id)
 	if update_err != nil {
-		panic(err)
+		panic(update_err)
 	}
 	return update_user, nil
 }
 
-func (a *Action) Archive(request_id string, request_type string) (bool, error) {
+func (a *Action) Archive(request_id string, request_type string, manager_id string) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(string(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}, {Key: "$set", Value: bson.M{"current_user": ""}}}
 	// updates the request
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update)
-	if err != nil {
-		panic(err)
+	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
+	if updateDoc == nil {
+		panic("error updating the document")
+	}
+	var manager user.User
+	updateMgr, updateMgrErr := manager.ClearNotification(request_id, manager_id)
+	if updateMgrErr != nil {
+		panic(updateMgrErr)
+	}
+	if !updateMgr {
+		panic("error clearing manager notification")
 	}
 	return true, nil
 }

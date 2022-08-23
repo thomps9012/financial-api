@@ -510,7 +510,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("must enter a valid request type")
 				}
 				var action r.Action
-				archiveReq, archiveErr := action.Archive(request_id, request_type)
+				var user u.User
+				user, userErr := user.FindContextID(p.Context)
+				if userErr != nil {
+					panic(userErr)
+				}
+				archiveReq, archiveErr := action.Archive(request_id, request_type, user.ID)
 				if archiveErr != nil {
 					panic(archiveErr)
 				}
