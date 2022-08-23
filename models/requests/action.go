@@ -178,7 +178,7 @@ func (a *Action) Reject(request_id string, request_user_id string, manager_id st
 	if updateMgrErr != nil {
 		panic(updateMgrErr)
 	}
-	if !updateMgr {
+	if updateMgr != true {
 		panic("error clearing manager notification")
 	}
 	// now adding a notification to the original user who made the request
@@ -206,8 +206,5 @@ func (a *Action) Archive(request_id string, request_type string, manager_id stri
 	if updateMgrErr != nil {
 		panic(updateMgrErr)
 	}
-	if !updateMgr {
-		panic("error clearing manager notification")
-	}
-	return true, nil
+	return updateMgr, nil
 }
