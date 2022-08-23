@@ -224,6 +224,9 @@ var CheckRequestType = graphql.NewObject(
 			"current_status": &graphql.Field{
 				Type: StatusType,
 			},
+			"current_user": &graphql.Field{
+				Type: graphql.ID,
+			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
 			},
@@ -340,6 +343,9 @@ var PettyCashType = graphql.NewObject(
 			},
 			"current_status": &graphql.Field{
 				Type: StatusType,
+			},
+			"current_user": &graphql.Field{
+				Type: graphql.ID,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -529,6 +535,9 @@ var MileageType = graphql.NewObject(
 			},
 			"action_history": &graphql.Field{
 				Type: graphql.NewList(ActionType),
+			},
+			"current_user": &graphql.Field{
+				Type: graphql.ID,
 			},
 			"current_status": &graphql.Field{
 				Type: StatusType,

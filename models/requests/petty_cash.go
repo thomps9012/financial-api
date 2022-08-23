@@ -22,6 +22,7 @@ type Petty_Cash_Request struct {
 	Receipts       []string  `json:"receipts" bson:"receipts"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Action_History []Action  `json:"action_history" bson:"action_history"`
+	Current_User	string		`json:"current_user" bson:"current_user"`
 	Current_Status string    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
@@ -99,6 +100,7 @@ func (p *Petty_Cash_Request) Create(user_id string) (Petty_Cash_Request, error) 
 	}
 	var manager user.User
 	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
+	p.Current_User = manager_id
 	if update_err != nil {
 		panic(update_err)
 	}

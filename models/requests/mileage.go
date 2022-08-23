@@ -28,6 +28,7 @@ type Mileage_Request struct {
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
+	Current_User	string		`json:"current_user" bson:"current_user"`
 	Current_Status    string    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
@@ -54,6 +55,7 @@ type Monthly_Mileage_Overview struct {
 	Mileage       int        `json:"mileage" bson:"mileage"`
 	Tolls         float64    `json:"tolls" bson:"tolls"`
 	Parking       float64    `json:"parking" bson:"parking"`
+	Current_User	string		`json:"current_user" bson:"current_user"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
 }
@@ -107,6 +109,7 @@ func (m *Mileage_Request) Create(user_id string) (Mileage_Request, error) {
 	
 	var manager user.User
 	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
+	m.Current_User = manager_id
 	if update_err != nil {
 		panic(update_err)
 	}

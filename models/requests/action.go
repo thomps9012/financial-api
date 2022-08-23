@@ -114,7 +114,7 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 		Status:       current_status,
 		Created_At:   time.Now(),
 	}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_status": current_status}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": manager_id}},{Key: "$set", Value: bson.M{"current_status": current_status}}}
 	// updates the request
 	updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateErr != nil {
@@ -125,6 +125,7 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 	if update_err != nil {
 		panic(err)
 	}
+
 	// adds the item to the original request user
 	var request_user user.User
 	_, requestErr := request_user.AddNotification(user.Action(*current_action), request_user_id)
@@ -153,7 +154,7 @@ func (a *Action) Reject(request_id string, request_user_id string, manager_id st
 		Created_At:   time.Now(),
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_status": REJECTED}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}},  {Key: "$set", Value: bson.M{"current_user": request_user_id}},{Key: "$set", Value: bson.M{"current_status": REJECTED}}}
 	// updates the request
 	updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateErr != nil {
@@ -173,7 +174,7 @@ func (a *Action) Archive(request_id string, request_type string) (bool, error) {
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(string(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}}
+	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}},  {Key: "$set", Value: bson.M{"current_user": ""}}}
 	// updates the request
 	err := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if err != nil {

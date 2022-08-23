@@ -43,6 +43,7 @@ type Check_Request struct {
 	Created_At     time.Time  `json:"created_at" bson:"created_at"`
 	User_ID        string     `json:"user_id" bson:"user_id"`
 	Action_History []Action   `json:"action_history" bson:"action_history"`
+	Current_User	string		`json:"current_user" bson:"current_user"`
 	Current_Status string     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
@@ -125,6 +126,7 @@ func (c *Check_Request) Create(user_id string) (string, error) {
 	// add in extra validation based on org chart here
 	var manager user.User
 	update_user, update_err := manager.AddNotification(user.Action(*first_action), manager_id)
+	c.Current_User = manager_id
 	if update_err != nil {
 		panic(update_err)
 	}
