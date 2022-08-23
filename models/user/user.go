@@ -18,8 +18,9 @@ type Role string
 const (
 	EMPLOYEE  Role = "EMPLOYEE"
 	MANAGER   Role = "MANAGER"
-	FINANCE   Role = "FINANCE"
+	CHIEF     Role = "CHIEF"
 	EXECUTIVE Role = "EXECUTIVE"
+	FINANCE   Role = "FINANCE"
 )
 
 func (u User) ParseRole(role string) Role {
@@ -33,6 +34,8 @@ func (u User) ParseRole(role string) Role {
 		roleParse = FINANCE
 	case "EXECUTIVE":
 		roleParse = EXECUTIVE
+	case "CHIEF":
+		roleParse = CHIEF
 	default:
 		roleParse = EMPLOYEE
 	}
@@ -128,6 +131,7 @@ type Status string
 const (
 	PENDING               Status = "PENDING"
 	MANAGER_APPROVED      Status = "MANAGER_APPROVED"
+	CHIEF_APPROVED        Status = "CHIEF_APPROVED"
 	FINANCE_APPROVED      Status = "FINANACE_APPROVED"
 	ORGANIZATION_APPROVED Status = "ORG_APPROVED"
 	REJECTED              Status = "REJECTED"
@@ -236,20 +240,15 @@ type User_Check_Requests struct {
 func setManagerID(email string, employee_role string) string {
 	var manager_id string
 	managers := []Manager{
-		{"101614399314441368253", []string{"emp1@norainc.org", "emp65@norainc.org"}},
-		{"5960679a-d2f3-475b-b142-00650f8f0ebf", []string{"emp7@norainc.org", "emp87@norainc.org"}},
-		{"46092af5-a989-4977-9da8-ca7c84132421", []string{"emp9@norainc.org", "emp10@norainc.org"}},
-		{"5e6288d5-9219-4c75-87cf-cdc53fde3958", []string{"emp19@norainc.org", "emp13@norainc.org"}},
-		{"29fc8292-8051-4f41-873c-d74bb7241e43", []string{"emp39@norainc.org", "emp52@norainc.org"}},
-		{"12b243ea-5654-4b53-92ad-f6f056fd86fe", []string{"emp4S9@norainc.org", "emp99@norainc.org"}},
+		{"101614399314441368253", []string{"emp1@norainc.org", "emp2@norainc.org", "emp3@norainc.org"}},
+		{"123", []string{"emp4@norainc.org", "emp5@norainc.org", "emp6@norainc.org"}},
 	}
-	executives := []Manager{
-		{"68125e1f-21c1-4f60-aab0-8efff5dc158e", []string{"manager1@norainc.org", "manager5@norainc.org", "sthompson@norainc.org"}},
-		{"cde4638b-4c33-4015-85fc-b0dd106a4b6b", []string{"manager2@norainc.org", "manager6@norainc.org"}},
-		{"acbe6899-200f-4185-8624-b31e32c42b44", []string{"manager3@norainc.org", "manager4@norainc.org"}},
+	chiefs := []Manager{
+		{"456", []string{"manager1@norainc.org"}},
+		{"789", []string{"sthompson@norainc.org"}},
 	}
-	var finance = "cbaf2ee1-79d7-40da-bb4c-a6017d4fb705"
-	N_A := "N/A"
+	var executive = "101112"
+	var finance = "131415"
 	switch employee_role {
 	case "EMPLOYEE":
 		for i := range managers {
@@ -261,51 +260,58 @@ func setManagerID(email string, employee_role string) string {
 
 			}
 			if manager_id == "" {
-				manager_id = finance
+				manager_id = executive
 			}
 		}
 	case "MANAGER":
-		for i := range executives {
-			var employeesArr = executives[i].Employees
+		for i := range chiefs {
+			var employeesArr = chiefs[i].Employees
 			for s := range employeesArr {
 				if employeesArr[s] == email {
-					manager_id = executives[i].ID
+					manager_id = chiefs[i].ID
 				}
 			}
 			if manager_id == "" {
-				manager_id = finance
+				manager_id = executive
 			}
 		}
+	case "CHIEF":
+		manager_id = executive
 	case "EXECUTIVE":
 		manager_id = finance
-	default:
-		manager_id = N_A
 	}
 	return manager_id
 }
 func setRole(email string) string {
 	var employee_role string
-	employees := []string{"emp1@norainc.org", "emp65@norainc.org"}
+	employees := []string{"emp1@norainc.org", "emp2@norainc.org", "emp3@norainc.org", "emp4@norainc.org", "emp5@norainc.org", "emp6@norainc.org"}
 	for i := range employees {
 		if employees[i] == email {
 			employee_role = "EMPLOYEE"
 		}
 	}
-	managers := []string{"manager1@norainc.org", "manager2@norainc.org", "sthompson@norainc.org"}
+	managers := []string{"manager1@norainc.org", "sthompson@norainc.org"}
 	for i := range managers {
 		if managers[i] == email {
 			employee_role = "MANAGER"
 		}
 
 	}
-	finance_team := []string{"finance1@norainc.org", "finance1@norainc.org"}
+	chiefs := []string{"coo@norainc.org", "cfo@norainc.org", "cmo@norainc.org"}
+	for i := range chiefs {
+		if chiefs[i] == email {
+			employee_role = "CHIEF"
+		}
+
+	}
+	finance_team := []string{"finance1@norainc.org", "finance2@norainc.org"}
 	for i := range finance_team {
 		if finance_team[i] == email {
 			employee_role = "FINANCE"
 		}
 
 	}
-	executives := []string{"exec1@norainc.org", "exec2@norainc.org"}
+	executives := []string{"ceo@norainc.org"}
 	for i := range executives {
 		if executives[i] == email {
 			employee_role = "EXECUTIVE"
