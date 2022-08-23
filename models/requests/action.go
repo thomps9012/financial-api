@@ -40,8 +40,9 @@ const (
 )
 
 type Request_Response struct {
-	User_ID string `json:"user_id" bson:"user_id"`
-	Success bool
+	User_ID        string `json:"user_id" bson:"user_id"`
+	Current_Status string
+	Success        bool
 }
 
 func (a *Action) FindOne(request_id string, request_type string) (Request_Response, error) {
@@ -57,8 +58,9 @@ func (a *Action) FindOne(request_id string, request_type string) (Request_Respon
 			panic(findErr)
 		}
 		return Request_Response{
-			User_ID: mileage.User_ID,
-			Success: true,
+			User_ID:        mileage.User_ID,
+			Current_Status: mileage.Current_Status,
+			Success:        true,
 		}, nil
 	case "check_requests":
 		findErr := collection.FindOne(context.TODO(), filter).Decode(&check)
@@ -66,8 +68,9 @@ func (a *Action) FindOne(request_id string, request_type string) (Request_Respon
 			panic(findErr)
 		}
 		return Request_Response{
-			User_ID: check.User_ID,
-			Success: true,
+			User_ID:        check.User_ID,
+			Current_Status: check.Current_Status,
+			Success:        true,
 		}, nil
 
 	case "petty_cash_requests":
@@ -76,17 +79,19 @@ func (a *Action) FindOne(request_id string, request_type string) (Request_Respon
 			panic(findErr)
 		}
 		return Request_Response{
-			User_ID: petty.User_ID,
-			Success: true,
+			User_ID:        petty.User_ID,
+			Current_Status: petty.Current_Status,
+			Success:        true,
 		}, nil
 	}
 	return Request_Response{
-		User_ID: "",
-		Success: false,
+		User_ID:        "",
+		Current_Status: "ARCHIVED",
+		Success:        false,
 	}, errors.New("no request found")
 }
 
-func (a *Action) Approve(request_id string, request_user_id string, manager user.User, request_type string) (bool, error) {
+func (a *Action) Approve(request_id string, request_info Request_Response, manager user.User, request_type string) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(request_type)
@@ -110,6 +115,10 @@ func (a *Action) Approve(request_id string, request_user_id string, manager user
 		Request_ID:   request_id,
 		Status:       current_status,
 		Created_At:   time.Now(),
+	}
+	// protect against multiple spamming here
+	if request_info.Current_Status == current_status {
+		panic("current action has already been taken")
 	}
 	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": manager.Manager_ID}}, {Key: "$set", Value: bson.M{"current_status": current_status}}}
 	// updates the request
@@ -135,14 +144,14 @@ func (a *Action) Approve(request_id string, request_user_id string, manager user
 	}
 	// adds the item to the original request user
 	var request_user user.User
-	update_requestor, requestErr := request_user.AddNotification(user.Action(*current_action), request_user_id)
+	update_requestor, requestErr := request_user.AddNotification(user.Action(*current_action), request_info.User_ID)
 	if requestErr != nil {
 		panic(requestErr)
 	}
 	return update_requestor, nil
 }
 
-func (a *Action) Reject(request_id string, request_user_id string, manager_id string, request_type string) (bool, error) {
+func (a *Action) Reject(request_id string, request_info Request_Response, manager_id string, request_type string) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(string(request_type))
@@ -160,8 +169,12 @@ func (a *Action) Reject(request_id string, request_user_id string, manager_id st
 		Status:       "REJECTED",
 		Created_At:   time.Now(),
 	}
+	// protect against multiple spamming here
+	if request_info.Current_Status == "REJECTED" {
+		panic("current action has already been taken")
+	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": request_user_id}}, {Key: "$set", Value: bson.M{"current_status": REJECTED}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": request_info.User_ID}}, {Key: "$set", Value: bson.M{"current_status": REJECTED}}}
 	// updates the request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateDoc == nil {
@@ -176,7 +189,7 @@ func (a *Action) Reject(request_id string, request_user_id string, manager_id st
 	}
 	// now adding a notification to the original user who made the request
 	var request_user user.User
-	update_user, update_err := request_user.AddNotification(user.Action(*current_action), request_user_id)
+	update_user, update_err := request_user.AddNotification(user.Action(*current_action), request_info.User_ID)
 	if update_err != nil {
 		panic(update_err)
 	}
