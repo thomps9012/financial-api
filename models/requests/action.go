@@ -123,7 +123,7 @@ func (a *Action) Approve(request_id string, request_user_id string, manager user
 		panic(update_err)
 	}
 	if !mgrNotified {
-		panic("error notifying manager")
+		panic("error notifying manager first lvl")
 	}
 	// clears the manager's notification queue
 	updateCurrentMgr, clearQueueErr := manager.ClearNotification(request_id, manager.ID)
@@ -131,7 +131,7 @@ func (a *Action) Approve(request_id string, request_user_id string, manager user
 		panic(clearQueueErr)
 	}
 	if !updateCurrentMgr {
-		panic("error clearing manager's notification")
+		panic("error clearing manager's notification first lvl")
 	}
 	// adds the item to the original request user
 	var request_user user.User

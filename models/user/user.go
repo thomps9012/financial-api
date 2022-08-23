@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	conn "financial-api/db"
 	auth "financial-api/middleware"
 	"math"
@@ -482,12 +483,10 @@ func (u *User) FindMgrID(user_id string) (string, error) {
 
 func (u *User) AddNotification(item Action, user_id string) (bool, error) {
 	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": item}}})
-	if err != nil {
-		panic(err)
-	}
-	if result.ModifiedCount == 0 {
-		return false, err
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": item}}})
+	if updateManager == nil {
+		return false, errors.New("error notifying manager second lvl")
 	}
 	return true, nil
 }
@@ -506,12 +505,10 @@ func (u *User) ClearNotifications(user_id string) (bool, error) {
 
 func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
 	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": bson.D{{Key: "request_id", Value: item_id}}}}})
-	if err != nil {
-		panic(err)
-	}
-	if result.ModifiedCount == 0 {
-		return false, err
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": bson.D{{Key: "request_id", Value: item_id}}}}})
+	if updateManager == nil {
+		return false, errors.New("error clearing notification second lvl")
 	}
 	return true, nil
 }
