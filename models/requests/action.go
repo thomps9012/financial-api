@@ -86,14 +86,14 @@ func (a *Action) FindOne(request_id string, request_type string) (Request_Respon
 	}, errors.New("no request found")
 }
 
-func (a *Action) Approve(request_id string, request_user_id string, manager_id string, manager_role string, request_type string) (bool, error) {
+func (a *Action) Approve(request_id string, request_user_id string, manager user.User, request_type string) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(request_type)
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	// possible expansion here
 	var current_status string
-	switch manager_role {
+	switch manager.Role {
 	case "MANAGER":
 		current_status = "MANAGER_APPROVED"
 	case "CHIEF":
@@ -103,39 +103,30 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 	case "EXECUTIVE":
 		current_status = "ORG_APPROVED"
 	}
-	var manager user.User
-	manager_info, err := manager.FindByID(manager_id)
-	next_manager, findMgrErr := manager.FindMgrID(manager_id)
-	if err != nil {
-		panic(err)
-	}
-	if findMgrErr != nil {
-		panic(findMgrErr)
-	}
 	current_action := &Action{
 		ID:           uuid.NewString(),
-		User:         manager_info,
+		User:         manager,
 		Request_Type: string(request_type),
 		Request_ID:   request_id,
 		Status:       current_status,
 		Created_At:   time.Now(),
 	}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": next_manager}}, {Key: "$set", Value: bson.M{"current_status": current_status}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": manager.Manager_ID}}, {Key: "$set", Value: bson.M{"current_status": current_status}}}
 	// updates the request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateDoc == nil {
 		panic("error updating the document")
 	}
 	// adds the item to the manager of the person approving the request
-	mgrNotified, update_err := manager.AddNotification(user.Action(*current_action), next_manager)
+	mgrNotified, update_err := manager.AddNotification(user.Action(*current_action), manager.Manager_ID)
 	if update_err != nil {
 		panic(update_err)
 	}
-	if mgrNotified == false {
+	if !mgrNotified {
 		panic("error notifying manager")
 	}
 	// clears the manager's notification queue
-	updateCurrentMgr, clearQueueErr := manager.ClearNotification(request_id, manager_id)
+	updateCurrentMgr, clearQueueErr := manager.ClearNotification(request_id, manager.ID)
 	if clearQueueErr != nil {
 		panic(clearQueueErr)
 	}

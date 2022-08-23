@@ -437,7 +437,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if managerErr != nil {
 					panic(managerErr)
 				}
-				approveReq, approveErr := action.Approve(request_id, request.User_ID, manager.ID, manager.Role, request_type)
+				approveReq, approveErr := action.Approve(request_id, request.User_ID, manager, request_type)
 				if approveErr != nil {
 					panic(approveErr)
 				}
