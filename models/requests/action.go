@@ -96,10 +96,12 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 	switch manager_role {
 	case "MANAGER":
 		current_status = "MANAGER_APPROVED"
+	case "CHIEF":
+		current_status = "CHIEF_APPROVED"
 	case "FINANCE":
 		current_status = "FINANCE_APPROVED"
 	case "EXECUTIVE":
-		current_status = "ORGANIZATION_APPROVED"
+		current_status = "ORG_APPROVED"
 	}
 	var manager user.User
 	manager_info, err := manager.FindByID(manager_id)
@@ -129,7 +131,7 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 	if update_err != nil {
 		panic(update_err)
 	}
-	if !mgrNotified {
+	if mgrNotified == false {
 		panic("error notifying manager")
 	}
 	// clears the manager's notification queue
