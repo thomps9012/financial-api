@@ -488,7 +488,7 @@ func (u *User) AddNotification(item Action, user_id string) (bool, error) {
 
 func (u *User) ClearNotifications(user_id string) (bool, error) {
 	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pullAll", Value: "incomplete_actions"}})
+	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$set", Value: bson.M{"incomplete_actions": []Action{}}}})
 	if err != nil {
 		panic(err)
 	}
