@@ -67,7 +67,7 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 	fmt.Printf("%s\n", filter.Map())
 	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	return true, nil
 }
