@@ -121,18 +121,18 @@ func (a *Action) Approve(request_id string, request_user_id string, manager_id s
 		panic(updateErr)
 	}
 	// adds the item to the manager of the person approving the request
-	update_user, update_err := manager.AddNotification(user.Action(*current_action), manager_id)
+	_, update_err := manager.AddNotification(user.Action(*current_action), manager_id)
 	if update_err != nil {
 		panic(err)
 	}
 
 	// adds the item to the original request user
 	var request_user user.User
-	_, requestErr := request_user.AddNotification(user.Action(*current_action), request_user_id)
+	update_requestor, requestErr := request_user.AddNotification(user.Action(*current_action), request_user_id)
 	if requestErr != nil {
 		panic(err)
 	}
-	return update_user, nil
+	return update_requestor, nil
 }
 
 func (a *Action) Reject(request_id string, request_user_id string, manager_id string, request_type string) (bool, error) {

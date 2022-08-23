@@ -405,7 +405,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Description: "A method for a manager to approve a financial request",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -449,7 +449,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Description: "A method for a manager to reject a financial request",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -488,7 +488,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Description: "A method for a manager to reject a financial request",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
