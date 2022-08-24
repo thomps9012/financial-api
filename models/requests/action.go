@@ -174,7 +174,7 @@ func (a *Action) Reject(request_id string, request_info Request_Response, manage
 		panic("current action has already been taken")
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": request_info.User_ID}}, {Key: "$set", Value: bson.M{"current_status": REJECTED}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": request_info.User_ID}}, {Key: "$set", Value: bson.M{"current_status": "REJECTED"}}}
 	// updates the request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateDoc == nil {
@@ -201,7 +201,7 @@ func (a *Action) Archive(request_id string, request_type string, manager_id stri
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(string(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	update := bson.D{{Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}, {Key: "$set", Value: bson.M{"current_user": ""}}}
+	update := bson.D{{Key: "$set", Value: bson.M{"current_status": "ARCHIVED", "is_active": false}}, {Key: "$set", Value: bson.M{"current_user": ""}}}
 	// updates the request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateDoc == nil {
