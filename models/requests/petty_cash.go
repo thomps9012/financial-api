@@ -2,6 +2,7 @@ package requests
 
 import (
 	"context"
+	"errors"
 	conn "financial-api/db"
 	grant "financial-api/models/grants"
 	user "financial-api/models/user"
@@ -22,7 +23,7 @@ type Petty_Cash_Request struct {
 	Receipts       []string  `json:"receipts" bson:"receipts"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Action_History []Action  `json:"action_history" bson:"action_history"`
-	Current_User	string		`json:"current_user" bson:"current_user"`
+	Current_User   string    `json:"current_user" bson:"current_user"`
 	Current_Status string    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
@@ -57,6 +58,17 @@ type Grant_Petty_Cash struct {
 	Last_Request_ID string      `json:"last_request_id" bson:"last_request_id"`
 }
 
+func (p *Petty_Cash_Request) FindByID(id string) (Petty_Cash_Request, error) {
+	var petty_cash Petty_Cash_Request
+	collection := conn.Db.Collection("petty_cash_requests")
+	filter := bson.D{{Key: "_id", Value: id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash)
+	if err != nil {
+		panic(err)
+	}
+	return petty_cash, nil
+}
+
 func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Time) (bool, error) {
 	var petty_cash_req Petty_Cash_Request
 	collection := conn.Db.Collection("petty_cash_requests")
@@ -77,17 +89,16 @@ func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, er
 	p.User_ID = requestor.ID
 	p.Current_User = requestor.Manager_ID
 	first_action := &Action{
-		ID:         uuid.NewString(),
-		User: 		user.User_Action_Info{
+		ID: uuid.NewString(),
+		User: user.User_Action_Info{
 			ID:         requestor.ID,
 			Role:       requestor.Role,
 			Name:       requestor.Name,
-			Manager_ID: requestor.Manager_ID,
 		},
 		Request_Type: "petty_cash_requests",
-		Request_ID: p.ID,
-		Status:     "PENDING",
-		Created_At: time.Now(),
+		Request_ID:   p.ID,
+		Status:       "PENDING",
+		Created_At:   time.Now(),
 	}
 	p.Action_History = append(p.Action_History, *first_action)
 	_, err := collection.InsertOne(context.TODO(), *p)
@@ -105,29 +116,40 @@ func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, er
 	return *p, nil
 }
 
-func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, user_id string) (bool, error) {
+func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor user.User) (Petty_Cash_Request, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
+	if request.Current_Status == "REJECTED" {
+		update_action := &Action{
+			ID: uuid.NewString(),
+			User: user.User_Action_Info{
+				ID:         requestor.ID,
+				Role:       requestor.Role,
+				Name:       requestor.Name,			
+			},
+			Request_Type: "petty_cash_requests",
+			Request_ID:   request.ID,
+			Status:       "REJECTED_EDIT",
+			Created_At:   time.Now(),
+		}
+		request.Current_Status = "PENDING"
+		request.Current_User = requestor.Manager_ID
+		request.Action_History = append(request.Action_History, *update_action)
+		var manager user.User
+		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
+		if update_err != nil {
+			panic(update_err)
+		}
+		if !update_user {
+			return Petty_Cash_Request{}, errors.New("failed to update manager")
+		}
+	}
 	var petty_cash_req Petty_Cash_Request
-	filter := bson.D{{Key: "request_id", Value: request.ID}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
+	filter := bson.D{{Key: "_id", Value: request.ID}}
+	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&petty_cash_req)
 	if err != nil {
 		panic(err)
 	}
-	if petty_cash_req.User_ID != user_id {
-		panic("you are not the user who created this request")
-	}
-	current_status := petty_cash_req.Current_Status
-	if current_status != "PENDING" && current_status != "REJECTED" {
-		panic("this request is already being processed")
-	}
-	result, update_err := collection.UpdateByID(context.TODO(), request.ID, request)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
+	return petty_cash_req, nil
 }
 
 func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) (bool, error) {

@@ -113,7 +113,6 @@ type Mileage_Request struct {
 type User_Action_Info struct {
 	ID         string `json:"id" bson:"_id"`
 	Name       string `json:"name" bson:"name"`
-	Manager_ID string `json:"manager_id" bson:"manager_id"`
 	Role       string `json:"role" bson:"role"`
 }
 

@@ -405,7 +405,79 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return petty_cash_req, nil
 			},
 		},
-		// "edit_petty_cash": &graphql.Field{},
+		"edit_petty_cash": &graphql.Field{
+			Type: PettyCashType,
+			Description: "Allows a user to edit one of their rejected or pending petty cash requests",
+			Args: graphql.FieldConfigArgument{
+				"request_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.ID,
+				},
+				"request": &graphql.ArgumentConfig{
+					Type: PettyCashInput,
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				var petty_cash r.Petty_Cash_Request
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				contextuser, _ := user.FindContextID(p.Context)
+				request_id, idOK := p.Args["request_id"].(string)
+				if !idOK {
+					panic("must enter a valid request id")
+				}
+				result, findErr := petty_cash.FindByID(request_id)
+				if findErr != nil {
+					panic(findErr)
+				}
+				if contextuser.ID != result.User_ID {
+					panic("you are unauthorized to edit this record")
+				}
+				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+					panic("this request is currently being processed")
+				}
+				if p.Args["request"] != nil {
+					requestArgs := p.Args["request"].(map[string]interface{})
+					amount, okAmount := requestArgs["amount"].(float64)
+				if !okAmount {
+					panic("must enter a valid amount")
+				}
+				date, okdate := requestArgs["date"].(time.Time)
+				if !okdate {
+					panic("must enter a valid date")
+				}
+				receiptArgs, receiptsOK := requestArgs["receipts"].([]interface{})
+				if !receiptsOK {
+					panic("must enter a valid receipt item")
+				}
+				var receipts []string
+				for item := range receiptArgs {
+					receipts = append(receipts, receiptArgs[item].(string))
+				}
+				description, descriptionOK := requestArgs["description"].(string)
+				if !descriptionOK {
+					panic("must enter a valid description")
+				}
+				result.Amount = amount
+				result.Date = date
+				result.Receipts = receipts
+				result.Description = description
+				}
+				if p.Args["grant_id"] != nil {
+					result.Grant_ID = p.Args["grant_id"].(string)
+				}
+				updatedDoc, updateErr := petty_cash.Update(result, contextuser)
+				if updateErr != nil {
+					panic(updateErr)
+				}
+				return updatedDoc, nil
+			},
+		},
 		// check request mutations
 		"create_check_request": &graphql.Field{
 			Type:        CheckRequestType,
