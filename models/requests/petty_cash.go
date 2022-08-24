@@ -78,7 +78,12 @@ func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, er
 	p.Current_User = requestor.Manager_ID
 	first_action := &Action{
 		ID:         uuid.NewString(),
-		User: 		requestor,
+		User: 		user.User_Action_Info{
+			ID:         requestor.ID,
+			Role:       requestor.Role,
+			Name:       requestor.Name,
+			Manager_ID: requestor.Manager_ID,
+		},
 		Request_Type: "petty_cash_requests",
 		Request_ID: p.ID,
 		Status:     "PENDING",
