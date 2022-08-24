@@ -405,7 +405,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return petty_cash_req, nil
 			},
 		},
-		"edit_petty_cash": &graphql.Field{},
+		// "edit_petty_cash": &graphql.Field{},
 		// check request mutations
 		"create_check_request": &graphql.Field{
 			Type:        CheckRequestType,
@@ -491,7 +491,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"edit_check_request": &graphql.Field{
-			Type: CheckRequestType,
+			Type:        CheckRequestType,
 			Description: "Allows a user to edit one of their rejected or pending check requests",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
@@ -534,50 +534,50 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				}
 				if p.Args["request"].(map[string]interface{}) != nil {
 					checkReqArgs := p.Args["request"].(map[string]interface{})
-				purchases_input := checkReqArgs["purchases"].([]interface{})
-				var purchases []r.Purchase
-				var order_total = 0.0
-				for _, purchase_item_obj := range purchases_input {
-					fmt.Printf("%s\n", purchase_item_obj)
-					purchase_item := purchase_item_obj.(map[string]interface{})
-					amount := purchase_item["amount"].(float64)
-					description := purchase_item["description"].(string)
-					grant_line_item := purchase_item["grant_line_item"].(string)
-					purchase := &r.Purchase{
-						Grant_Line_Item: grant_line_item,
-						Description:     description,
-						Amount:          (math.Round(amount*100) / 100),
+					purchases_input := checkReqArgs["purchases"].([]interface{})
+					var purchases []r.Purchase
+					var order_total = 0.0
+					for _, purchase_item_obj := range purchases_input {
+						fmt.Printf("%s\n", purchase_item_obj)
+						purchase_item := purchase_item_obj.(map[string]interface{})
+						amount := purchase_item["amount"].(float64)
+						description := purchase_item["description"].(string)
+						grant_line_item := purchase_item["grant_line_item"].(string)
+						purchase := &r.Purchase{
+							Grant_Line_Item: grant_line_item,
+							Description:     description,
+							Amount:          (math.Round(amount*100) / 100),
+						}
+						order_total += (math.Round(amount*100) / 100)
+						order_total = math.Round(order_total*100) / 100
+						purchases = append(purchases, *purchase)
 					}
-					order_total += (math.Round(amount*100) / 100)
-					order_total = math.Round(order_total*100) / 100
-					purchases = append(purchases, *purchase)
-				}
-				receiptArgs := checkReqArgs["receipts"].([]interface{})
-				var receipts []string
-				for item := range receiptArgs {
-					receipts = append(receipts, receiptArgs[item].(string))
-				}
-				result.Date = checkReqArgs["date"].(time.Time)
-				result.Description = checkReqArgs["description"].(string)
-				result.Order_Total = order_total
-				result.Receipts = receipts
-				result.Credit_Card = checkReqArgs["credit_card"].(string)
+					receiptArgs := checkReqArgs["receipts"].([]interface{})
+					var receipts []string
+					for item := range receiptArgs {
+						receipts = append(receipts, receiptArgs[item].(string))
+					}
+					result.Date = checkReqArgs["date"].(time.Time)
+					result.Description = checkReqArgs["description"].(string)
+					result.Order_Total = order_total
+					result.Receipts = receipts
+					result.Credit_Card = checkReqArgs["credit_card"].(string)
 				}
 				if p.Args["vendor"].(map[string]interface{}) != nil {
 					vendor_input := p.Args["vendor"].(map[string]interface{})
-				vendor_address_input := vendor_input["address"].(map[string]interface{})
-				vendor_address := &r.Address{
-					Website:  vendor_address_input["website"].(string),
-					Street:   vendor_address_input["street"].(string),
-					City:     vendor_address_input["city"].(string),
-					State:    vendor_address_input["state"].(string),
-					Zip_Code: vendor_address_input["zip"].(int),
-				}
-				vendor := r.Vendor{
-					Name:    vendor_input["name"].(string),
-					Address: *vendor_address,
-				}
-				result.Vendor = vendor
+					vendor_address_input := vendor_input["address"].(map[string]interface{})
+					vendor_address := &r.Address{
+						Website:  vendor_address_input["website"].(string),
+						Street:   vendor_address_input["street"].(string),
+						City:     vendor_address_input["city"].(string),
+						State:    vendor_address_input["state"].(string),
+						Zip_Code: vendor_address_input["zip"].(int),
+					}
+					vendor := r.Vendor{
+						Name:    vendor_input["name"].(string),
+						Address: *vendor_address,
+					}
+					result.Vendor = vendor
 				}
 				updatedDoc, updateErr := check_req.Update(result)
 				if updateErr != nil {
