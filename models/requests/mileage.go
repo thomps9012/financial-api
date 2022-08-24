@@ -144,16 +144,17 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 		ReturnDocument: &after,
 		Upsert:         &upsert,
 	}
+	var updateReq Mileage_Request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter,update, &opt)
 	if updateDoc.Err() != nil {
 		panic(updateDoc.Err())
 	}
 
-	decodeErr := updateDoc.Decode(&mileage_req)
+	decodeErr := updateDoc.Decode(&updateReq)
 	if decodeErr != nil {
 		panic(decodeErr)
 	}
-	return mileage_req, nil
+	return updateReq, nil
 }
 
 func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool, error) {
