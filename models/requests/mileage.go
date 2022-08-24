@@ -84,8 +84,13 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 	m.Current_User = requestor.Manager_ID
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
 	first_action := &Action{
-		ID:           uuid.NewString(),
-		User:         requestor,
+		ID: uuid.NewString(),
+		User: user.User_Action_Info{
+			ID:         requestor.ID,
+			Role:       requestor.Role,
+			Name:       requestor.Name,
+			Manager_ID: requestor.Manager_ID,
+		},
 		Request_Type: "mileage_requests",
 		Request_ID:   m.ID,
 		Status:       "PENDING",
@@ -111,8 +116,13 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (Mileage_Request, error) {
 	if request.Current_Status == "REJECTED" {
 		update_action := &Action{
-			ID:           uuid.NewString(),
-			User:         requestor,
+			ID: uuid.NewString(),
+			User: user.User_Action_Info{
+				ID:         requestor.ID,
+				Role:       requestor.Role,
+				Name:       requestor.Name,
+				Manager_ID: requestor.Manager_ID,
+			},
 			Request_Type: "mileage_requests",
 			Request_ID:   request.ID,
 			Status:       "EDITED_REJECTED",

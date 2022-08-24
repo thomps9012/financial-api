@@ -23,8 +23,8 @@ const (
 )
 
 type Action struct {
-	ID           string    `json:"id" bson:"_id"`
-	User         user.User `json:"user" bson:"user`
+	ID           string `json:"id" bson:"_id"`
+	User         user.User_Action_Info
 	Request_Type string    `json:"request_type" bson:"request_type"`
 	Request_ID   string    `json:"request_id" bson:"request_id"`
 	Status       string    `json:"status" bson:"status"`
@@ -109,8 +109,13 @@ func (a *Action) Approve(request_id string, request_info Request_Response, manag
 		current_status = "ORG_APPROVED"
 	}
 	current_action := &Action{
-		ID:           uuid.NewString(),
-		User:         manager,
+		ID: uuid.NewString(),
+		User: user.User_Action_Info{
+			ID:         manager.ID,
+			Role:       manager.Role,
+			Name:       manager.Name,
+			Manager_ID: manager.Manager_ID,
+		},
 		Request_Type: string(request_type),
 		Request_ID:   request_id,
 		Status:       current_status,
@@ -162,8 +167,13 @@ func (a *Action) Reject(request_id string, request_info Request_Response, manage
 		panic(err)
 	}
 	current_action := &Action{
-		ID:           uuid.NewString(),
-		User:         manager_info,
+		ID: uuid.NewString(),
+		User: user.User_Action_Info{
+			ID:         manager_info.ID,
+			Role:       manager_info.Role,
+			Name:       manager_info.Name,
+			Manager_ID: manager_info.Manager_ID,
+		},
 		Request_Type: string(request_type),
 		Request_ID:   request_id,
 		Status:       "REJECTED",
@@ -184,7 +194,7 @@ func (a *Action) Reject(request_id string, request_info Request_Response, manage
 	if updateMgrErr != nil {
 		panic(updateMgrErr)
 	}
-	if updateMgr != true {
+	if !updateMgr {
 		panic("error clearing manager notification")
 	}
 	// now adding a notification to the original user who made the request

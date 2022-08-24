@@ -103,8 +103,13 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 	c.Current_Status = "PENDING"
 	c.Current_User = requestor.Manager_ID
 	first_action := &Action{
-		ID:           uuid.NewString(),
-		User:         requestor,
+		ID: uuid.NewString(),
+		User: user.User_Action_Info{
+			ID:         requestor.ID,
+			Role:       requestor.Role,
+			Name:       requestor.Name,
+			Manager_ID: requestor.Manager_ID,
+		},
 		Request_Type: "check_requests",
 		Request_ID:   c.ID,
 		Status:       "PENDING",

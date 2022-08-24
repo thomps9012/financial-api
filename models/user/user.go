@@ -110,6 +110,13 @@ type Mileage_Request struct {
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
+type User_Action_Info struct {
+	ID         string `json:"id" bson:"_id"`
+	Name       string `json:"name" bson:"name"`
+	Manager_ID string `json:"manager_id" bson:"manager_id"`
+	Role       string `json:"role" bson:"role"`
+}
+
 type User struct {
 	ID                 string    `json:"id" bson:"_id"`
 	Email              string    `json:"email" bson:"email"`
@@ -140,8 +147,8 @@ const (
 )
 
 type Action struct {
-	ID           string    `json:"id" bson:"_id"`
-	User         User      `json:"user" bson:"user`
+	ID           string `json:"id" bson:"_id"`
+	User         User_Action_Info
 	Request_Type string    `json:"request_type" bson:"request_type"`
 	Request_ID   string    `json:"request_id" bson:"request_id"`
 	Status       string    `json:"status" bson:"status"`
