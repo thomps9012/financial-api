@@ -115,10 +115,11 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			ID:           uuid.NewString(),
 			User:         requestor,
 			Request_Type: "mileage_requests",
-			Request_ID:   m.ID,
+			Request_ID:   request.ID,
 			Status:       "PENDING",
 			Created_At:   time.Now(),
 		}
+		request.Current_Status = "PENDING"
 		request.Action_History = append(request.Action_History, *update_action)
 		var manager user.User
 		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
