@@ -3,7 +3,7 @@ package main
 import (
 	conn "financial-api/db"
 	r "financial-api/graphql/root"
-	// auth "financial-api/middleware"
+	auth "financial-api/middleware"
 	"net/http"
 	"os"
 
@@ -31,10 +31,10 @@ func main() {
 		Schema:     &rootSchema,
 		Pretty:     true,
 		GraphiQL:   false,
-		Playground: true,
+		Playground: false,
 	})
 	router := chi.NewRouter()
-	// router.Use(auth.Middleware())
+	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
 	originsOK := handlers.AllowedOrigins([]string{"*"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
