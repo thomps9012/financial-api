@@ -149,7 +149,6 @@ func (c *Check_Request) Update(request Check_Request, requestor user.User) (Chec
 			Status:       "REJECTED_EDIT",
 			Created_At:   time.Now(),
 		}
-		request.Current_Status = "PENDING"
 		request.Current_User = requestor.Manager_ID
 		request.Action_History = append(request.Action_History, *update_action)
 		var manager user.User
@@ -161,6 +160,7 @@ func (c *Check_Request) Update(request Check_Request, requestor user.User) (Chec
 			return Check_Request{}, errors.New("failed to update manager")
 		}
 	}
+	request.Current_Status = "PENDING"
 	var check_request Check_Request
 	filter := bson.D{{Key: "_id", Value: request.ID}}
 	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&check_request)
