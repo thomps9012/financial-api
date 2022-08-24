@@ -120,6 +120,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			Created_At:   time.Now(),
 		}
 		request.Current_Status = "PENDING"
+		request.Current_User = requestor.Manager_ID
 		request.Action_History = append(request.Action_History, *update_action)
 		var manager user.User
 		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
@@ -131,7 +132,6 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 		}
 	}
 	var mileage_req Mileage_Request
-	request.Current_User = requestor.Manager_ID
 	collection := conn.Db.Collection("mileage_requests")
 	filter := bson.D{{Key: "_id", Value: request.ID}}
 	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&mileage_req)
