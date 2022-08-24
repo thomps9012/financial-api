@@ -119,6 +119,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			Status:       "PENDING",
 			Created_At:   time.Now(),
 		}
+		request.Current_Status = "PENDING"
 		request.Current_User = requestor.Manager_ID
 		request.Action_History = append(request.Action_History, *update_action)
 		var manager user.User
@@ -127,10 +128,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			panic(update_err)
 		}
 		if !update_user {
-			return *m, errors.New("failed to update manager")
-		}
-		if update_user {
-			request.Current_Status = "PENDING"
+			return Mileage_Request{}, errors.New("failed to update manager")
 		}
 	}
 	var mileage_req Mileage_Request
