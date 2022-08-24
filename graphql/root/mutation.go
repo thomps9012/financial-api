@@ -336,11 +336,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					result.Tolls = tolls
 					result.Parking = parking
 				}
-					updatedDoc, updateErr := milage_req.Update(result, contextuser)
-					if updateErr != nil {
-						panic(updateErr)
-					}
-					return updatedDoc, nil
+				updatedDoc, updateErr := milage_req.Update(result, contextuser)
+				if updateErr != nil {
+					panic(updateErr)
+				}
+				return updatedDoc, nil
 			},
 		},
 		// petty cash mutations
@@ -563,7 +563,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					result.Receipts = receipts
 					result.Credit_Card = checkReqArgs["credit_card"].(string)
 				}
-				if p.Args["vendor"].(map[string]interface{}) != nil {
+				if p.Args["vendor"] != nil {
 					vendor_input := p.Args["vendor"].(map[string]interface{})
 					vendor_address_input := vendor_input["address"].(map[string]interface{})
 					vendor_address := &r.Address{
@@ -579,7 +579,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					}
 					result.Vendor = vendor
 				}
-				updatedDoc, updateErr := check_req.Update(result)
+				updatedDoc, updateErr := check_req.Update(result, contextuser)
 				if updateErr != nil {
 					panic(updateErr)
 				}

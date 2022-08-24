@@ -2,6 +2,7 @@ package requests
 
 import (
 	"context"
+	"errors"
 	conn "financial-api/db"
 	grant "financial-api/models/grants"
 	user "financial-api/models/user"
@@ -132,8 +133,34 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 	return c.ID, nil
 }
 
-func (c *Check_Request) Update(request Check_Request) (Check_Request, error) {
+func (c *Check_Request) Update(request Check_Request, requestor user.User) (Check_Request, error) {
 	collection := conn.Db.Collection("check_requests")
+	if request.Current_Status == "REJECTED" {
+		update_action := &Action{
+			ID: uuid.NewString(),
+			User: user.User_Action_Info{
+				ID:         requestor.ID,
+				Role:       requestor.Role,
+				Name:       requestor.Name,
+				Manager_ID: requestor.Manager_ID,
+			},
+			Request_Type: "mileage_requests",
+			Request_ID:   request.ID,
+			Status:       "REJECTED_EDIT",
+			Created_At:   time.Now(),
+		}
+		request.Current_Status = "PENDING"
+		request.Current_User = requestor.Manager_ID
+		request.Action_History = append(request.Action_History, *update_action)
+		var manager user.User
+		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
+		if update_err != nil {
+			panic(update_err)
+		}
+		if !update_user {
+			return Check_Request{}, errors.New("failed to update manager")
+		}
+	}
 	var check_request Check_Request
 	filter := bson.D{{Key: "_id", Value: request.ID}}
 	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&check_request)
