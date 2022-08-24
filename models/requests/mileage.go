@@ -5,7 +5,6 @@ import (
 	"errors"
 	conn "financial-api/db"
 	user "financial-api/models/user"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"fmt"
 	"time"
 
@@ -116,7 +115,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			User:         requestor,
 			Request_Type: "mileage_requests",
 			Request_ID:   request.ID,
-			Status:       "PENDING",
+			Status:       "EDITED_REJECTED",
 			Created_At:   time.Now(),
 		}
 		request.Current_User = requestor.Manager_ID
@@ -137,24 +136,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 	if err != nil {
 		panic(err)
 	}
-	update :=  bson.D{{Key: "$set", Value: bson.M{"current_status": "PENDING"}}}
-	upsert := true
-	after := options.After
-	opt := options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-		Upsert:         &upsert,
-	}
-	var updateReq Mileage_Request
-	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter,update, &opt)
-	if updateDoc.Err() != nil {
-		panic(updateDoc.Err())
-	}
-
-	decodeErr := updateDoc.Decode(&updateReq)
-	if decodeErr != nil {
-		panic(decodeErr)
-	}
-	return updateReq, nil
+	return mileage_req, nil
 }
 
 func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool, error) {
