@@ -30,7 +30,7 @@ func main() {
 	rootRequestHandler := handler.New(&handler.Config{
 		Schema:     &rootSchema,
 		Pretty:     true,
-		GraphiQL:   false,
+		GraphiQL:   true,
 		Playground: true,
 	})
 	router := chi.NewRouter()
