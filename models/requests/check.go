@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Address struct {
@@ -161,7 +162,11 @@ func (c *Check_Request) Update(request Check_Request, requestor user.User) (Chec
 	}
 	var check_request Check_Request
 	filter := bson.D{{Key: "_id", Value: request.ID}}
-	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&check_request)
+	after := options.After
+	opts := options.FindOneAndReplaceOptions{
+		ReturnDocument: &after,
+	}
+	err := collection.FindOneAndReplace(context.TODO(), filter, request, &opts).Decode(&check_request)
 	if err != nil {
 		panic(err)
 	}

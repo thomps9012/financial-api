@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Mileage_Request struct {
@@ -141,7 +142,11 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 	var mileage_req Mileage_Request
 	collection := conn.Db.Collection("mileage_requests")
 	filter := bson.D{{Key: "_id", Value: request.ID}}
-	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&mileage_req)
+	after := options.After
+	opts := options.FindOneAndReplaceOptions{
+		ReturnDocument: &after,
+	}
+	err := collection.FindOneAndReplace(context.TODO(), filter, request, &opts).Decode(&mileage_req)
 	if err != nil {
 		panic(err)
 	}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Petty_Cash_Request struct {
@@ -145,7 +146,11 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor user.U
 	}
 	var petty_cash_req Petty_Cash_Request
 	filter := bson.D{{Key: "_id", Value: request.ID}}
-	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&petty_cash_req)
+	after := options.After
+	opts := options.FindOneAndReplaceOptions{
+		ReturnDocument: &after,
+	}
+	err := collection.FindOneAndReplace(context.TODO(), filter, request, &opts).Decode(&petty_cash_req)
 	if err != nil {
 		panic(err)
 	}
