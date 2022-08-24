@@ -245,7 +245,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Tolls:             tolls,
 					Parking:           parking,
 				}
-				exists, _ := mileage_req.Exists(user.ID, date, start_odo, end_odo)
+				exists, _ := mileage_req.Exists(requestor.ID, date, start_odo, end_odo)
 				if exists {
 					return nil, errors.New("mileage request already created")
 				}
