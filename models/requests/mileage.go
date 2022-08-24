@@ -125,7 +125,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			},
 			Request_Type: "mileage_requests",
 			Request_ID:   request.ID,
-			Status:       "EDITED_REJECTED",
+			Status:       "REJECTED_EDIT",
 			Created_At:   time.Now(),
 		}
 		request.Current_User = requestor.Manager_ID

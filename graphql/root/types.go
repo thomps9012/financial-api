@@ -665,6 +665,9 @@ var StatusType = graphql.NewEnum(
 			"REJECTED": &graphql.EnumValueConfig{
 				Value: "REJECTED",
 			},
+			"REJECTED_EDIT": &graphql.EnumValueConfig{
+				Value: "REJECTED_EDIT",
+			},
 			"ARCHIVED": &graphql.EnumValueConfig{
 				Value: "ARCHIVED",
 			},
