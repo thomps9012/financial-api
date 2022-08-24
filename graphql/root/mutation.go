@@ -293,7 +293,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if p.Args["grant_id"] != nil {
 					result.Grant_ID = p.Args["grant_id"].(string)
 				}
-				if p.Args["request"].(map[string]interface{}) != nil {
+				if p.Args["request"] != nil {
 					mileageArgs := p.Args["request"].(map[string]interface{})
 					date, dateisOK := mileageArgs["date"].(time.Time)
 					if !dateisOK {
@@ -532,7 +532,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if p.Args["grant_id"] != nil {
 					result.Grant_ID = p.Args["grant_id"].(string)
 				}
-				if p.Args["request"].(map[string]interface{}) != nil {
+				if p.Args["request"] != nil {
 					checkReqArgs := p.Args["request"].(map[string]interface{})
 					purchases_input := checkReqArgs["purchases"].([]interface{})
 					var purchases []r.Purchase
