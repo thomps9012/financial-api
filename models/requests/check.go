@@ -144,7 +144,7 @@ func (c *Check_Request) Update(request Check_Request, requestor user.User) (Chec
 				Name:       requestor.Name,
 				Manager_ID: requestor.Manager_ID,
 			},
-			Request_Type: "mileage_requests",
+			Request_Type: "check_requests",
 			Request_ID:   request.ID,
 			Status:       "REJECTED_EDIT",
 			Created_At:   time.Now(),
