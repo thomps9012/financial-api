@@ -129,6 +129,9 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 		if !update_user {
 			return *m, errors.New("failed to update manager")
 		}
+		if update_user {
+			request.Current_Status = "PENDING"
+		}
 	}
 	var mileage_req Mileage_Request
 	collection := conn.Db.Collection("mileage_requests")
