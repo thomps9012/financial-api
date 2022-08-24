@@ -5,6 +5,7 @@ import (
 	"errors"
 	conn "financial-api/db"
 	user "financial-api/models/user"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"fmt"
 	"time"
 
@@ -106,11 +107,10 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 		return *m, errors.New("failed to update manager")
 	}
 	return *m, nil
-
 }
 
-func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User, rejected bool) (Mileage_Request, error) {
-	if rejected {
+func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (Mileage_Request, error) {
+	if request.Current_Status == "REJECTED" {
 		update_action := &Action{
 			ID:           uuid.NewString(),
 			User:         requestor,
@@ -136,6 +136,22 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User, r
 	err := collection.FindOneAndReplace(context.TODO(), filter, request).Decode(&mileage_req)
 	if err != nil {
 		panic(err)
+	}
+	update :=  bson.D{{Key: "$set", Value: bson.M{"current_status": "PENDING"}}}
+	upsert := true
+	after := options.After
+	opt := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter,update, &opt)
+	if updateDoc.Err() != nil {
+		panic(updateDoc.Err())
+	}
+
+	decodeErr := updateDoc.Decode(&mileage_req)
+	if decodeErr != nil {
+		panic(decodeErr)
 	}
 	return mileage_req, nil
 }

@@ -336,19 +336,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					result.Tolls = tolls
 					result.Parking = parking
 				}
-				if result.Current_Status == "REJECTED" {
-					result.Current_Status = "PENDING"
-					updatedDoc, updateErr := milage_req.Update(result, contextuser, true)
+					updatedDoc, updateErr := milage_req.Update(result, contextuser)
 					if updateErr != nil {
 						panic(updateErr)
 					}
 					return updatedDoc, nil
-				}
-				updatedDoc, updateErr := milage_req.Update(result, contextuser, false)
-				if updateErr != nil {
-					panic(updateErr)
-				}
-				return updatedDoc, nil
 			},
 		},
 		// petty cash mutations
