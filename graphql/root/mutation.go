@@ -336,7 +336,15 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					result.Tolls = tolls
 					result.Parking = parking
 				}
-				updatedDoc, updateErr := milage_req.Update(result, contextuser)
+				if result.Current_Status == "REJECTED" {
+					result.Current_Status = "PENDING"
+					updatedDoc, updateErr := milage_req.Update(result, contextuser, true)
+					if updateErr != nil {
+						panic(updateErr)
+					}
+					return updatedDoc, nil
+				}
+				updatedDoc, updateErr := milage_req.Update(result, contextuser, false)
 				if updateErr != nil {
 					panic(updateErr)
 				}

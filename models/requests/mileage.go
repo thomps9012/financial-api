@@ -109,8 +109,8 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 
 }
 
-func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (Mileage_Request, error) {
-	if request.Current_Status == "REJECTED" {
+func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User, rejected bool) (Mileage_Request, error) {
+	if rejected {
 		update_action := &Action{
 			ID:           uuid.NewString(),
 			User:         requestor,
@@ -119,7 +119,6 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 			Status:       "PENDING",
 			Created_At:   time.Now(),
 		}
-		request.Current_Status = "PENDING"
 		request.Current_User = requestor.Manager_ID
 		request.Action_History = append(request.Action_History, *update_action)
 		var manager user.User
