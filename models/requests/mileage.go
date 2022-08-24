@@ -109,7 +109,26 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 
 }
 
-func (m *Mileage_Request) Update(request Mileage_Request) (Mileage_Request, error) {
+func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (Mileage_Request, error) {
+	if request.Current_Status == "REJECTED" {
+		update_action := &Action{
+			ID:           uuid.NewString(),
+			User:         requestor,
+			Request_Type: "mileage_requests",
+			Request_ID:   m.ID,
+			Status:       "PENDING",
+			Created_At:   time.Now(),
+		}
+		request.Action_History = append(request.Action_History, *update_action)
+		var manager user.User
+		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
+		if update_err != nil {
+			panic(update_err)
+		}
+		if !update_user {
+			return *m, errors.New("failed to update manager")
+		}
+	}
 	var mileage_req Mileage_Request
 	collection := conn.Db.Collection("mileage_requests")
 	filter := bson.D{{Key: "_id", Value: request.ID}}

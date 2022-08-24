@@ -561,6 +561,9 @@ var MileageOverviewType = graphql.NewObject(
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
 			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
 			"user": &graphql.Field{
 				Type: UserType,
 			},
