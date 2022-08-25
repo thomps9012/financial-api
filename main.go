@@ -42,8 +42,7 @@ func main() {
 	rootRequestHandler := handler.New(&handler.Config{
 		Schema:     &rootSchema,
 		Pretty:     true,
-		GraphiQL:   false,
-		Playground: false,
+		GraphiQL:   true,
 	})
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
