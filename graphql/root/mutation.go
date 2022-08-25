@@ -49,7 +49,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic(okID)
 				}
 				var user u.User
-				exists := user.Exists(id)
+				exists, _ := user.Exists(id)
 				if exists {
 					result, err := user.Login(id)
 					if err != nil {
@@ -406,7 +406,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"edit_petty_cash": &graphql.Field{
-			Type: PettyCashType,
+			Type:        PettyCashType,
 			Description: "Allows a user to edit one of their rejected or pending petty cash requests",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
@@ -444,29 +444,29 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if p.Args["request"] != nil {
 					requestArgs := p.Args["request"].(map[string]interface{})
 					amount, okAmount := requestArgs["amount"].(float64)
-				if !okAmount {
-					panic("must enter a valid amount")
-				}
-				date, okdate := requestArgs["date"].(time.Time)
-				if !okdate {
-					panic("must enter a valid date")
-				}
-				receiptArgs, receiptsOK := requestArgs["receipts"].([]interface{})
-				if !receiptsOK {
-					panic("must enter a valid receipt item")
-				}
-				var receipts []string
-				for item := range receiptArgs {
-					receipts = append(receipts, receiptArgs[item].(string))
-				}
-				description, descriptionOK := requestArgs["description"].(string)
-				if !descriptionOK {
-					panic("must enter a valid description")
-				}
-				result.Amount = amount
-				result.Date = date
-				result.Receipts = receipts
-				result.Description = description
+					if !okAmount {
+						panic("must enter a valid amount")
+					}
+					date, okdate := requestArgs["date"].(time.Time)
+					if !okdate {
+						panic("must enter a valid date")
+					}
+					receiptArgs, receiptsOK := requestArgs["receipts"].([]interface{})
+					if !receiptsOK {
+						panic("must enter a valid receipt item")
+					}
+					var receipts []string
+					for item := range receiptArgs {
+						receipts = append(receipts, receiptArgs[item].(string))
+					}
+					description, descriptionOK := requestArgs["description"].(string)
+					if !descriptionOK {
+						panic("must enter a valid description")
+					}
+					result.Amount = amount
+					result.Date = date
+					result.Receipts = receipts
+					result.Description = description
 				}
 				if p.Args["grant_id"] != nil {
 					result.Grant_ID = p.Args["grant_id"].(string)
