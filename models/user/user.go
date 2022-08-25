@@ -292,7 +292,7 @@ func setManagerID(email string, employee_role string) string {
 }
 func setRole(email string) string {
 	var employee_role string
-	employees := []string{"emp1@norainc.org", "emp2@norainc.org", "emp3@norainc.org", "emp4@norainc.org", "emp5@norainc.org", "emp6@norainc.org"}
+	employees := []string{"emp1@norainc.org", "emp2@norainc.org"}
 	for i := range employees {
 		if employees[i] == email {
 			employee_role = "EMPLOYEE"
