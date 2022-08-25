@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -111,9 +112,9 @@ type Mileage_Request struct {
 }
 
 type User_Action_Info struct {
-	ID         string `json:"id" bson:"_id"`
-	Name       string `json:"name" bson:"name"`
-	Role       string `json:"role" bson:"role"`
+	ID   string `json:"id" bson:"_id"`
+	Name string `json:"name" bson:"name"`
+	Role string `json:"role" bson:"role"`
 }
 
 type User struct {
@@ -346,17 +347,7 @@ func (u *User) Create(id string, name string, email string) (User, error) {
 	}
 	return *u, nil
 }
-func (u *User) Exists(id string) (bool, error) {
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: id}}
-	var user User
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-func (u *User) Login(id string) (User, error) {
+func (u *User) Login(id string, name string, email string) (User, error) {
 	var user User
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "_id", Value: id}}
@@ -368,8 +359,12 @@ func (u *User) Login(id string) (User, error) {
 		Upsert:         &upsert,
 	}
 	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
-	if err != nil {
-		panic(err)
+	if err == mongo.ErrNoDocuments {
+		newUser, createErr := user.Create(id, name, email)
+		if createErr != nil {
+			panic(createErr)
+		}
+		return newUser, nil
 	}
 	return user, nil
 }
@@ -436,18 +431,12 @@ func (u *User) FindContextID(ctx context.Context) (User, error) {
 
 func (u *User) CheckAdmin(ctx context.Context) bool {
 	user_role := auth.ForRole(ctx)
-	if user_role == "EMPLOYEE" {
-		return false
-	}
-	return true
+	return user_role != "EMPLOYEE"
 }
 
 func (u *User) LoggedIn(ctx context.Context) bool {
 	user_id := auth.ForID(ctx)
-	if user_id == "" {
-		return false
-	}
-	return true
+	return user_id != ""
 }
 
 func (u *User) FindByID(user_id string) (User, error) {

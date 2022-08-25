@@ -49,28 +49,16 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic(okID)
 				}
 				var user u.User
-				exists, _ := user.Exists(id)
-				if exists {
-					result, err := user.Login(id)
-					if err != nil {
-						panic(err)
-					}
-					token, tokenErr := auth.GenerateToken(result.ID, result.Role)
-					if tokenErr != nil {
-						panic(tokenErr)
-					}
-					return token, nil
-				} else {
-					result, err := user.Create(id, name, email)
-					if err != nil {
-						panic(err)
-					}
-					token, tokenErr := auth.GenerateToken(result.ID, result.Role)
-					if tokenErr != nil {
-						panic(tokenErr)
-					}
-					return token, nil
+
+				result, err := user.Login(id, name, email)
+				if err != nil {
+					panic(err)
 				}
+				token, tokenErr := auth.GenerateToken(result.ID, result.Role)
+				if tokenErr != nil {
+					panic(tokenErr)
+				}
+				return token, nil
 			},
 		},
 		"deactivate_user": &graphql.Field{
