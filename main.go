@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"encoding/json"
+	// "encoding/json"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
-	// "github.com/graphql-go/handler"
+	"github.com/graphql-go/handler"
 )
 
 const defaultPort = "8080"
@@ -39,18 +39,19 @@ func main() {
 	}
 	conn.InitDB()
 	defer conn.CloseDB()
-	// rootRequestHandler := handler.New(&handler.Config{
-	// 	Schema:     &rootSchema,
-	// 	Pretty:     true,
-	// 	GraphiQL:   false,
-	// 	Playground: false,
-	// })
+	rootRequestHandler := handler.New(&handler.Config{
+		Schema:     &rootSchema,
+		Pretty:     true,
+		GraphiQL:   false,
+		Playground: false,
+	})
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
-	router.Get("/graphql", func(w http.ResponseWriter, r *http.Request){
-		result := executeQuery(r.URL.Query().Get(("query")), rootSchema)
-		json.NewEncoder(w).Encode(result)
-	})
+	router.Handle("/graphql", rootRequestHandler)
+	// router.Get("/graphql", func(w http.ResponseWriter, r *http.Request){
+	// 	result := executeQuery(r.URL.Query().Get(("query")), rootSchema)
+	// 	json.NewEncoder(w).Encode(result)
+	// })
 	originsOK := handlers.AllowedOrigins([]string{"https://agile-tundra-78417.herokuapp.com/graphql", "http://localhost:3000", "https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
