@@ -23,7 +23,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
         - name: deploy to github pages
-          uses: thomps9012/financial-api@v3
+          uses: JamesIves/github-pages-deploy-action@v4
           with:
             folder: build
             
