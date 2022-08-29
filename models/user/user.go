@@ -253,7 +253,7 @@ func setManagerID(email string, employee_role string) string {
 	}
 	chiefs := []Manager{
 		{"456", []string{"manager1@norainc.org"}},
-		{"789", []string{"sthompson@norainc.org"}},
+		{"116601745736489768774", []string{"sthompson@norainc.org"}},
 	}
 	var executive = "101112"
 	var finance = "131415"
@@ -329,6 +329,7 @@ func setRole(email string) string {
 }
 func (u *User) Create(id string, name string, email string) (User, error) {
 	collection := conn.Db.Collection("users")
+	println("user info in create function: %s", id, name, email)
 	u.ID = id
 	u.Name = name
 	u.Email = email
@@ -360,6 +361,7 @@ func (u *User) Login(id string, name string, email string) (User, error) {
 	}
 	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
 	if err == mongo.ErrNoDocuments {
+		println("user info in login err: %s", id, name, email)
 		newUser, createErr := user.Create(id, name, email)
 		if createErr != nil {
 			panic(createErr)
