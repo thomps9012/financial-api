@@ -25,5 +25,6 @@ jobs:
         - name: deploy to github pages
           uses: JamesIves/github-pages-deploy-action@v4
           with:
-            folder: build
+            folder: app
+            clean: true
             
