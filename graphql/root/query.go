@@ -499,7 +499,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		// ensure consistent return type
 		"grant_check_requests": &graphql.Field{
 			Type:        AggGrantCheckReq,
 			Description: "Aggregate and gather all check requests for a given grant",
@@ -575,9 +574,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return check_request, nil
 			},
 		},
-		// build out grant query
 		"all_grants": &graphql.Field{
-			Type: GrantType,
+			Type:        GrantType,
 			Description: "Returns all grant information in the database",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User

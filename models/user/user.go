@@ -237,10 +237,7 @@ type User_Check_Requests struct {
 	End_Date     string          `json:"end_date" bson:"end_date"`
 	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
 	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
-	Purchases    []Purchase      `json:"purchases" bson:"purchases"`
-	Receipts     []string        `json:"receipts" bson:"receipts"`
 	Requests     []Check_Request `json:"requests" bson:"requests"`
-	Last_Request Check_Request   `json:"last_request" bson:"last_request"`
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
@@ -630,18 +627,12 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 	var receipts []string
 	var purchases []Purchase
 	var requests []Check_Request
-	var last_request Check_Request
-	last_request_date := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
 	var vendorExists = make(map[Vendor]bool)
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
-		}
-		if check_req.Date.After(last_request_date) {
-			last_request = check_req
 		}
 		requests = append(requests, check_req)
 		if !vendorExists[check_req.Vendor] {
@@ -659,10 +650,7 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		End_Date:     end_date,
 		Total_Amount: total_amount,
 		Vendors:      vendors,
-		Purchases:    purchases,
 		Requests:     requests,
-		Last_Request: last_request,
-		Receipts:     receipts,
 	}, nil
 }
 
