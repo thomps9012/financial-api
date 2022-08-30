@@ -75,14 +75,11 @@ type User_Check_Overview struct {
 }
 
 type Grant_Check_Overview struct {
-	Grant_ID        string      `json:"grant_id" bson:"grant_id"`
-	Grant           grant.Grant `json:"grant" bson:"grant"`
-	Vendors         []Vendor    `json:"vendors" bson:"vendors"`
-	Total_Amount    float64     `json:"total_amount" bson:"total_amount"`
-	Credit_Cards    []string    `json:"credit_cards" bson:"credit_cards"`
-	Request_IDS     []string    `json:"request_ids" bson:"request_ids"`
-	Last_Request    time.Time   `json:"last_request" bson:"last_request"`
-	Last_Request_ID string      `json:"last_request_id" bson:"last_request_id"`
+	Grant        grant.Grant     `json:"grant" bson:"grant"`
+	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
+	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
+	Credit_Cards []string        `json:"credit_cards" bson:"credit_cards"`
+	Requests     []Check_Request `json:"request_ids" bson:"request_ids"`
 }
 
 func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) (bool, error) {
@@ -107,9 +104,9 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 	first_action := &Action{
 		ID: uuid.NewString(),
 		User: user.User_Action_Info{
-			ID:         requestor.ID,
-			Role:       requestor.Role,
-			Name:       requestor.Name,
+			ID:   requestor.ID,
+			Role: requestor.Role,
+			Name: requestor.Name,
 		},
 		Request_Type: "check_requests",
 		Request_ID:   c.ID,
@@ -139,9 +136,9 @@ func (c *Check_Request) Update(request Check_Request, requestor user.User) (Chec
 		update_action := &Action{
 			ID: uuid.NewString(),
 			User: user.User_Action_Info{
-				ID:         requestor.ID,
-				Role:       requestor.Role,
-				Name:       requestor.Name,
+				ID:   requestor.ID,
+				Role: requestor.Role,
+				Name: requestor.Name,
 			},
 			Request_Type: "check_requests",
 			Request_ID:   request.ID,
@@ -334,29 +331,22 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 	if grant_err != nil {
 		panic(grant_err)
 	}
-	last_request := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
 	total_amount := 0.0
-	last_request_id := ""
 	var vendors []Vendor
 	var credit_cards []string
 	var exists = make(map[string]bool)
 	var vendorExists = make(map[Vendor]bool)
-	var request_ids []string
+	var requests []Check_Request
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		request_ids = append(request_ids, check_req.ID)
+		requests = append(requests, check_req)
 		if !vendorExists[check_req.Vendor] {
 			vendors = append(vendors, check_req.Vendor)
 			vendorExists[check_req.Vendor] = true
-		}
-		if check_req.Date.After(last_request) {
-			last_request = check_req.Date
-			last_request_id = check_req.ID
 		}
 		if !exists[check_req.Credit_Card] {
 			credit_cards = append(credit_cards, check_req.Credit_Card)
@@ -365,14 +355,11 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 		total_amount += check_req.Order_Total
 	}
 	check_overview := &Grant_Check_Overview{
-		Grant_ID:        grant_id,
-		Grant:           grant_info,
-		Vendors:         vendors,
-		Credit_Cards:    credit_cards,
-		Request_IDS:     request_ids,
-		Last_Request:    last_request,
-		Last_Request_ID: last_request_id,
-		Total_Amount:    total_amount,
+		Grant:        grant_info,
+		Vendors:      vendors,
+		Credit_Cards: credit_cards,
+		Requests:     requests,
+		Total_Amount: total_amount,
 	}
 	return *check_overview, nil
 }

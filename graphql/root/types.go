@@ -279,12 +279,6 @@ var AggGrantCheckReq = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "GrantCheckRequests",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
-			"grant_id": &graphql.Field{
-				Type: graphql.ID,
-			},
 			"grant": &graphql.Field{
 				Type: g.GrantType,
 			},
@@ -297,14 +291,8 @@ var AggGrantCheckReq = graphql.NewObject(
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"last_request": &graphql.Field{
-				Type: graphql.DateTime,
-			},
-			"last_request_id": &graphql.Field{
-				Type: graphql.String,
-			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
+			"requests": &graphql.Field{
+				Type: graphql.NewList(CheckRequestType),
 			},
 		},
 	},
