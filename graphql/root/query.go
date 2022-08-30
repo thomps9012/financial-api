@@ -609,7 +609,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"all_grants": &graphql.Field{
-			Type:        GrantType,
+			Type:        graphql.NewList(GrantType),
 			Description: "Returns all grant information in the database",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
