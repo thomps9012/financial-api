@@ -58,7 +58,7 @@ type Monthly_Mileage_Overview struct {
 	Parking       float64    `json:"parking" bson:"parking"`
 	Current_User  string     `json:"current_user" bson:"current_user"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
-	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
+	Requests   []user.Mileage_Request   `json:"requests" bson:"requests"`
 }
 
 func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end int) (bool, error) {

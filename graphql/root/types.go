@@ -605,8 +605,8 @@ var AggMonthlyMileageType = graphql.NewObject(
 			"reimbursement": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.ID),
+			"requests": &graphql.Field{
+				Type: graphql.NewList(MileageType),
 			},
 		},
 	},

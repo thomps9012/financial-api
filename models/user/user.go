@@ -211,7 +211,7 @@ type User_Monthly_Mileage struct {
 	Parking       float64    `json:"parking" bson:"parking"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Grant_IDS     []string   `json:"grant_ids" bson:"grant_ids"`
-	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
+	Requests   []Mileage_Request   `json:"requests" bson:"requests"`
 }
 type User_Mileage struct {
 	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
@@ -536,7 +536,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 	tolls := 0.0
 	parking := 0.0
 	reimbursement := 0.0
-	var request_ids []string
+	var requests []Mileage_Request
 	var grant_ids []string
 	for cursor.Next(context.TODO()) {
 		var mileage_req Mileage_Request
@@ -545,7 +545,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 			panic(decode_err)
 		}
 		grant_ids = append(grant_ids, mileage_req.Grant_ID)
-		request_ids = append(request_ids, mileage_req.ID)
+		requests = append(requests, mileage_req)
 		mileage += mileage_req.Trip_Mileage
 		tolls += mileage_req.Tolls
 		parking += mileage_req.Parking
@@ -562,7 +562,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 		Parking:       parking,
 		Tolls:         tolls,
 		Reimbursement: reimbursement,
-		Request_IDS:   request_ids,
+		Requests:   requests,
 	}, nil
 }
 

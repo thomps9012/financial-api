@@ -291,7 +291,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						Tolls:         user_mileage.Tolls,
 						Parking:       user_mileage.Parking,
 						Reimbursement: user_mileage.Reimbursement,
-						Request_IDS:   user_mileage.Request_IDS,
+						Requests:   user_mileage.Requests,
 					}
 					// possible to exclude null records
 					records = append(records, *user_record)
