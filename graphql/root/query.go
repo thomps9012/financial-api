@@ -333,6 +333,46 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		// build out grant mileage report
+		"grant_mileage_report": &graphql.Field{
+			Type:        AggGrantMileage,
+			Description: "Aggregate and gather all mileage requests for a given grant",
+			Args: graphql.FieldConfigArgument{
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				isAdmin := user.CheckAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
+				}
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				var mileage_request r.Grant_Mileage_Overview
+				grant_id, isOk := p.Args["grant_id"].(string)
+				if !isOk {
+					panic("must enter a valid grant id")
+				}
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := mileage_request.FindByGrant(grant_id, start_date, end_date)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
+		},
 		// petty cash queries
 		"petty_cash_overview": &graphql.Field{
 			Type:        graphql.NewList(PettyCashOverviewType),

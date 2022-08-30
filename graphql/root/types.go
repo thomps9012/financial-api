@@ -611,6 +611,31 @@ var AggMonthlyMileageType = graphql.NewObject(
 		},
 	},
 )
+var AggGrantMileage = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "GrantMileageRequests",
+		Fields: graphql.Fields{
+			"grant": &graphql.Field{
+				Type: g.GrantType,
+			},
+			"mileage": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"tolls": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"parking": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"reimbursement": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"requests": &graphql.Field{
+				Type: graphql.NewList(MileageType),
+			},
+		},
+	},
+)
 var RoleType = graphql.NewEnum(
 	graphql.EnumConfig{
 		Name: "Role",

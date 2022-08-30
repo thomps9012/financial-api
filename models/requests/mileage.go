@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	conn "financial-api/db"
+	"financial-api/models/grants"
+	g "financial-api/models/grants"
 	user "financial-api/models/user"
 	"fmt"
 	"time"
@@ -46,7 +48,14 @@ type Mileage_Overview struct {
 	Current_Status string    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
-
+type Grant_Mileage_Overview struct {
+	Grant		g.Grant		`json:"grant" bson:"grant"`
+	Mileage       int        `json:"mileage" bson:"mileage"`
+	Tolls         float64    `json:"tolls" bson:"tolls"`
+	Parking       float64    `json:"parking" bson:"parking"`
+	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
+	Requests   []Mileage_Request   `json:"requests" bson:"requests"`
+}
 type Monthly_Mileage_Overview struct {
 	User_ID       string     `json:"user_id" bson:"user_id"`
 	Grant_IDS     []string   `json:"grant_id" bson:"grant_id"`
@@ -59,6 +68,60 @@ type Monthly_Mileage_Overview struct {
 	Current_User  string     `json:"current_user" bson:"current_user"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Requests   []user.Mileage_Request   `json:"requests" bson:"requests"`
+}
+
+func (g *Grant_Mileage_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Mileage_Overview, error) {
+	collection := conn.Db.Collection("mileage_requests")
+	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
+	if start_date != "" && end_date != "" {
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
+	} else {
+		filter = bson.D{{Key: "grant_id", Value: grant_id}}
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	var grant grants.Grant
+	grant_info, grant_err := grant.Find(grant_id)
+	if grant_err != nil {
+		panic(grant_err)
+	}
+	var requests []Mileage_Request
+	total_reimbursement := 0.00
+	total_tolls := 0.00
+	total_parking := 0.00
+	total_mileage := 0
+
+	for cursor.Next(context.TODO()) {
+		var mileage_req Mileage_Request
+		decode_err := cursor.Decode(&mileage_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		total_reimbursement += mileage_req.Reimbursement
+		total_tolls += mileage_req.Tolls
+		total_parking += mileage_req.Parking
+		total_mileage += mileage_req.Trip_Mileage
+		requests = append(requests, mileage_req)
+	}
+	return Grant_Mileage_Overview{
+		Grant: grant_info,
+		Mileage: total_mileage,
+		Tolls: total_tolls,
+		Parking: total_parking,
+		Reimbursement: total_reimbursement,
+		Requests: requests,
+	}, nil
 }
 
 func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end int) (bool, error) {
