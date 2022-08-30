@@ -128,7 +128,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}, nil
 			},
 		},
-		// need to make edits here
 		"user_mileage": &graphql.Field{
 			Type:        UserAggMileage,
 			Description: "Aggregate and gather all mileage requests for a user for a given time period",
@@ -172,7 +171,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		// change return type
 		"user_check_requests": &graphql.Field{
 			Type:        UserCheckRequests,
 			Description: "Aggregate and gather all check requests for a user over a given time period",
