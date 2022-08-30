@@ -131,7 +131,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		// need to make edits here
 		"user_mileage": &graphql.Field{
 			Type:        UserAggMileage,
-			Description: "Aggregate and gather all mileage requests for a user for a given month and year",
+			Description: "Aggregate and gather all mileage requests for a user for a given time period",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -291,7 +291,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						Tolls:         user_mileage.Tolls,
 						Parking:       user_mileage.Parking,
 						Reimbursement: user_mileage.Reimbursement,
-						Requests:   user_mileage.Requests,
+						Requests:      user_mileage.Requests,
 					}
 					// possible to exclude null records
 					records = append(records, *user_record)
