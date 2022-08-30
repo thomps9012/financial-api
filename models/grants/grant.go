@@ -1,4 +1,4 @@
-package grant
+package grants
 
 import (
 	"context"
@@ -23,6 +23,21 @@ func (g *Grant) Find(grant_id string) (Grant, error) {
 		panic(err)
 	}
 	return grant, nil
+}
+
+func (g *Grant) FindAll() ([]Grant, error) {
+	collection := conn.Db.Collection("grants")
+	var grantArr []Grant
+	cursor, err := collection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	for cursor.Next(context.TODO()) {
+		var grant Grant
+		cursor.Decode(&grant)
+		grantArr = append(grantArr, grant)
+	}
+	return grantArr, nil
 }
 
 func (g *Grant) BulkInsert() (bool, error) {

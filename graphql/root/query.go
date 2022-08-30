@@ -3,9 +3,8 @@ package root
 import (
 	"context"
 	conn "financial-api/db"
-	auth "financial-api/middleware"
+	g "financial-api/models/grants"
 	r "financial-api/models/requests"
-	"financial-api/models/user"
 	u "financial-api/models/user"
 	"time"
 
@@ -76,10 +75,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}
 				return results, nil
 			},
-			Subscribe: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := auth.Middleware()
-				return ctx, nil
-			},
 		},
 		"user_overview": &graphql.Field{
 			Type:        UserOverviewType,
@@ -133,7 +128,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}, nil
 			},
 		},
-		"user_monthly_mileage": &graphql.Field{
+		// need to make edits here
+		"user_mileage": &graphql.Field{
 			Type:        UserMonthlyMileageType,
 			Description: "Aggregate and gather all mileage requests for a user for a given month and year",
 			Args: graphql.FieldConfigArgument{
@@ -179,6 +175,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
+		// change return type
 		"user_check_requests": &graphql.Field{
 			Type:        UserCheckRequests,
 			Description: "Aggregate and gather all check requests for a user over a given time period",
@@ -255,7 +252,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				if !isAdmin {
 					panic("you are unauthorized to view this page")
@@ -314,7 +311,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
@@ -338,6 +335,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
+		// build out grant mileage report
 		// petty cash queries
 		"petty_cash_overview": &graphql.Field{
 			Type:        graphql.NewList(PettyCashOverviewType),
@@ -360,6 +358,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
+		// ensure consistent return type below
 		"petty_cash_grant_requests": &graphql.Field{
 			Type:        AggGrantPettyCashReq,
 			Description: "Aggregate and gather all petty cash requests for a given grant",
@@ -452,7 +451,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
@@ -500,6 +499,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
+		// ensure consistent return type
 		"grant_check_requests": &graphql.Field{
 			Type:        AggGrantCheckReq,
 			Description: "Aggregate and gather all check requests for a given grant",
@@ -549,7 +549,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
@@ -573,6 +573,24 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic(err)
 				}
 				return check_request, nil
+			},
+		},
+		// build out grant query
+		"all_grants": &graphql.Field{
+			Type: GrantType,
+			Description: "Returns all grant information in the database",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				var grant g.Grant
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				results, err := grant.FindAll()
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
 			},
 		},
 	},

@@ -1047,6 +1047,19 @@ var UserMonthlyPettyCash = graphql.NewObject(
 		},
 	},
 )
+
+var GrantType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
 var UserCheckRequests = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "UserTotalCheckRequests",

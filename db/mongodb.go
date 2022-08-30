@@ -11,6 +11,7 @@ import (
 )
 
 var Db *mongo.Database
+
 func InitDB() {
 	// change on production
 	ATLAS_URI := os.Getenv("ATLAS_URI")
