@@ -71,6 +71,15 @@ type User_Detail struct {
 	Petty_Cash_Requests     User_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
 }
 
+type User_Agg_Mileage struct {
+	Parking       float64           `json:"parking" bson:"parking"`
+	Tolls         float64           `json:"tolls" bson:"tolls"`
+	Mileage       int               `json:"mileage" bson:"mileage"`
+	User          User              `json:"user" bson:"user"`
+	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
+	Requests      []Mileage_Request `json:"requests" bson:"requests"`
+}
+
 type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
@@ -593,6 +602,60 @@ func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Month
 		Total_Amount: total_amount,
 		Request_IDS:  requestIDs,
 		Receipts:     receipts,
+	}, nil
+}
+
+func (u *User) AggregateMileage(user_id string, start_date string, end_date string) (User_Agg_Mileage, error) {
+	collection := conn.Db.Collection("mileage_requests")
+	var user User
+	result, err := user.FindByID(user_id)
+	if err != nil {
+		panic(err)
+	}
+	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
+	if start_date != "" && end_date != "" {
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
+	} else {
+		filter = bson.D{{Key: "user_id", Value: user_id}}
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	var requests []Mileage_Request
+	total_reimbursement := 0.00
+	total_tolls := 0.00
+	total_parking := 0.00
+	total_mileage := 0
+
+	for cursor.Next(context.TODO()) {
+		var mileage_req Mileage_Request
+		decode_err := cursor.Decode(&mileage_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		total_reimbursement += mileage_req.Reimbursement
+		total_tolls += mileage_req.Tolls
+		total_parking += mileage_req.Parking
+		total_mileage += mileage_req.Trip_Mileage
+		requests = append(requests, mileage_req)
+	}
+	return User_Agg_Mileage{
+		User:          result,
+		Mileage:       total_mileage,
+		Tolls:         total_tolls,
+		Parking:       total_parking,
+		Reimbursement: total_reimbursement,
+		Requests:      requests,
 	}, nil
 }
 

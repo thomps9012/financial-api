@@ -1010,6 +1010,32 @@ var UserMonthlyMileageType = graphql.NewObject(
 		},
 	},
 )
+
+var UserAggMileage = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "UserMonthlyMileageRequests",
+		Fields: graphql.Fields{
+			"user": &graphql.Field{
+				Type: UserType,
+			},
+			"mileage": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"tolls": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"parking": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"reimbursement": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"requests": &graphql.Field{
+				Type: graphql.NewList(MileageType),
+			},
+		},
+	},
+)
 var UserMonthlyPettyCash = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "UserMonthlyPettyCashRequests",

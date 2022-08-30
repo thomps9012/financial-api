@@ -130,17 +130,19 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// need to make edits here
 		"user_mileage": &graphql.Field{
-			Type:        UserMonthlyMileageType,
+			Type:        UserAggMileage,
 			Description: "Aggregate and gather all mileage requests for a user for a given month and year",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"month": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Int),
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
 				},
-				"year": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Int),
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -149,14 +151,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				month, validMo := p.Args["month"].(int)
-				if !validMo {
-					panic("must enter a valid month")
-				}
-				year, validYear := p.Args["year"].(int)
-				if !validYear {
-					panic("must enter a valid year")
-				}
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
@@ -168,7 +164,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						panic("you are unauthorized to view this page")
 					}
 				}
-				results, err := user.MonthlyMileage(user_id, month, year)
+				// build out on user function
+				results, err := user.AggregateMileage(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
