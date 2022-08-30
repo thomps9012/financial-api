@@ -384,17 +384,14 @@ var AggUserPettyCash = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "AggregateUserPettyCash",
 		Fields: graphql.Fields{
+			"user": &graphql.Field{
+				Type: UserType,
+			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"receipts": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
-			},
 			"requests": &graphql.Field{
 				Type: graphql.NewList(PettyCashType),
-			},
-			"last_request": &graphql.Field{
-				Type: PettyCashType,
 			},
 		},
 	},

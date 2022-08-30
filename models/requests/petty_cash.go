@@ -247,9 +247,6 @@ func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_d
 		panic(user_err)
 	}
 	total_amount := 0.0
-	last_request_date := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
-	var last_request Petty_Cash_Request
 	var requests []Petty_Cash_Request
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
@@ -258,18 +255,13 @@ func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_d
 			panic(decode_err)
 		}
 		requests = append(requests, petty_cash_req)
-		if petty_cash_req.Date.After(last_request_date) {
-			last_request = petty_cash_req
-		}
 		total_amount += math.Round(petty_cash_req.Amount*100) / 100
 		total_amount = math.Round(total_amount*100) / 100
 	}
 	petty_cash_overview := &User_Petty_Cash{
-		User_ID:      user_id,
 		User:         user_info,
 		Total_Amount: total_amount,
 		Requests:     requests,
-		Last_Request: last_request,
 	}
 	return *petty_cash_overview, nil
 }
