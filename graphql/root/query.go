@@ -170,7 +170,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"user_check_requests": &graphql.Field{
+		"user_check_requests": &graphql.Field{ 
 			Type:        UserCheckRequests,
 			Description: "Aggregate and gather all check requests for a user over a given time period",
 			Args: graphql.FieldConfigArgument{

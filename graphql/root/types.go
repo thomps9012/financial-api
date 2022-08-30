@@ -141,7 +141,6 @@ var VendorType = graphql.NewObject(
 	},
 )
 
-
 var PurchaseInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "PurchaseInput",
@@ -279,9 +278,6 @@ var AggGrantCheckReq = graphql.NewObject(
 			},
 			"vendors": &graphql.Field{
 				Type: graphql.NewList(VendorType),
-			},
-			"credit_cards": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
@@ -739,7 +735,7 @@ var UserVendorType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"address": &graphql.Field{
-				Type: graphql.String,
+				Type: AddressType,
 			},
 		},
 	},
