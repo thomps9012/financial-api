@@ -424,23 +424,14 @@ var AggGrantPettyCashReq = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "AggregateGrantPettyCash",
 		Fields: graphql.Fields{
-			"grant_id": &graphql.Field{
-				Type: graphql.ID,
-			},
 			"grant": &graphql.Field{
 				Type: g.GrantType,
-			},
-			"last_request": &graphql.Field{
-				Type: graphql.DateTime,
-			},
-			"last_request_id": &graphql.Field{
-				Type: graphql.String,
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
+			"requests": &graphql.Field{
+				Type: graphql.NewList(PettyCashType),
 			},
 		},
 	},

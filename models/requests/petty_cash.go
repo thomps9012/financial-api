@@ -51,12 +51,9 @@ type User_Petty_Cash struct {
 }
 
 type Grant_Petty_Cash struct {
-	Grant_ID        string      `json:"grant_id" bson:"grant_id"`
-	Grant           grant.Grant `json:"grant" bson:"grant"`
-	Total_Amount    float64     `json:"total_amount" bson:"total_amount"`
-	Request_IDS     []string    `json:"request_ids" bson:"request_ids"`
-	Last_Request    time.Time   `json:"last_request" bson:"last_request"`
-	Last_Request_ID string      `json:"last_request_id" bson:"last_request_id"`
+	Grant        grant.Grant          `json:"grant" bson:"grant"`
+	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
+	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
 }
 
 func (p *Petty_Cash_Request) FindByID(id string) (Petty_Cash_Request, error) {
@@ -92,9 +89,9 @@ func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, er
 	first_action := &Action{
 		ID: uuid.NewString(),
 		User: user.User_Action_Info{
-			ID:         requestor.ID,
-			Role:       requestor.Role,
-			Name:       requestor.Name,
+			ID:   requestor.ID,
+			Role: requestor.Role,
+			Name: requestor.Name,
 		},
 		Request_Type: "petty_cash_requests",
 		Request_ID:   p.ID,
@@ -123,9 +120,9 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor user.U
 		update_action := &Action{
 			ID: uuid.NewString(),
 			User: user.User_Action_Info{
-				ID:         requestor.ID,
-				Role:       requestor.Role,
-				Name:       requestor.Name,			
+				ID:   requestor.ID,
+				Role: requestor.Role,
+				Name: requestor.Name,
 			},
 			Request_Type: "petty_cash_requests",
 			Request_ID:   request.ID,
@@ -303,30 +300,20 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 		panic(grant_err)
 	}
 	total_amount := 0.0
-	last_request := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
-	var last_request_id string
-	var requestIDs []string
+	var requests []Petty_Cash_Request
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
 		decode_err := cursor.Decode(&petty_cash_req)
 		if decode_err != nil {
 			panic(decode_err)
 		}
-		requestIDs = append(requestIDs, petty_cash_req.ID)
-		if petty_cash_req.Date.After(last_request) {
-			last_request = petty_cash_req.Date
-			last_request_id = petty_cash_req.ID
-		}
+		requests = append(requests, petty_cash_req)
 		total_amount += petty_cash_req.Amount
 	}
 	petty_cash_overview := &Grant_Petty_Cash{
-		Grant_ID:        grant_id,
-		Grant:           grant_info,
-		Total_Amount:    total_amount,
-		Request_IDS:     requestIDs,
-		Last_Request:    last_request,
-		Last_Request_ID: last_request_id,
+		Grant:        grant_info,
+		Total_Amount: total_amount,
+		Requests:     requests,
 	}
 	return *petty_cash_overview, nil
 }
