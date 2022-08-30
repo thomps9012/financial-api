@@ -163,7 +163,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						panic("you are unauthorized to view this page")
 					}
 				}
-				// build out on user function
 				results, err := user.AggregateMileage(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)

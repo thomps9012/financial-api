@@ -141,11 +141,6 @@ var VendorType = graphql.NewObject(
 	},
 )
 
-type PurchaseInputStruct struct {
-	grant_line_item string
-	description     string
-	amount          float64
-}
 
 var PurchaseInputType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
@@ -918,7 +913,7 @@ var UserPettyCashOverview = graphql.NewObject(
 
 var UserCheckReqOverview = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "UserCheckRequestOverview",
+		Name: "UserCheckReqOverview",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
@@ -986,47 +981,9 @@ var UserType = graphql.NewObject(
 	},
 )
 
-var UserMonthlyMileageType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "UserMonthlyMileageRequests",
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.ID,
-			},
-			"name": &graphql.Field{
-				Type: graphql.String,
-			},
-			"vehicles": &graphql.Field{
-				Type: graphql.NewList(VehicleType),
-			},
-			"month": &graphql.Field{
-				Type: graphql.String,
-			},
-			"year": &graphql.Field{
-				Type: graphql.Int,
-			},
-			"mileage": &graphql.Field{
-				Type: graphql.Int,
-			},
-			"tolls": &graphql.Field{
-				Type: graphql.Float,
-			},
-			"parking": &graphql.Field{
-				Type: graphql.Float,
-			},
-			"reimbursement": &graphql.Field{
-				Type: graphql.Float,
-			},
-			"request_ids": &graphql.Field{
-				Type: graphql.NewList(graphql.ID),
-			},
-		},
-	},
-)
-
 var UserAggMileage = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "UserMonthlyMileageRequests",
+		Name: "UserAggMileage",
 		Fields: graphql.Fields{
 			"user": &graphql.Field{
 				Type: UserType,
@@ -1077,6 +1034,7 @@ var UserMonthlyPettyCash = graphql.NewObject(
 
 var GrantType = graphql.NewObject(
 	graphql.ObjectConfig{
+		Name: "GrantType",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.ID,
