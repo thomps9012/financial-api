@@ -170,7 +170,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"user_check_requests": &graphql.Field{ 
+		"user_check_requests": &graphql.Field{
 			Type:        UserCheckRequests,
 			Description: "Aggregate and gather all check requests for a user over a given time period",
 			Args: graphql.FieldConfigArgument{
@@ -611,6 +611,11 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		"all_grants": &graphql.Field{
 			Type:        graphql.NewList(GrantType),
 			Description: "Returns all grant information in the database",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
 				var grant g.Grant
@@ -623,6 +628,27 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic(err)
 				}
 				return results, nil
+			},
+		},
+		"single_grant": &graphql.Field{
+			Type:        GrantType,
+			Description: "Returns grant information based off an id",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				var grant g.Grant
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				grant_id, isOk := p.Args["id"].(string)
+				if !isOk {
+					panic("must enter a valid grant id")
+				}
+				result, err := grant.Find(grant_id)
+				if err != nil {
+					panic(err)
+				}
+				return result, nil
 			},
 		},
 	},
