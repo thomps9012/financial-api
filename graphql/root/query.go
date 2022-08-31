@@ -611,11 +611,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		"all_grants": &graphql.Field{
 			Type:        graphql.NewList(GrantType),
 			Description: "Returns all grant information in the database",
-			Args: graphql.FieldConfigArgument{
-				"id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
 				var grant g.Grant
@@ -633,6 +628,11 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		"single_grant": &graphql.Field{
 			Type:        GrantType,
 			Description: "Returns grant information based off an id",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user u.User
 				var grant g.Grant
