@@ -13,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set env
-      env:
-        ATLAS_URI: ${{ secrets.ATLAS_URI }}
-        DB_NAME: ${{ secrets.DB_NAME }}
-        JWT_KEY: ${{ secrets.JWT_KEY }}
       
     - name: Set up Go
       uses: actions/setup-go@v3
@@ -25,5 +20,10 @@ jobs:
           go-version: 1.18
     - name: Build
       run: go build -v ./...
+    
     - name: Run
+      env:
+        ATLAS_URI: ${{ secrets.ATLAS_URI }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        JWT_KEY: ${{ secrets.JWT_KEY }}
       run: go run main.go
