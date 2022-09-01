@@ -1,6 +1,5 @@
 name: Go
 env:
-  ATLAS_URI: ${{ secrets.ATLAS_URI }}
   DB_NAME: ${{ secrets.DB_NAME }}
   JWT_KEY: ${{ secrets.JWT_KEY }}
 on:
@@ -16,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "print env variables"
-        run: echo "Atlas uri $ATLAS_URI, Database $DB_NAME, jwt key $JWT_KEY"
+        run: echo "Atlas uri  ${{ secrets.ATLAS_URI }}, Database $DB_NAME, jwt key $JWT_KEY"
       
   build:
     runs-on: ubuntu-latest
