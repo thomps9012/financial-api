@@ -25,6 +25,9 @@ jobs:
 
     - name: Build
       run: go build -v ./...
-    
+      
+    - name: Environment list
+      run: env
+      
     - name: Run
       run: go run main.go
