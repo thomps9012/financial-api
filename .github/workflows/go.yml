@@ -9,6 +9,16 @@ on:
 
 
 jobs:
+  testENV:
+    runs-on: ubuntu-latest
+    env:
+        ATLAS_URI: ${{ secrets.ATLAS_URI }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        JWT_KEY: ${{ secrets.JWT_KEY }}
+    steps:
+      - name: "print env variables"
+        run: echo "Atlas uri $ATLAS_URI, Database $DB_NAME, jwt key $JWT_KEY"
+      
   build:
     runs-on: ubuntu-latest
     steps:
@@ -20,7 +30,7 @@ jobs:
           go-version: 1.18
     - name: Build
       run: go build -v ./...
-    
+      
     - name: Run
       run: go run main.go
       env:
