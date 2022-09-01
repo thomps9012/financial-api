@@ -22,8 +22,8 @@ jobs:
       run: go build -v ./...
     
     - name: Run
+      run: go run main.go
       env:
         ATLAS_URI: ${{ secrets.ATLAS_URI }}
         DB_NAME: ${{ secrets.DB_NAME }}
         JWT_KEY: ${{ secrets.JWT_KEY }}
-      run: go run main.go
