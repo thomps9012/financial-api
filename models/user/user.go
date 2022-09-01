@@ -71,6 +71,15 @@ type User_Detail struct {
 	Petty_Cash_Requests     User_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
 }
 
+type User_Agg_Mileage struct {
+	Parking       float64           `json:"parking" bson:"parking"`
+	Tolls         float64           `json:"tolls" bson:"tolls"`
+	Mileage       int               `json:"mileage" bson:"mileage"`
+	User          User              `json:"user" bson:"user"`
+	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
+	Requests      []Mileage_Request `json:"requests" bson:"requests"`
+}
+
 type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
@@ -202,7 +211,7 @@ type User_Monthly_Mileage struct {
 	Parking       float64    `json:"parking" bson:"parking"`
 	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
 	Grant_IDS     []string   `json:"grant_ids" bson:"grant_ids"`
-	Request_IDS   []string   `json:"request_ids" bson:"request_ids"`
+	Requests   []Mileage_Request   `json:"requests" bson:"requests"`
 }
 type User_Mileage struct {
 	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
@@ -237,10 +246,7 @@ type User_Check_Requests struct {
 	End_Date     string          `json:"end_date" bson:"end_date"`
 	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
 	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
-	Purchases    []Purchase      `json:"purchases" bson:"purchases"`
-	Receipts     []string        `json:"receipts" bson:"receipts"`
 	Requests     []Check_Request `json:"requests" bson:"requests"`
-	Last_Request Check_Request   `json:"last_request" bson:"last_request"`
 }
 
 // can optimize this function with a switch to search certain arrays based on the user's role
@@ -530,7 +536,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 	tolls := 0.0
 	parking := 0.0
 	reimbursement := 0.0
-	var request_ids []string
+	var requests []Mileage_Request
 	var grant_ids []string
 	for cursor.Next(context.TODO()) {
 		var mileage_req Mileage_Request
@@ -539,7 +545,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 			panic(decode_err)
 		}
 		grant_ids = append(grant_ids, mileage_req.Grant_ID)
-		request_ids = append(request_ids, mileage_req.ID)
+		requests = append(requests, mileage_req)
 		mileage += mileage_req.Trip_Mileage
 		tolls += mileage_req.Tolls
 		parking += mileage_req.Parking
@@ -556,7 +562,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 		Parking:       parking,
 		Tolls:         tolls,
 		Reimbursement: reimbursement,
-		Request_IDS:   request_ids,
+		Requests:   requests,
 	}, nil
 }
 
@@ -599,6 +605,60 @@ func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Month
 	}, nil
 }
 
+func (u *User) AggregateMileage(user_id string, start_date string, end_date string) (User_Agg_Mileage, error) {
+	collection := conn.Db.Collection("mileage_requests")
+	var user User
+	result, err := user.FindByID(user_id)
+	if err != nil {
+		panic(err)
+	}
+	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
+	if start_date != "" && end_date != "" {
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
+	} else {
+		filter = bson.D{{Key: "user_id", Value: user_id}}
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	var requests []Mileage_Request
+	total_reimbursement := 0.00
+	total_tolls := 0.00
+	total_parking := 0.00
+	total_mileage := 0
+
+	for cursor.Next(context.TODO()) {
+		var mileage_req Mileage_Request
+		decode_err := cursor.Decode(&mileage_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		total_reimbursement += mileage_req.Reimbursement
+		total_tolls += mileage_req.Tolls
+		total_parking += mileage_req.Parking
+		total_mileage += mileage_req.Trip_Mileage
+		requests = append(requests, mileage_req)
+	}
+	return User_Agg_Mileage{
+		User:          result,
+		Mileage:       total_mileage,
+		Tolls:         total_tolls,
+		Parking:       total_parking,
+		Reimbursement: total_reimbursement,
+		Requests:      requests,
+	}, nil
+}
+
 func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (User_Check_Requests, error) {
 	collection := conn.Db.Collection("check_requests")
 	var user User
@@ -630,18 +690,12 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 	var receipts []string
 	var purchases []Purchase
 	var requests []Check_Request
-	var last_request Check_Request
-	last_request_date := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
 	var vendorExists = make(map[Vendor]bool)
 	for cursor.Next(context.TODO()) {
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
 			panic(decode_err)
-		}
-		if check_req.Date.After(last_request_date) {
-			last_request = check_req
 		}
 		requests = append(requests, check_req)
 		if !vendorExists[check_req.Vendor] {
@@ -659,10 +713,7 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		End_Date:     end_date,
 		Total_Amount: total_amount,
 		Vendors:      vendors,
-		Purchases:    purchases,
 		Requests:     requests,
-		Last_Request: last_request,
-		Receipts:     receipts,
 	}, nil
 }
 

@@ -3,9 +3,8 @@ package root
 import (
 	"context"
 	conn "financial-api/db"
-	auth "financial-api/middleware"
+	g "financial-api/models/grants"
 	r "financial-api/models/requests"
-	"financial-api/models/user"
 	u "financial-api/models/user"
 	"time"
 
@@ -76,10 +75,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}
 				return results, nil
 			},
-			Subscribe: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx := auth.Middleware()
-				return ctx, nil
-			},
 		},
 		"user_overview": &graphql.Field{
 			Type:        UserOverviewType,
@@ -133,18 +128,20 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}, nil
 			},
 		},
-		"user_monthly_mileage": &graphql.Field{
-			Type:        UserMonthlyMileageType,
-			Description: "Aggregate and gather all mileage requests for a user for a given month and year",
+		"user_mileage": &graphql.Field{
+			Type:        UserAggMileage,
+			Description: "Aggregate and gather all mileage requests for a user for a given time period",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"month": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Int),
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
 				},
-				"year": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Int),
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -153,14 +150,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				month, validMo := p.Args["month"].(int)
-				if !validMo {
-					panic("must enter a valid month")
-				}
-				year, validYear := p.Args["year"].(int)
-				if !validYear {
-					panic("must enter a valid year")
-				}
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
@@ -172,7 +163,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						panic("you are unauthorized to view this page")
 					}
 				}
-				results, err := user.MonthlyMileage(user_id, month, year)
+				results, err := user.AggregateMileage(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -255,7 +246,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				if !isAdmin {
 					panic("you are unauthorized to view this page")
@@ -297,7 +288,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						Tolls:         user_mileage.Tolls,
 						Parking:       user_mileage.Parking,
 						Reimbursement: user_mileage.Reimbursement,
-						Request_IDS:   user_mileage.Request_IDS,
+						Requests:      user_mileage.Requests,
 					}
 					// possible to exclude null records
 					records = append(records, *user_record)
@@ -314,7 +305,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
@@ -332,6 +323,47 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 						panic("you are unauthorized to view this record")
 					}
 				}
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
+		},
+		// build out grant mileage report
+		"grant_mileage_report": &graphql.Field{
+			Type:        AggGrantMileage,
+			Description: "Aggregate and gather all mileage requests for a given grant",
+			Args: graphql.FieldConfigArgument{
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				isAdmin := user.CheckAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
+				}
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				var mileage_request r.Grant_Mileage_Overview
+				grant_id, isOk := p.Args["grant_id"].(string)
+				if !isOk {
+					panic("must enter a valid grant id")
+				}
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := mileage_request.FindByGrant(grant_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -360,6 +392,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
+		// ensure consistent return type below
 		"petty_cash_grant_requests": &graphql.Field{
 			Type:        AggGrantPettyCashReq,
 			Description: "Aggregate and gather all petty cash requests for a given grant",
@@ -452,7 +485,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
@@ -549,7 +582,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user user.User
+				var user u.User
 				isAdmin := user.CheckAdmin(p.Context)
 				loggedIn := user.LoggedIn(p.Context)
 				if !loggedIn {
@@ -573,6 +606,49 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic(err)
 				}
 				return check_request, nil
+			},
+		},
+		"all_grants": &graphql.Field{
+			Type:        graphql.NewList(GrantType),
+			Description: "Returns all grant information in the database",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				var grant g.Grant
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				results, err := grant.FindAll()
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
+		},
+		"single_grant": &graphql.Field{
+			Type:        GrantType,
+			Description: "Returns grant information based off an id",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				var grant g.Grant
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				grant_id, isOk := p.Args["id"].(string)
+				if !isOk {
+					panic("must enter a valid grant id")
+				}
+				result, err := grant.Find(grant_id)
+				if err != nil {
+					panic(err)
+				}
+				return result, nil
 			},
 		},
 	},

@@ -17,6 +17,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootMutations",
 	Fields: graphql.Fields{
 		// user mutations
+		// update functionality here after user collection has been seeded
 		"sign_in": &graphql.Field{
 			Type:        graphql.String,
 			Description: "Either creates a new user or logs a user in based on their account history",
