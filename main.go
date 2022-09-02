@@ -47,10 +47,6 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
-	// router.Get("/graphql", func(w http.ResponseWriter, r *http.Request){
-	// 	result := executeQuery(r.URL.Query().Get(("query")), rootSchema)
-	// 	json.NewEncoder(w).Encode(result)
-	// })
 	http.Handle("/graphql", rootRequestHandler)
 	originsOK := handlers.AllowedOrigins([]string{"https://agile-tundra-78417.herokuapp.com/graphql", "http://localhost:3000", "https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
