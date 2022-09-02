@@ -1,4 +1,3 @@
 # can be set to custom to use a dockerfile for gcloud app deployment
-runtime: custom
-env: flex
+runtime: go118
 
