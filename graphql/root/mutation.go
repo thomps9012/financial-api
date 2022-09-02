@@ -16,8 +16,6 @@ import (
 var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootMutations",
 	Fields: graphql.Fields{
-		// user mutations
-		// update functionality here after user collection has been seeded
 		"sign_in": &graphql.Field{
 			Type:        graphql.String,
 			Description: "Either creates a new user or logs a user in based on their account history",
@@ -27,9 +25,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
-				},
-				"id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -45,13 +40,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !okName {
 					panic(okName)
 				}
-				id, okID := p.Args["id"].(string)
-				if !okID {
-					panic(okID)
-				}
 				var user u.User
-
-				result, err := user.Login(id, name, email)
+				result, err := user.Login(name, email)
 				if err != nil {
 					panic(err)
 				}
@@ -63,7 +53,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"add_user": &graphql.Field{
-			Type: UserType,
+			Type:        graphql.String,
 			Description: "Creates a new user for the application",
 			Args: graphql.FieldConfigArgument{
 				"name": &graphql.ArgumentConfig{
@@ -117,19 +107,22 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic(okManagerEmail)
 				}
 				newUser := u.User{
-					Name: name,
-					Email: email,
-					Role: role,
-					Manager_ID: managerID,
-					Manager_Email: managerEmail
+					Name:          name,
+					Email:         email,
+					Role:          role,
+					Manager_ID:    managerID,
+					Manager_Email: managerEmail,
 				}
 				exists, _ := user.Exists(email)
 				if exists {
 					return nil, errors.New("user already exists for specified email")
 				}
-				newUser.Create()
-				return newUser, nil
-			}
+				userID, createErr := newUser.Create()
+				if createErr != nil {
+					panic(createErr)
+				}
+				return userID, nil
+			},
 		},
 		"deactivate_user": &graphql.Field{
 			Type:        UserType,

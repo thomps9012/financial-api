@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -134,7 +133,7 @@ type User struct {
 	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
 	InComplete_Actions []Action  `json:"incomplete_actions" bson:"incomplete_actions"`
 	Manager_ID         string    `json:"manager_id" bson:"manager_id"`
-	Manager_Email	   string	 `json:"manager_email" bson:"manager_email"`
+	Manager_Email      string    `json:"manager_email" bson:"manager_email"`
 	Is_Active          bool      `json:"is_active" bson:"is_active"`
 	Role               string    `json:"role" bson:"role"`
 }
@@ -202,17 +201,17 @@ type Check_Request struct {
 }
 
 type User_Monthly_Mileage struct {
-	ID            string     `json:"id" bson:"_id"`
-	Name          string     `json:"name" bson:"name"`
-	Vehicles      []Vehicle  `json:"vehicles" bson:"vehicles"`
-	Month         time.Month `json:"month" bson:"month"`
-	Year          int        `json:"year" bson:"year"`
-	Mileage       int        `json:"mileage" bson:"mileage"`
-	Tolls         float64    `json:"tolls" bson:"tolls"`
-	Parking       float64    `json:"parking" bson:"parking"`
-	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
-	Grant_IDS     []string   `json:"grant_ids" bson:"grant_ids"`
-	Requests   []Mileage_Request   `json:"requests" bson:"requests"`
+	ID            string            `json:"id" bson:"_id"`
+	Name          string            `json:"name" bson:"name"`
+	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
+	Month         time.Month        `json:"month" bson:"month"`
+	Year          int               `json:"year" bson:"year"`
+	Mileage       int               `json:"mileage" bson:"mileage"`
+	Tolls         float64           `json:"tolls" bson:"tolls"`
+	Parking       float64           `json:"parking" bson:"parking"`
+	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
+	Grant_IDS     []string          `json:"grant_ids" bson:"grant_ids"`
+	Requests      []Mileage_Request `json:"requests" bson:"requests"`
 }
 type User_Mileage struct {
 	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
@@ -250,184 +249,57 @@ type User_Check_Requests struct {
 	Requests     []Check_Request `json:"requests" bson:"requests"`
 }
 
-// can optimize this function with a switch to search certain arrays based on the user's role
-// double check two lower functions for manager id and manager role
-// func setManagerID(email string, employee_role string) string {
-// 	// var manager_id string
-// 	// managers := []Manager{
-// 	// 	{"101614399314441368253", []string{"emp1@norainc.org", "emp2@norainc.org", "emp3@norainc.org"}},
-// 	// 	{"123", []string{"emp4@norainc.org", "emp5@norainc.org", "emp6@norainc.org"}},
-// 	// }
-// 	// chiefs := []Manager{
-// 	// 	{"456", []string{"manager1@norainc.org"}},
-// 	// 	{"116601745736489768774", []string{"sthompson@norainc.org"}},
-// 	// }
-// 	// var executive = "101112"
-// 	// var finance = "131415"
-// 	// switch employee_role {
-// 	// case "EMPLOYEE":
-// 	// 	for i := range managers {
-// 	// 		var employeesArr = managers[i].Employees
-// 	// 		for s := range employeesArr {
-// 	// 			if employeesArr[s] == email {
-// 	// 				manager_id = managers[i].ID
-// 	// 			}
-
-// 	// 		}
-// 	// 		if manager_id == "" {
-// 	// 			manager_id = executive
-// 	// 		}
-// 	// 	}
-// 	// case "MANAGER":
-// 	// 	for i := range chiefs {
-// 	// 		var employeesArr = chiefs[i].Employees
-// 	// 		for s := range employeesArr {
-// 	// 			if employeesArr[s] == email {
-// 	// 				manager_id = chiefs[i].ID
-// 	// 			}
-// 	// 		}
-// 	// 		if manager_id == "" {
-// 	// 			manager_id = executive
-// 	// 		}
-// 	// 	}
-// 	// case "CHIEF":
-// 	// 	manager_id = executive
-// 	// case "EXECUTIVE":
-// 	// 	manager_id = finance
-// 	// }
-// 	return manager_id
-// }
-// func setRole(email string) string {
-// 	var employee_role string
-// 	employees := []string{"emp1@norainc.org", "emp2@norainc.org"}
-// 	for i := range employees {
-// 		if employees[i] == email {
-// 			employee_role = "EMPLOYEE"
-// 		}
-// 	}
-// 	managers := []string{"manager1@norainc.org", "sthompson@norainc.org"}
-// 	for i := range managers {
-// 		if managers[i] == email {
-// 			employee_role = "MANAGER"
-// 		}
-
-// 	}
-// 	chiefs := []string{"coo@norainc.org", "cfo@norainc.org", "cmo@norainc.org"}
-// 	for i := range chiefs {
-// 		if chiefs[i] == email {
-// 			employee_role = "CHIEF"
-// 		}
-
-// 	}
-// 	finance_team := []string{"finance1@norainc.org", "finance2@norainc.org"}
-// 	for i := range finance_team {
-// 		if finance_team[i] == email {
-// 			employee_role = "FINANCE"
-// 		}
-
-// 	}
-// 	executives := []string{"ceo@norainc.org"}
-// 	for i := range executives {
-// 		if executives[i] == email {
-// 			employee_role = "EXECUTIVE"
-// 		}
-// 	}
-// 	return employee_role
-// }
-// func (u *User) Create(id string, name string, email string) (User, error) {
-// 	collection := conn.Db.Collection("users")
-// 	println("user info in create function: %s", id, name, email)
-// 	u.ID = id
-// 	u.Name = name
-// 	u.Email = email
-// 	u.Last_Login = time.Now()
-// 	u.Is_Active = true
-// 	u.Email = email
-// 	u.Vehicles = []Vehicle{}
-// 	u.InComplete_Actions = []Action{}
-// 	role := setRole(email)
-// 	manager_id := setManagerID(email, role)
-// 	u.Manager_ID = manager_id
-// 	u.Role = role
-// 	_, err := collection.InsertOne(context.TODO(), u)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return *u, nil
-// }
-// func (u *User) Login(id string, name string, email string) (User, error) {
-// 	var user User
-// 	collection := conn.Db.Collection("users")
-// 	filter := bson.D{{Key: "_id", Value: id}}
-// 	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
-// 	upsert := true
-// 	after := options.After
-// 	opt := options.FindOneAndUpdateOptions{
-// 		ReturnDocument: &after,
-// 		Upsert:         &upsert,
-// 	}
-// turn this into async await
-// 	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
-// 	if err == mongo.ErrNoDocuments {
-// 		println("user info in login err: %s", id, name, email)
-// 		newUser, createErr := user.Create(id, name, email)
-// 		if createErr != nil {
-// 			panic(createErr)
-// 		}
-// 		return newUser, nil
-// 	}
-// 	return user, nil
-// }
 // automatically search through database for user info
-func (u *User) Login(id string, name string, email string) (User, error) {
+func (u *User) Login(name string, email string) (User, error) {
 	var user User
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	// two options
+	// 1. supervisors make accounts prior to usage of app
+	// 2. user can select role and supervisor - subject to manager approval
+	if err != nil {
+		panic("your supervisor needs to make you an account")
+	}
 	upsert := true
 	after := options.After
-	opt := FindOneAndUpdateOptions{
+	opt := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
-		Upsert: &upsert,
+		Upsert:         &upsert,
 	}
-	if user.Google_ID == "" && user.Manager_ID != "" {
-		var updatedUser User
-		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}, {Key: "$set", Value: bson.M{"google_id": id} }}
-		err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
-		if err != nil {
-			panic(err)
-		}
-		return updatedUser
-	}
-	if user.Manager_ID == "" && user.Google_ID == "" {
+	if user.Manager_ID == "" {
 		var manager User
 		var updatedUser User
 		mgrFilter := bson.D{{Key: "email", Value: user.Manager_Email}}
 		err := collection.FindOne(context.TODO(), mgrFilter).Decode(&manager)
-		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}, {Key: "$set", Value: bson.M{"manager_id": manager.ID}}}
-		err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
 		if err != nil {
 			panic(err)
 		}
-		return updatedUser
+		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}, {Key: "$set", Value: bson.M{"manager_id": manager.ID}}}
+		err2 := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
+		if err2 != nil {
+			panic(err2)
+		}
+		return updatedUser, nil
+	} else {
+		var updatedUser User
+		updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
+		if updateErr != nil {
+			panic(updateErr)
+		}
+		return updatedUser, nil
 	}
-	var updatedUser User
-	updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
-	if updateErr != nil {
-		panic(updateErr)
-	}
-	return updatedUser, nil
-	
 }
 
-func (u *User) Create() (User, error){
+func (u *User) Create() (interface{}, error) {
+	u.ID = uuid.NewString()
 	collection := conn.Db.Collection("users")
 	newUser, err := collection.InsertOne(context.TODO(), *u)
 	if err != nil {
 		panic(err)
 	}
-	return newUser, nil
+	return newUser.InsertedID, nil
 }
 
 func (u *User) Exists(email string) (bool, error) {
@@ -627,7 +499,7 @@ func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly
 		Parking:       parking,
 		Tolls:         tolls,
 		Reimbursement: reimbursement,
-		Requests:   requests,
+		Requests:      requests,
 	}, nil
 }
 
