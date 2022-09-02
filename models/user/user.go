@@ -250,7 +250,7 @@ type User_Check_Requests struct {
 }
 
 // automatically search through database for user info
-func (u *User) Login(name string, email string) (User, error) {
+func (u *User) Login(name string, email string) (string, error) {
 	var user User
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
@@ -268,6 +268,7 @@ func (u *User) Login(name string, email string) (User, error) {
 		ReturnDocument: &after,
 		Upsert:         &upsert,
 	}
+	// this will break login functionality if manager doesn't exist
 	if user.Manager_ID == "" {
 		var manager User
 		var updatedUser User
@@ -281,14 +282,22 @@ func (u *User) Login(name string, email string) (User, error) {
 		if err2 != nil {
 			panic(err2)
 		}
-		return updatedUser, nil
+		token, tokenErr := auth.GenerateToken(updatedUser.ID, updatedUser.Name, updatedUser.Role)
+		if tokenErr != nil {
+			panic(tokenErr)
+		}
+		return token, nil
 	} else {
 		var updatedUser User
 		updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
 		if updateErr != nil {
 			panic(updateErr)
 		}
-		return updatedUser, nil
+		token, tokenErr := auth.GenerateToken(updatedUser.ID, updatedUser.Name, updatedUser.Role)
+		if tokenErr != nil {
+			panic(tokenErr)
+		}
+		return token, nil
 	}
 }
 

@@ -31,6 +31,7 @@ func Middleware() func(http.Handler) http.Handler {
 				return
 			}
 			id := token["id"].(string)
+			name := token["name"].(string)
 			role := token["role"].(string)
 			contextInfo := &contextInfo{id, role}
 			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)

@@ -13,14 +13,16 @@ var jwtKey = []byte(os.Getenv("JWT_KEY"))
 
 type Claims struct {
 	id   string
+	name string
 	role string
 	jwt.StandardClaims
 }
 
-func GenerateToken(id string, role string) (string, error) {
+func GenerateToken(id string, name string, role string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = id
+	claims["name"] = name
 	claims["role"] = role
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	tokenString, err := token.SignedString(jwtKey)
@@ -41,6 +43,7 @@ func ParseToken(tokenString string) (map[string]interface{}, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var info = map[string]interface{}{
 			"id":   claims["id"].(string),
+			"name": claims["name"].(string),
 			"role": claims["role"].(string),
 		}
 		return info, nil

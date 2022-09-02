@@ -45,11 +45,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				token, tokenErr := auth.GenerateToken(result.ID, result.Role)
-				if tokenErr != nil {
-					panic(tokenErr)
-				}
-				return token, nil
+				return result, nil
 			},
 		},
 		"add_user": &graphql.Field{
