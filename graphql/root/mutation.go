@@ -62,6 +62,75 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return token, nil
 			},
 		},
+		"add_user": &graphql.Field{
+			Type: UserType,
+			Description: "Creates a new user for the application",
+			Args: graphql.FieldConfigArgument{
+				"name": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"email": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"role": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"manager_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"manager_email": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user u.User
+				loggedIn := user.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				isAdmin := user.CheckAdmin(p.Context)
+				if !isAdmin {
+					panic("you are not authorized to create new users")
+				}
+				email, okEmail := p.Args["email"].(string)
+				if !okEmail {
+					panic(okEmail)
+				}
+				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
+				if !emailCheck {
+					panic("users must have a Northern Ohio Recovery Association Email")
+				}
+				name, okName := p.Args["name"].(string)
+				if !okName {
+					panic(okName)
+				}
+				role, okRole := p.Args["role"].(string)
+				if !okRole {
+					panic(okRole)
+				}
+				managerID, okManagerID := p.Args["manager_id"].(string)
+				if !okManagerID {
+					panic(okManagerID)
+				}
+				managerEmail, okManagerEmail := p.Args["manager_email"].(string)
+				if !okManagerEmail {
+					panic(okManagerEmail)
+				}
+				newUser := u.User{
+					Name: name,
+					Email: email,
+					Role: role,
+					Manager_ID: managerID,
+					Manager_Email: managerEmail
+				}
+				exists, _ := user.Exists(email)
+				if exists {
+					return nil, errors.New("user already exists for specified email")
+				}
+				newUser.Create()
+				return newUser, nil
+			}
+		},
 		"deactivate_user": &graphql.Field{
 			Type:        UserType,
 			Description: "Deactivates a user by setting the status to inactive",
