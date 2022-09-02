@@ -102,12 +102,15 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic(okManagerEmail)
 				}
 				newUser := u.User{
-					Name:          name,
-					Email:         email,
-					Role:          role,
-					Manager_ID:    managerID,
-					Manager_Email: managerEmail,
-					Last_Login: time.Now(),
+					Name:               name,
+					Email:              email,
+					Role:               role,
+					Manager_ID:         managerID,
+					Manager_Email:      managerEmail,
+					InComplete_Actions: []u.Action{},
+					Vehicles:           []u.Vehicle{},
+					Last_Login:         time.Now(),
+					Is_Active:          true,
 				}
 				exists, _ := user.Exists(email)
 				if exists {
