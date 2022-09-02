@@ -2,7 +2,6 @@ package root
 
 import (
 	"errors"
-	auth "financial-api/middleware"
 	r "financial-api/models/requests"
 	u "financial-api/models/user"
 	"fmt"

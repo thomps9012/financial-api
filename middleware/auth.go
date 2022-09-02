@@ -13,6 +13,7 @@ type contextKey struct {
 
 type contextInfo struct {
 	id   string `json:"id" bson:"role"`
+	name string `json:"name" bson:"name"`
 	role string `json:"role" bson:"role"`
 }
 
@@ -33,7 +34,7 @@ func Middleware() func(http.Handler) http.Handler {
 			id := token["id"].(string)
 			name := token["name"].(string)
 			role := token["role"].(string)
-			contextInfo := &contextInfo{id, role}
+			contextInfo := &contextInfo{id, name, role}
 			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
@@ -44,6 +45,11 @@ func Middleware() func(http.Handler) http.Handler {
 func ForID(ctx context.Context) string {
 	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
 	return raw.id
+}
+
+func ForName(ctx context.Context) string {
+	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
+	return raw.name
 }
 
 func ForRole(ctx context.Context) string {
