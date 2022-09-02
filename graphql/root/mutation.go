@@ -48,7 +48,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"add_user": &graphql.Field{
-			Type:        graphql.String,
+			Type:        UserType,
 			Description: "Creates a new user for the application",
 			Args: graphql.FieldConfigArgument{
 				"name": &graphql.ArgumentConfig{
@@ -107,16 +107,17 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Role:          role,
 					Manager_ID:    managerID,
 					Manager_Email: managerEmail,
+					Last_Login: time.Now(),
 				}
 				exists, _ := user.Exists(email)
 				if exists {
 					return nil, errors.New("user already exists for specified email")
 				}
-				userID, createErr := newUser.Create()
+				newUserInfo, createErr := newUser.Create()
 				if createErr != nil {
 					panic(createErr)
 				}
-				return userID, nil
+				return newUserInfo, nil
 			},
 		},
 		"deactivate_user": &graphql.Field{

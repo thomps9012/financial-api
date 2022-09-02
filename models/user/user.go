@@ -302,14 +302,14 @@ func (u *User) Login(name string, email string) (string, error) {
 	}
 }
 
-func (u *User) Create() (interface{}, error) {
+func (u *User) Create() (User, error) {
 	u.ID = uuid.NewString()
 	collection := conn.Db.Collection("users")
-	newUser, err := collection.InsertOne(context.TODO(), *u)
+	_, err := collection.InsertOne(context.TODO(), *u)
 	if err != nil {
 		panic(err)
 	}
-	return newUser.InsertedID, nil
+	return *u, nil
 }
 
 func (u *User) Exists(email string) (bool, error) {
