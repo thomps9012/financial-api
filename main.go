@@ -48,7 +48,6 @@ func main() {
 	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
 	http.Handle("/graphql", rootRequestHandler)
-	http.HandleFunc("/", rootRequestHandler)
 	originsOK := handlers.AllowedOrigins([]string{"https://agile-tundra-78417.herokuapp.com/graphql", "http://localhost:3000", "https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
