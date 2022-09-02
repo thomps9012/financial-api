@@ -254,7 +254,7 @@ func (u *User) Login(name string, email string) (string, error) {
 	var user User
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
-	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
+
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	// two options
 	// 1. supervisors make accounts prior to usage of app
@@ -289,7 +289,8 @@ func (u *User) Login(name string, email string) (string, error) {
 		return token, nil
 	} else {
 		var updatedUser User
-		updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
+		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
+		updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
 		if updateErr != nil {
 			panic(updateErr)
 		}
