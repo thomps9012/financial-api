@@ -251,6 +251,7 @@ type User_Check_Requests struct {
 
 // automatically search through database for user info
 func (u *User) Login(name string, email string) (string, error) {
+	var user User
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	find_err := collection.FindOne(context.TODO(), filter).Decode(&user)
@@ -275,6 +276,7 @@ func (u *User) Login(name string, email string) (string, error) {
 		}
 		return token, nil
 	} else {
+		var updatedUser User
 		user.Last_Login = time.Now()
 		upsert := true
 		after := options.After
