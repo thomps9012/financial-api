@@ -253,53 +253,22 @@ type User_Check_Requests struct {
 func (u *User) Login(name string, email string) (string, error) {
 	var user User
 	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "email", Value: email}}
-
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
-	// two options
-	// 1. supervisors make accounts prior to usage of app
-	// 2. user can select role and supervisor - subject to manager approval
-	if err != nil {
-		panic("your supervisor needs to make you an account")
-	}
 	upsert := true
 	after := options.After
 	opt := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
 		Upsert:         &upsert,
 	}
-	// this will break login functionality if manager doesn't exist
-	if user.Manager_ID == "" {
-		var manager User
-		var updatedUser User
-		mgrFilter := bson.D{{Key: "email", Value: user.Manager_Email}}
-		err := collection.FindOne(context.TODO(), mgrFilter).Decode(&manager)
-		if err != nil {
-			panic(err)
-		}
-		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}, {Key: "$set", Value: bson.M{"manager_id": manager.ID}}}
-		err2 := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
-		if err2 != nil {
-			panic(err2)
-		}
-		token, tokenErr := auth.GenerateToken(updatedUser.ID, updatedUser.Name, updatedUser.Role)
+	u.ID = uuid.NewString()
+	u.Manager_ID = ""
+	u.Last_Login = time.Now()
+	u.Role = "EMPLOYEE"
+	_, err := collection.InsertOne(context.TODO(), *u)
+	token, tokenErr := auth.GenerateToken(u.ID, name, "EMPLOYEE")
 		if tokenErr != nil {
 			panic(tokenErr)
 		}
 		return token, nil
-	} else {
-		var updatedUser User
-		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
-		updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
-		if updateErr != nil {
-			panic(updateErr)
-		}
-		token, tokenErr := auth.GenerateToken(updatedUser.ID, updatedUser.Name, updatedUser.Role)
-		if tokenErr != nil {
-			panic(tokenErr)
-		}
-		return token, nil
-	}
 }
 
 func (u *User) Create() (User, error) {
