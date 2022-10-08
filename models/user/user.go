@@ -254,17 +254,23 @@ func (u *User) Login(name string, email string) (string, error) {
 	collection := conn.Db.Collection("users")
 	u.ID = uuid.NewString()
 	u.Manager_ID = ""
+	u.Manager_Email = ""
 	u.Last_Login = time.Now()
 	u.Role = "EMPLOYEE"
+	u.Name = name
+	u.Email = email
+	u.Is_Active = true
+	u.Vehicles = []u.Vehicle{}
+	u.InComplete_Actions = []u.Action{}
 	_, err := collection.InsertOne(context.TODO(), *u)
 	if err != nil {
 		panic(err)
 	}
-	token, tokenErr := auth.GenerateToken(u.ID, name, "EMPLOYEE")
-		if tokenErr != nil {
+	token, tokenErr := auth.GenerateToken(u.ID, u.Name, "EMPLOYEE")
+	if tokenErr != nil {
 			panic(tokenErr)
-		}
-		return token, nil
+	}
+	return token, nil
 }
 
 func (u *User) Create() (User, error) {
