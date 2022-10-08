@@ -256,7 +256,7 @@ func (u *User) Login(name string, email string) (string, error) {
 	u.Manager_ID = ""
 	u.Manager_Email = ""
 	u.Last_Login = time.Now()
-	u.Role = "EMPLOYEE"
+	u.Role = "MANAGER"
 	u.Name = name
 	u.Email = email
 	u.Is_Active = true
