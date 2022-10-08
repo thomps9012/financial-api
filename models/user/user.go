@@ -252,25 +252,47 @@ type User_Check_Requests struct {
 // automatically search through database for user info
 func (u *User) Login(name string, email string) (string, error) {
 	collection := conn.Db.Collection("users")
-	u.ID = uuid.NewString()
-	u.Manager_ID = ""
-	u.Manager_Email = ""
-	u.Last_Login = time.Now()
-	u.Role = "MANAGER"
-	u.Name = name
-	u.Email = email
-	u.Is_Active = true
-	u.Vehicles = []Vehicle{}
-	u.InComplete_Actions = []Action{}
-	_, err := collection.InsertOne(context.TODO(), *u)
-	if err != nil {
-		panic(err)
-	}
-	token, tokenErr := auth.GenerateToken(u.ID, u.Name, "EMPLOYEE")
-	if tokenErr != nil {
+	filter := bson.D{{Key: "email", Value: email}}
+	find_err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	if find_err != nil {
+		u.ID = uuid.NewString()
+		u.Manager_ID = "f850c60d-cee5-4843-9bba-2badaeaeac14"
+		u.Manager_Email = "cmo@norainc.org"
+		u.Last_Login = time.Now()
+		u.Role = "MANAGER"
+		u.Name = name
+		u.Email = email
+		u.Is_Active = true
+		u.Vehicles = []Vehicle{}
+		u.InComplete_Actions = []Action{}
+		_, err := collection.InsertOne(context.TODO(), *u)
+		if err != nil {
+			panic(err)
+		}
+		token, tokenErr := auth.GenerateToken(u.ID, u.Name, u.Role)
+		if tokenErr != nil {
 			panic(tokenErr)
+		}
+		return token, nil
+	} else {
+		user.Last_Login = time.Now()
+		upsert := true
+		after := options.After
+		opt := options.FindOneAndUpdateOptions{
+			ReturnDocument: &after,
+			Upsert:         &upsert,
+		}
+		update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
+		err2 := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
+		if err2 != nil {
+			panic(err2)
+		}
+		token, tokenErr := auth.GenerateToken(updatedUser.ID, updatedUser.Name, updatedUser.Role)
+		if tokenErr != nil {
+			panic(tokenErr)
+		}
+		return token, nil
 	}
-	return token, nil
 }
 
 func (u *User) Create() (User, error) {
