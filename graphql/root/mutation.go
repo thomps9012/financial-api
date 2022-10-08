@@ -6,7 +6,6 @@ import (
 	u "financial-api/models/user"
 	"fmt"
 	"math"
-	"regexp"
 	"time"
 
 	"github.com/graphql-go/graphql"
