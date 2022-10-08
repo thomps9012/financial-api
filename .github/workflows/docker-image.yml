@@ -26,6 +26,7 @@ jobs:
     - id: 'gcloud'
       name: 'gCloud Service List'
       run: |-
+        gcloud auth login --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
         gcloud services list --project='finance-api'
     
     - name: 'Configures Gcloud Docker'
