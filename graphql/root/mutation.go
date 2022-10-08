@@ -77,10 +77,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !okEmail {
 					panic(okEmail)
 				}
-				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
-				if !emailCheck {
-					panic("users must have a Northern Ohio Recovery Association Email")
-				}
 				name, okName := p.Args["name"].(string)
 				if !okName {
 					panic(okName)
