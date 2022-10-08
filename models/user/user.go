@@ -260,8 +260,8 @@ func (u *User) Login(name string, email string) (string, error) {
 	u.Name = name
 	u.Email = email
 	u.Is_Active = true
-	u.Vehicles = []u.Vehicle{}
-	u.InComplete_Actions = []u.Action{}
+	u.Vehicles = []Vehicle{}
+	u.InComplete_Actions = []Action{}
 	_, err := collection.InsertOne(context.TODO(), *u)
 	if err != nil {
 		panic(err)
