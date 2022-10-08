@@ -251,19 +251,15 @@ type User_Check_Requests struct {
 
 // automatically search through database for user info
 func (u *User) Login(name string, email string) (string, error) {
-	var user User
 	collection := conn.Db.Collection("users")
-	upsert := true
-	after := options.After
-	opt := options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-		Upsert:         &upsert,
-	}
 	u.ID = uuid.NewString()
 	u.Manager_ID = ""
 	u.Last_Login = time.Now()
 	u.Role = "EMPLOYEE"
 	_, err := collection.InsertOne(context.TODO(), *u)
+	if err != nil {
+		panic(err)
+	}
 	token, tokenErr := auth.GenerateToken(u.ID, name, "EMPLOYEE")
 		if tokenErr != nil {
 			panic(tokenErr)
