@@ -12,10 +12,11 @@ import (
 )
 
 type Status string
-
+// add in user received status to close loop
 const (
 	PENDING               Status = "PENDING"
 	MANAGER_APPROVED      Status = "MANAGER_APPROVED"
+	CHIEF_APPROVED		  Status = "CHIEF_APPROVED"
 	FINANCE_APPROVED      Status = "FINANACE_APPROVED"
 	ORGANIZATION_APPROVED Status = "ORG_APPROVED"
 	REJECTED              Status = "REJECTED"
