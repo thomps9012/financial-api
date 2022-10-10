@@ -3,7 +3,8 @@ A graphql and go based application program interface for the submission of grant
 
 # Features
 The Application Program Interface (API) uses regular expressions to ensure that users are originating accounts from within the organization (for the internal website), and allows anyone with a google account to create an account (using the public facing api).
-The API endpoint is hosted on the google cloud platform using a combination of google cloud containers and google cloud run functions. Automatic deployments are set up with some prior authoriztions on the google cloud console, utilization of a service account, and an automated YAML script that creates a docker image on a cloud based container instance.
+The API endpoint is hosted on the google cloud platform using a combination of google cloud containers and google cloud run functions.
+Automatic deployments are set up on the google cloud console, with custom permissions, the utilization of a service account, and an automated YAML script that creates and deployes a docker image to a cloud based container instance.
 
 # Tech Stack
 1. [Google UUID](https://github.com/google/uuid)
