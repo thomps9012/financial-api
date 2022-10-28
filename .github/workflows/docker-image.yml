@@ -31,7 +31,7 @@ jobs:
     - id: gcloud
       name: Test Authentication by Listing gCloud Services
       run: |-
-        gcloud auth login --cred-fil="${{ steps.auth.outputs.credentials_file_path }}"
+        gcloud auth login --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
         gcloud services list --project="finance-api-361311"
       
     - name: Configures gCloud for Docker
