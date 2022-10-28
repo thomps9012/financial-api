@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	conn "financial-api/db"
 	r "financial-api/graphql/root"
 	auth "financial-api/middleware"
@@ -12,6 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
 )
 
 const defaultPort = "8080"
@@ -40,17 +40,17 @@ func main() {
 	conn.InitDB()
 	defer conn.CloseDB()
 	// delete below on final production push
-	// rootRequestHandler := handler.New(&handler.Config{
-	// 	Schema:   &rootSchema,
-	// 	Pretty:   true,
-	// 	GraphiQL: true,
-	// })
+	rootRequestHandler := handler.New(&handler.Config{
+		Schema: &rootSchema,
+		Pretty: true,
+	})
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
-	router.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
-		result := executeQuery(r.URL.Query().Get("query"), rootSchema)
-		json.NewEncoder(w).Encode(result)
-	})
+	router.Handle("/graphql", rootRequestHandler)
+	// router.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
+	// 	result := executeQuery(r.URL.Query().Get("query"), rootSchema)
+	// 	json.NewEncoder(w).Encode(result)
+	// })
 	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
