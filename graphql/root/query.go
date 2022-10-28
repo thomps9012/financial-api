@@ -212,6 +212,48 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
+		"user_petty_cash_requests": &graphql.Field{
+			Type:        AggUserPettyCash,
+			Description: "Aggregate and gather all petty cash requests for a given user",
+			Args: graphql.FieldConfigArgument{
+				"user_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				user_id, isOK := p.Args["user_id"].(string)
+				if !isOK {
+					panic("need to enter a valid user id")
+				}
+				isAdmin := middleware.ForAdmin(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				contextuser := middleware.ForID(p.Context)
+				if !isAdmin {
+					if user_id != contextuser {
+						panic("you are unauthorized to view this page")
+					}
+				}
+				var user_petty_cash models.Petty_Cash_Request
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
+		},
 		// mileage queries
 		"mileage_overview": &graphql.Field{
 			Type:        graphql.NewList(MileageOverviewType),
@@ -387,7 +429,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		// ensure consistent return type below
 		"petty_cash_grant_requests": &graphql.Field{
 			Type:        AggGrantPettyCashReq,
 			Description: "Aggregate and gather all petty cash requests for a given grant",
@@ -421,48 +462,6 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
 				results, err := grant_petty_cash.FindByGrant(grant_id, start_date, end_date)
-				if err != nil {
-					panic(err)
-				}
-				return results, nil
-			},
-		},
-		"petty_cash_user_requests": &graphql.Field{
-			Type:        AggUserPettyCash,
-			Description: "Aggregate and gather all petty cash requests for a given user",
-			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-				"start_date": &graphql.ArgumentConfig{
-					Type:         graphql.String,
-					DefaultValue: "",
-				},
-				"end_date": &graphql.ArgumentConfig{
-					Type:         graphql.String,
-					DefaultValue: "",
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				user_id, isOK := p.Args["user_id"].(string)
-				if !isOK {
-					panic("need to enter a valid user id")
-				}
-				isAdmin := middleware.ForAdmin(p.Context)
-				loggedIn := middleware.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
-				}
-				contextuser := middleware.ForID(p.Context)
-				if !isAdmin {
-					if user_id != contextuser {
-						panic("you are unauthorized to view this page")
-					}
-				}
-				var user_petty_cash models.Petty_Cash_Request
-				start_date := p.Args["start_date"].(string)
-				end_date := p.Args["end_date"].(string)
-				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -597,6 +596,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return check_request, nil
 			},
 		},
+		// grant queries
 		"all_grants": &graphql.Field{
 			Type:        graphql.NewList(GrantType),
 			Description: "Returns all grant information in the database",
