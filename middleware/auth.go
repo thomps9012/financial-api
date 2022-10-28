@@ -56,10 +56,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 func LoggedIn(ctx context.Context) bool {
 	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	if raw.id != "" {
-		return true
-	}
-	return false
+	return raw.id != ""
 }
 
 func ForID(ctx context.Context) string {

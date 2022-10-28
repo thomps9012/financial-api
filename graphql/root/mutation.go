@@ -47,10 +47,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic(okid)
 				}
 				var user models.User
-				exists, err := user.Exists(id)
-				if err != nil {
-					panic(err)
-				}
+				exists, _ := user.Exists(id)
 				if exists {
 					result, err := user.Login(id)
 					if err != nil {
