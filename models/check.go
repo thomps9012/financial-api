@@ -415,8 +415,6 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 	}
 	total_amount := 0.0
 	var vendors []Vendor
-	var receipts []string
-	var purchases []Purchase
 	var requests []Check_Request
 	var vendorExists = make(map[Vendor]bool)
 	for cursor.Next(context.TODO()) {
@@ -430,8 +428,6 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 			vendors = append(vendors, check_req.Vendor)
 			vendorExists[check_req.Vendor] = true
 		}
-		purchases = append(purchases, check_req.Purchases...)
-		receipts = append(receipts, check_req.Receipts...)
 		total_amount += check_req.Order_Total
 	}
 	return User_Check_Requests{

@@ -46,7 +46,7 @@ type Request_Response struct {
 }
 
 type Request_Info struct {
-	User_ID        string `json:"user_id" bson:"user_id`
+	User_ID        string `json:"user_id" bson:"user_id"`
 	Current_User   string `json:"current_user" bson:"current_user"`
 	Current_Status Status `json:"current_status" bson:"current_status"`
 }
