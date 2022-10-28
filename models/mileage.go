@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	conn "financial-api/db"
-	user "financial-api/models/user"
+	"financial-api/middleware"
 	"fmt"
 	"time"
 
@@ -31,7 +31,7 @@ type Mileage_Request struct {
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
 	Current_User      string    `json:"current_user" bson:"current_user"`
-	Current_Status    string    `json:"current_status" bson:"current_status"`
+	Current_Status    Status    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -44,7 +44,7 @@ type Mileage_Overview struct {
 	Trip_Mileage   int       `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
-	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_Status Status    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 type Grant_Mileage_Overview struct {
@@ -168,7 +168,6 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 	return true, nil
 }
 
-// update via refactor
 func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	fmt.Printf("%s\n", m.Date)
 	collection := conn.Db.Collection("mileage_requests")
@@ -177,64 +176,75 @@ func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	m.Created_At = time.Now()
 	m.Is_Active = true
 	m.User_ID = requestor.ID
-	m.Current_Status = "PENDING"
-	m.Current_User = requestor.Manager_ID
+	m.Current_Status = PENDING
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
+	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
+	// set current user based off category
+	current_user_email := UserEmailHandler(m.Category, PENDING, false)
+	var user User
+	current_user_id, err := user.FindID(current_user_email)
+	if err != nil {
+		panic(err)
+	}
+	m.Current_User = current_user_id
+	// set first action and apply to mileage request
 	first_action := &Action{
-		ID: uuid.NewString(),
-		User: user.User_Action_Info{
-			ID:   requestor.ID,
-			Role: requestor.Role,
-			Name: requestor.Name,
-		},
-		Request_Type: "mileage_requests",
-		Request_ID:   m.ID,
-		Status:       "PENDING",
-		Created_At:   time.Now(),
+		ID:         uuid.NewString(),
+		User:       m.User_ID,
+		Request_ID: m.ID,
+		Status:     PENDING,
+		Created_At: time.Now(),
 	}
 	m.Action_History = append(m.Action_History, *first_action)
-	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
+	// insert the document
 	_, insert_err := collection.InsertOne(context.TODO(), *m)
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
+	// notify the current user based off the above
+	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Mileage", requestor.Name, time.Now())
 	if update_err != nil {
 		panic(update_err)
 	}
 	if !update_user {
-		return *m, errors.New("failed to update manager")
+		return *m, errors.New("failed to update appropiate admin staff")
 	}
 	return *m, nil
 }
 
-func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (Mileage_Request, error) {
-	if request.Current_Status == "REJECTED" {
+func (m *Mileage_Request) Update(request Mileage_Request, requestor User) (Mileage_Request, error) {
+	if request.Current_Status == REJECTED {
 		update_action := &Action{
-			ID: uuid.NewString(),
-			User: user.User_Action_Info{
-				ID:   requestor.ID,
-				Role: requestor.Role,
-				Name: requestor.Name,
-			},
-			Request_Type: "mileage_requests",
-			Request_ID:   request.ID,
-			Status:       "REJECTED_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       requestor.ID,
+			Request_ID: request.ID,
+			Status:     REJECTED_EDIT,
+			Created_At: time.Now(),
 		}
-		request.Current_Status = "PENDING"
-		request.Current_User = requestor.Manager_ID
+		// find out status of previous action
+		request.Current_Status = PENDING
+		prev_user_id := request.Action_History[len(request.Action_History)-1].User
+		prev_pre_rejection_action_status := request.Action_History[len(request.Action_History)-2].Status
+		// make appropiate notification based off previous action
+		var user User
+		current_user, err := user.FindByID(prev_user_id)
+		if err != nil {
+			panic(err)
+		}
+		var current_user_email = current_user.Email
+		// set the current status back to the previous action status
+		request.Current_Status = prev_pre_rejection_action_status
 		request.Action_History = append(request.Action_History, *update_action)
-		var manager user.User
-		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
+		// notify the current user based off the above
+		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Mileage", requestor.Name, time.Now())
 		if update_err != nil {
 			panic(update_err)
 		}
 		if !update_user {
-			return Mileage_Request{}, errors.New("failed to update manager")
+			return *m, errors.New("failed to update appropiate admin staff")
 		}
 	}
+	// these are all other updates made
 	var mileage_req Mileage_Request
 	collection := conn.Db.Collection("mileage_requests")
 	filter := bson.D{{Key: "_id", Value: request.ID}}
@@ -261,7 +271,7 @@ func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool,
 		panic("you are not the user who created this request")
 	}
 	current_status := m.Current_Status
-	if current_status != "PENDING" && current_status != "REJECTED" {
+	if current_status != PENDING && current_status != REJECTED {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
