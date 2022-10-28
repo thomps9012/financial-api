@@ -169,7 +169,6 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 }
 
 func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
-	fmt.Printf("%s\n", m.Date)
 	collection := conn.Db.Collection("mileage_requests")
 	var currentMileageRate = 62.5
 	m.ID = uuid.NewString()
@@ -241,7 +240,7 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor User) (Milea
 			panic(update_err)
 		}
 		if !update_user {
-			return *m, errors.New("failed to update appropiate admin staff")
+			panic("failed to update appropiate admin staff")
 		}
 	}
 	// these are all other updates made

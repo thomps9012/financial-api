@@ -2,9 +2,8 @@ package models
 
 import (
 	"context"
-	"errors"
 	conn "financial-api/db"
-	user "financial-api/models/user"
+	"financial-api/middleware"
 	"time"
 
 	"github.com/google/uuid"
@@ -46,7 +45,7 @@ type Check_Request struct {
 	User_ID        string     `json:"user_id" bson:"user_id"`
 	Action_History []Action   `json:"action_history" bson:"action_history"`
 	Current_User   string     `json:"current_user" bson:"current_user"`
-	Current_Status string     `json:"current_status" bson:"current_status"`
+	Current_Status Status     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
 
@@ -59,7 +58,7 @@ type Check_Request_Overview struct {
 	Date           time.Time `json:"date" bson:"date"`
 	Vendor         Vendor    `json:"vendor" bson:"vendor"`
 	Order_Total    float64   `json:"order_total" bson:"order_total"`
-	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_Status Status    `json:"current_status" bson:"current_status"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
@@ -110,20 +109,21 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	c.Created_At = time.Now()
 	c.Is_Active = true
 	c.User_ID = requestor.ID
-	c.Current_Status = "PENDING"
+	c.Current_Status = PENDING
 	// build in logic for setting current user id
-	c.Current_User = requestor.Manager_ID
+	current_user_email := UserEmailHandler(c.Category, PENDING, false)
+	var user User
+	current_user_id, err := user.FindID(current_user_email)
+	if err != nil {
+		panic(err)
+	}
+	c.Current_User = current_user_id
 	first_action := &Action{
-		ID: uuid.NewString(),
-		User: user.User_Action_Info{
-			ID:   requestor.ID,
-			Role: requestor.Role,
-			Name: requestor.Name,
-		},
-		Request_Type: "check_requests",
-		Request_ID:   c.ID,
-		Status:       "PENDING",
-		Created_At:   time.Now(),
+		ID:         uuid.NewString(),
+		User:       requestor.ID,
+		Request_ID: c.ID,
+		Status:     PENDING,
+		Created_At: time.Now(),
 	}
 	c.Action_History = append(c.Action_History, *first_action)
 	_, insert_err := collection.InsertOne(context.TODO(), *c)
@@ -131,8 +131,7 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 		panic(insert_err)
 	}
 	// add in extra validation based on org chart here
-	var manager User
-	update_user, update_err := manager.AddNotification(*first_action, requestor.Manager_ID)
+	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 	if update_err != nil {
 		panic(update_err)
 	}
@@ -144,29 +143,30 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 
 func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Request, error) {
 	collection := conn.Db.Collection("check_requests")
-	if request.Current_Status == "REJECTED" {
+	if request.Current_Status == REJECTED {
 		update_action := &Action{
-			ID: uuid.NewString(),
-			User: User_Action_Info{
-				ID:   requestor.ID,
-				Role: requestor.Role,
-				Name: requestor.Name,
-			},
-			Request_Type: "check_requests",
-			Request_ID:   request.ID,
-			Status:       "REJECTED_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       requestor.ID,
+			Request_ID: request.ID,
+			Status:     REJECTED_EDIT,
+			Created_At: time.Now(),
 		}
-		request.Current_Status = "PENDING"
-		request.Current_User = requestor.Manager_ID
+		prev_user_id := request.Action_History[len(request.Action_History)-1].User
+		prev_pre_rejection_action_status := request.Action_History[len(request.Action_History)-2].Status
+		var user User
+		current_user, err := user.FindByID(prev_user_id)
+		if err != nil {
+			panic(err)
+		}
+		var current_user_email = current_user.Email
+		request.Current_Status = prev_pre_rejection_action_status
 		request.Action_History = append(request.Action_History, *update_action)
-		var manager User
-		update_user, update_err := manager.AddNotification(*update_action, requestor.Manager_ID)
+		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 		if update_err != nil {
 			panic(update_err)
 		}
 		if !update_user {
-			return Check_Request{}, errors.New("failed to update manager")
+			panic("failed to update appropiate admin staff")
 		}
 	}
 	var check_request Check_Request
@@ -194,7 +194,7 @@ func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, err
 		panic("you are not the user who created this request")
 	}
 	current_status := check_request.Current_Status
-	if current_status != "PENDING" && current_status != "REJECTED" {
+	if current_status != PENDING && current_status != REJECTED {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)

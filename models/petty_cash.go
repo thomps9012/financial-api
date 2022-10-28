@@ -2,9 +2,8 @@ package models
 
 import (
 	"context"
-	"errors"
 	conn "financial-api/db"
-	user "financial-api/models/user"
+	"financial-api/middleware"
 	"math"
 	"time"
 
@@ -25,7 +24,7 @@ type Petty_Cash_Request struct {
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Action_History []Action  `json:"action_history" bson:"action_history"`
 	Current_User   string    `json:"current_user" bson:"current_user"`
-	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_Status Status    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -38,7 +37,7 @@ type Petty_Cash_Overview struct {
 	Grant          Grant     `json:"grant" bson:"grant"`
 	Date           time.Time `json:"date" bson:"date"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
-	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_Status Status    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -88,33 +87,33 @@ func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Ti
 	return true, nil
 }
 
-// need to updated via refactor
 func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	p.ID = uuid.NewString()
 	p.Created_At = time.Now()
 	p.Is_Active = true
-	p.Current_Status = "PENDING"
+	p.Current_Status = PENDING
 	p.User_ID = requestor.ID
 	first_action := &Action{
-		ID: uuid.NewString(),
-		User: user.User_Action_Info{
-			ID:   requestor.ID,
-			Role: requestor.Role,
-			Name: requestor.Name,
-		},
-		Request_Type: "petty_cash_requests",
-		Request_ID:   p.ID,
-		Status:       "PENDING",
-		Created_At:   time.Now(),
+		ID:         uuid.NewString(),
+		User:       requestor.ID,
+		Request_ID: p.ID,
+		Status:     PENDING,
+		Created_At: time.Now(),
 	}
-	p.Action_History = append(p.Action_History, *first_action)
-	_, err := collection.InsertOne(context.TODO(), *p)
+	current_user_email := UserEmailHandler(p.Category, PENDING, false)
+	var user User
+	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
 		panic(err)
 	}
-	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
+	p.Current_User = current_user_id
+	p.Action_History = append(p.Action_History, *first_action)
+	_, insert_err := collection.InsertOne(context.TODO(), *p)
+	if insert_err != nil {
+		panic(insert_err)
+	}
+	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Petty Cash", requestor.Name, time.Now())
 	if update_err != nil {
 		panic(update_err)
 	}
@@ -124,30 +123,33 @@ func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) 
 	return *p, nil
 }
 
-func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor user.User) (Petty_Cash_Request, error) {
+func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor User) (Petty_Cash_Request, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
-	if request.Current_Status == "REJECTED" {
+	if request.Current_Status == REJECTED {
 		update_action := &Action{
-			ID: uuid.NewString(),
-			User: user.User_Action_Info{
-				ID:   requestor.ID,
-				Role: requestor.Role,
-				Name: requestor.Name,
-			},
-			Request_Type: "petty_cash_requests",
-			Request_ID:   request.ID,
-			Status:       "REJECTED_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       requestor.ID,
+			Request_ID: request.ID,
+			Status:     REJECTED_EDIT,
+			Created_At: time.Now(),
 		}
-		request.Current_Status = "PENDING"
+		request.Current_Status = PENDING
+		prev_user_id := request.Action_History[len(request.Action_History)-1].User
+		prev_pre_rejection_action_status := request.Action_History[len(request.Action_History)-2].Status
+		var user User
+		current_user, err := user.FindByID(prev_user_id)
+		if err != nil {
+			panic(err)
+		}
+		var current_user_email = current_user.Email
+		request.Current_Status = prev_pre_rejection_action_status
 		request.Action_History = append(request.Action_History, *update_action)
-		var manager user.User
-		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
+		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Petty Cash", requestor.Name, time.Now())
 		if update_err != nil {
 			panic(update_err)
 		}
 		if !update_user {
-			return Petty_Cash_Request{}, errors.New("failed to update manager")
+			panic("failed to update appropiate admin staff")
 		}
 	}
 	var petty_cash_req Petty_Cash_Request
@@ -175,7 +177,7 @@ func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) 
 		panic("you are not the user who created this request")
 	}
 	current_status := petty_cash_req.Current_Status
-	if current_status != "PENDING" && current_status != "REJECTED" {
+	if current_status != PENDING && current_status != REJECTED {
 		panic("this request is already being processed")
 	}
 	result, update_err := collection.DeleteOne(context.TODO(), request.ID)

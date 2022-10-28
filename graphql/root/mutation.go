@@ -283,7 +283,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+				if result.Current_Status != models.PENDING && result.Current_Status != models.REJECTED {
 					panic("this request is already being processed")
 				}
 				// add in conditional update of fields based on input
@@ -447,7 +447,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if contextuser.ID != result.User_ID {
 					panic("you are unauthorized to edit this record")
 				}
-				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+				if result.Current_Status != models.PENDING && result.Current_Status != models.REJECTED {
 					panic("this request is currently being processed")
 				}
 				if p.Args["request"] != nil {
@@ -619,7 +619,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+				if result.Current_Status != models.PENDING && result.Current_Status != models.REJECTED {
 					panic("this request is already being processed")
 				}
 				if p.Args["grant_id"] != nil {
