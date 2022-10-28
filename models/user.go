@@ -146,10 +146,10 @@ func (u *User) Create() (string, error) {
 	return token, nil
 }
 
-func (u *User) Exists(email string) (bool, error) {
+func (u *User) Exists(id string) (bool, error) {
 	var user User
 	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "email", Value: email}}
+	filter := bson.D{{Key: "_id", Value: id}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return false, err
