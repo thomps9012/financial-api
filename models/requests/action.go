@@ -16,8 +16,10 @@ type Status string
 const (
 	PENDING               Status = "PENDING"
 	MANAGER_APPROVED      Status = "MANAGER_APPROVED"
-	FINANCE_APPROVED      Status = "FINANACE_APPROVED"
-	ORGANIZATION_APPROVED Status = "ORG_APPROVED"
+	SUPERVISOR_APPROVED   Status = "SUPERVISOR_APPROVED"
+	FINANCE_APPROVED      Status = "FINANCE_APPROVED"
+	EXECUTIVE_APPROVED    Status = "EXECUTIVE_APPROVED"
+	ORGANIZATION_APPROVED Status = "ORGANIZATION_APPROVED"
 	REJECTED              Status = "REJECTED"
 	ARCHIVED              Status = "ARCHIVED"
 )
@@ -111,9 +113,9 @@ func (a *Action) Approve(request_id string, request_info Request_Response, manag
 	current_action := &Action{
 		ID: uuid.NewString(),
 		User: user.User_Action_Info{
-			ID:         manager.ID,
-			Role:       manager.Role,
-			Name:       manager.Name,
+			ID:   manager.ID,
+			Role: manager.Role,
+			Name: manager.Name,
 		},
 		Request_Type: string(request_type),
 		Request_ID:   request_id,
@@ -168,9 +170,9 @@ func (a *Action) Reject(request_id string, request_info Request_Response, manage
 	current_action := &Action{
 		ID: uuid.NewString(),
 		User: user.User_Action_Info{
-			ID:         manager_info.ID,
-			Role:       manager_info.Role,
-			Name:       manager_info.Name,
+			ID:   manager_info.ID,
+			Role: manager_info.Role,
+			Name: manager_info.Name,
 		},
 		Request_Type: string(request_type),
 		Request_ID:   request_id,

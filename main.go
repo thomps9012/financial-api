@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
 	// "encoding/json"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/handlers"
@@ -23,7 +24,7 @@ var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 
 func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
-		Schema: schema,
+		Schema:        schema,
 		RequestString: query,
 	})
 	if len(result.Errors) > 0 {
@@ -40,9 +41,9 @@ func main() {
 	conn.InitDB()
 	defer conn.CloseDB()
 	rootRequestHandler := handler.New(&handler.Config{
-		Schema:     &rootSchema,
-		Pretty:     true,
-		GraphiQL:   true,
+		Schema:   &rootSchema,
+		Pretty:   true,
+		GraphiQL: true,
 	})
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())

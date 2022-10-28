@@ -31,10 +31,27 @@ type Purchase struct {
 	Description     string  `json:"description" bson:"description"`
 	Amount          float64 `json:"amount" bson:"amount"`
 }
+type Category string
+
+const (
+	IOP            Category = "IOP"
+	INTAKE         Category = "INTAKE"
+	PEERS          Category = "PEERS"
+	ACT_TEAM       Category = "ACT_TEAM"
+	IHBT           Category = "IHBT"
+	PERKINS        Category = "PERKINS"
+	MENS_HOUSE     Category = "MENS_HOUSE"
+	NEXT_STEP      Category = "NEXT_STEP"
+	LORAIN         Category = "LORAIN"
+	PREVENTION     Category = "PREVENTION"
+	ADMINISTRATIVE Category = "ADMINISTRATIVE"
+	FINANCE        Category = "FINANCE"
+)
 
 type Check_Request struct {
 	ID             string     `json:"id" bson:"_id"`
 	Date           time.Time  `json:"date" bson:"date"`
+	Category       Category   `json:"category" bson:"category"`
 	Vendor         Vendor     `json:"vendor" bson:"vendor"`
 	Description    string     `json:"description" bson:"description"`
 	Grant_ID       string     `json:"grant_id" bson:"grant_id"`

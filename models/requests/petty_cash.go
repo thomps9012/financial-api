@@ -18,6 +18,7 @@ type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
 	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
+	Category       Category  `json:"category" bson:"category"`
 	Date           time.Time `json:"date" bson:"date"`
 	Description    string    `json:"description" bson:"description"`
 	Amount         float64   `json:"amount" bson:"amount"`
@@ -85,7 +86,6 @@ func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, er
 	p.Is_Active = true
 	p.Current_Status = "PENDING"
 	p.User_ID = requestor.ID
-	p.Current_User = requestor.Manager_ID
 	first_action := &Action{
 		ID: uuid.NewString(),
 		User: user.User_Action_Info{
@@ -130,7 +130,6 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor user.U
 			Created_At:   time.Now(),
 		}
 		request.Current_Status = "PENDING"
-		request.Current_User = requestor.Manager_ID
 		request.Action_History = append(request.Action_History, *update_action)
 		var manager user.User
 		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)

@@ -17,11 +17,11 @@ import (
 type Role string
 
 const (
-	EMPLOYEE  Role = "EMPLOYEE"
-	MANAGER   Role = "MANAGER"
-	CHIEF     Role = "CHIEF"
-	EXECUTIVE Role = "EXECUTIVE"
-	FINANCE   Role = "FINANCE"
+	EMPLOYEE      Role = "EMPLOYEE"
+	MANAGER       Role = "MANAGER"
+	SUPERVISOR    Role = "SUPERVISOR"
+	EXECUTIVE     Role = "EXECUTIVE"
+	FINANCE_STAFF Role = "FINANCE_STAFF"
 )
 
 func (u User) ParseRole(role string) Role {
@@ -31,12 +31,12 @@ func (u User) ParseRole(role string) Role {
 		roleParse = EMPLOYEE
 	case "MANAGER":
 		roleParse = MANAGER
-	case "FINANCE":
-		roleParse = FINANCE
+	case "FINANCE_STAFF":
+		roleParse = FINANCE_STAFF
 	case "EXECUTIVE":
 		roleParse = EXECUTIVE
-	case "CHIEF":
-		roleParse = CHIEF
+	case "SUPERVISOR":
+		roleParse = SUPERVISOR
 	default:
 		roleParse = EMPLOYEE
 	}
@@ -83,12 +83,14 @@ type Petty_Cash_Request struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
 	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
+	Category       Category  `json:"category" bson:"category"`
 	Date           time.Time `json:"date" bson:"date"`
 	Description    string    `json:"description" bson:"description"`
 	Amount         float64   `json:"amount" bson:"amount"`
 	Receipts       []string  `json:"receipts" bson:"receipts"`
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Action_History []Action  `json:"action_history" bson:"action_history"`
+	Current_User   string    `json:"current_user" bson:"current_user"`
 	Current_Status string    `json:"current_status" bson:"current_status"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
@@ -98,12 +100,29 @@ type Vehicle struct {
 	Name        string `json:"name" bson:"name"`
 	Description string `json:"description" bson:"description"`
 }
+type Category string
+
+const (
+	IOP            Category = "IOP"
+	INTAKE         Category = "INTAKE"
+	PEERS          Category = "PEERS"
+	ACT_TEAM       Category = "ACT_TEAM"
+	IHBT           Category = "IHBT"
+	PERKINS        Category = "PERKINS"
+	MENS_HOUSE     Category = "MENS_HOUSE"
+	NEXT_STEP      Category = "NEXT_STEP"
+	LORAIN         Category = "LORAIN"
+	PREVENTION     Category = "PREVENTION"
+	ADMINISTRATIVE Category = "ADMINISTRATIVE"
+	FINANCE        Category = "FINANCE"
+)
 
 type Mileage_Request struct {
 	ID                string    `json:"id" bson:"_id"`
 	Grant_ID          string    `json:"grant_id" bson:"grant_id"`
 	User_ID           string    `json:"user_id" bson:"user_id"`
 	Date              time.Time `json:"date" bson:"date"`
+	Category          Category  `json:"category" bson:"category"`
 	Starting_Location string    `json:"starting_location" bson:"starting_location"`
 	Destination       string    `json:"destination" bson:"destination"`
 	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose"`
@@ -115,7 +134,8 @@ type Mileage_Request struct {
 	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
 	Created_At        time.Time `json:"created_at" bson:"created_at"`
 	Action_History    []Action  `json:"action_history" bson:"action_history"`
-	Current_Status    string    `json:"current_status" bson:"current_status"`
+	Current_User      string    `json:"current_user" bson:"current_user"`
+	Current_Status    Status    `json:"current_status" bson:"current_status"`
 	Is_Active         bool      `json:"is_active" bson:"is_active"`
 }
 
@@ -132,8 +152,6 @@ type User struct {
 	Last_Login         time.Time `json:"last_login" bson:"last_login"`
 	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
 	InComplete_Actions []Action  `json:"incomplete_actions" bson:"incomplete_actions"`
-	Manager_ID         string    `json:"manager_id" bson:"manager_id"`
-	Manager_Email      string    `json:"manager_email" bson:"manager_email"`
 	Is_Active          bool      `json:"is_active" bson:"is_active"`
 	Role               string    `json:"role" bson:"role"`
 }
@@ -148,9 +166,10 @@ type Status string
 const (
 	PENDING               Status = "PENDING"
 	MANAGER_APPROVED      Status = "MANAGER_APPROVED"
-	CHIEF_APPROVED        Status = "CHIEF_APPROVED"
-	FINANCE_APPROVED      Status = "FINANACE_APPROVED"
-	ORGANIZATION_APPROVED Status = "ORG_APPROVED"
+	SUPERVISOR_APPROVED   Status = "SUPERVISOR_APPROVED"
+	FINANCE_APPROVED      Status = "FINANCE_APPROVED"
+	EXECUTIVE_APPROVED    Status = "EXECUTIVE_APPROVED"
+	ORGANIZATION_APPROVED Status = "ORGANIZATION_APPROVED"
 	REJECTED              Status = "REJECTED"
 	ARCHIVED              Status = "ARCHIVED"
 )
@@ -186,6 +205,7 @@ type Purchase struct {
 type Check_Request struct {
 	ID             string     `json:"id" bson:"_id"`
 	Date           time.Time  `json:"date" bson:"date"`
+	Category       Category   `json:"category" bson:"category"`
 	Vendor         Vendor     `json:"vendor" bson:"vendor"`
 	Description    string     `json:"description" bson:"description"`
 	Grant_ID       string     `json:"grant_id" bson:"grant_id"`
@@ -196,6 +216,7 @@ type Check_Request struct {
 	Created_At     time.Time  `json:"created_at" bson:"created_at"`
 	User_ID        string     `json:"user_id" bson:"user_id"`
 	Action_History []Action   `json:"action_history" bson:"action_history"`
+	Current_User   string     `json:"current_user" bson:"current_user"`
 	Current_Status string     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
@@ -249,7 +270,7 @@ type User_Check_Requests struct {
 	Requests     []Check_Request `json:"requests" bson:"requests"`
 }
 
-// automatically search through database for user info
+// update to create or login based on user existing in database
 func (u *User) Login(name string, email string) (string, error) {
 	var user User
 	collection := conn.Db.Collection("users")
@@ -418,17 +439,6 @@ func (u *User) Findall() ([]User, error) {
 		userArr = append(userArr, user)
 	}
 	return userArr, nil
-}
-
-func (u *User) FindMgrID(user_id string) (string, error) {
-	collection := conn.Db.Collection("users")
-	var user User
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		panic(err)
-	}
-	return user.Manager_ID, nil
 }
 
 func (u *User) AddNotification(item Action, user_id string) (bool, error) {
