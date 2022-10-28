@@ -3,6 +3,7 @@ package main
 import (
 	conn "financial-api/db"
 	r "financial-api/graphql/root"
+	"financial-api/middleware"
 	auth "financial-api/middleware"
 	"fmt"
 	"net/http"
@@ -22,6 +23,7 @@ var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 	Mutation: r.RootMutations,
 })
 
+// swap for graphiql handler on production
 func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
@@ -52,5 +54,5 @@ func main() {
 	originsOK := handlers.AllowedOrigins([]string{"https://agile-tundra-78417.herokuapp.com/graphql", "http://localhost:3000", "https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(router))
+	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(middleware.LimitApiCalls(router)))
 }
