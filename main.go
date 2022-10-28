@@ -1,19 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	conn "financial-api/db"
 	r "financial-api/graphql/root"
-	"financial-api/middleware"
 	auth "financial-api/middleware"
 	"fmt"
 	"net/http"
 	"os"
 
-	// "encoding/json"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/handler"
 )
 
 const defaultPort = "8080"
@@ -23,7 +21,6 @@ var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 	Mutation: r.RootMutations,
 })
 
-// swap for graphiql handler on production
 func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
@@ -42,17 +39,20 @@ func main() {
 	}
 	conn.InitDB()
 	defer conn.CloseDB()
-	rootRequestHandler := handler.New(&handler.Config{
-		Schema:   &rootSchema,
-		Pretty:   true,
-		GraphiQL: true,
-	})
+	// delete below on final production push
+	// rootRequestHandler := handler.New(&handler.Config{
+	// 	Schema:   &rootSchema,
+	// 	Pretty:   true,
+	// 	GraphiQL: true,
+	// })
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
-	router.Handle("/graphql", rootRequestHandler)
-	http.Handle("/graphql", rootRequestHandler)
-	originsOK := handlers.AllowedOrigins([]string{"https://agile-tundra-78417.herokuapp.com/graphql", "http://localhost:3000", "https://finance-requests.vercel.app"})
+	router.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
+		result := executeQuery(r.URL.Query().Get("query"), rootSchema)
+		json.NewEncoder(w).Encode(result)
+	})
+	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(middleware.LimitApiCalls(router)))
+	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(auth.LimitApiCalls(router)))
 }
