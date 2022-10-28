@@ -1,7 +1,7 @@
 package root
 
 import (
-	g "financial-api/models/grants"
+	"financial-api/models"
 
 	"github.com/graphql-go/graphql"
 )
@@ -18,8 +18,11 @@ var UserDetailType = graphql.NewObject(graphql.ObjectConfig{
 		"name": &graphql.Field{
 			Type: graphql.String,
 		},
-		"role": &graphql.Field{
-			Type: RoleType,
+		"admin": &graphql.Field{
+			Type: graphql.Boolean,
+		},
+		"permissions": &graphql.Field{
+			Type: graphql.NewList(graphql.String),
 		},
 		"vehicles": &graphql.Field{
 			Type: graphql.NewList(VehicleType),
@@ -91,10 +94,57 @@ var AddressType = graphql.NewObject(
 	},
 )
 
+var CategoryType = graphql.NewEnum(
+	graphql.EnumConfig{
+		Name: "Category",
+		Values: graphql.EnumValueConfigMap{
+			"IOP": &graphql.EnumValueConfig{
+				Value: "IOP",
+			},
+			"INTAKE": &graphql.EnumValueConfig{
+				Value: "INTAKE",
+			},
+			"PEERS": &graphql.EnumValueConfig{
+				Value: "PEERS",
+			},
+			"ACT_TEAM": &graphql.EnumValueConfig{
+				Value: "ACT_TEAM",
+			},
+			"IHBT": &graphql.EnumValueConfig{
+				Value: "IHBT",
+			},
+			"PERKINS": &graphql.EnumValueConfig{
+				Value: "PERKINS",
+			},
+			"MENS_HOUSE": &graphql.EnumValueConfig{
+				Value: "MENS_HOUSE",
+			},
+			"NEXT_STEP": &graphql.EnumValueConfig{
+				Value: "NEXT_STEP",
+			},
+			"LORAIN": &graphql.EnumValueConfig{
+				Value: "LORAIN",
+			},
+			"PREVENTION": &graphql.EnumValueConfig{
+				Value: "PREVENTION",
+			},
+			"ADMINISTRATIVE": &graphql.EnumValueConfig{
+				Value: "ADMINISTRATIVE",
+			},
+			"FINANCE": &graphql.EnumValueConfig{
+				Value: "FINANCE",
+			},
+		},
+	},
+)
+
 var CheckRequestInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "CheckRequestInput",
 		Fields: graphql.InputObjectConfigFieldMap{
+			"category": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(CategoryType),
+			},
 			"date": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.DateTime),
 			},
@@ -127,6 +177,7 @@ var VendorInput = graphql.NewInputObject(
 		},
 	},
 )
+
 var VendorType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Vendor",
@@ -181,6 +232,9 @@ var CheckRequestType = graphql.NewObject(
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
+			},
+			"category": &graphql.Field{
+				Type: CategoryType,
 			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -245,7 +299,7 @@ var CheckReqOverviewType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
@@ -274,7 +328,7 @@ var AggGrantCheckReq = graphql.NewObject(
 		Name: "GrantCheckRequests",
 		Fields: graphql.Fields{
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"vendors": &graphql.Field{
 				Type: graphql.NewList(VendorType),
@@ -295,6 +349,9 @@ var PettyCashType = graphql.NewObject(
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
+			},
+			"category": &graphql.Field{
+				Type: CategoryType,
 			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -350,7 +407,7 @@ var PettyCashOverviewType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
@@ -392,6 +449,9 @@ var PettyCashInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "PettyCashInput",
 		Fields: graphql.InputObjectConfigFieldMap{
+			"category": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(CategoryType),
+			},
 			"amount": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.Float),
 			},
@@ -413,7 +473,7 @@ var AggGrantPettyCashReq = graphql.NewObject(
 		Name: "AggregateGrantPettyCash",
 		Fields: graphql.Fields{
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
@@ -431,6 +491,9 @@ var MileageInputType = graphql.NewInputObject(
 		Fields: graphql.InputObjectConfigFieldMap{
 			"date": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"category": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(CategoryType),
 			},
 			"starting_location": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
@@ -463,6 +526,9 @@ var MileageType = graphql.NewObject(
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
+			},
+			"category": &graphql.Field{
+				Type: CategoryType,
 			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -595,7 +661,7 @@ var AggGrantMileage = graphql.NewObject(
 		Name: "GrantMileageRequests",
 		Fields: graphql.Fields{
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"mileage": &graphql.Field{
 				Type: graphql.Int,
@@ -615,29 +681,8 @@ var AggGrantMileage = graphql.NewObject(
 		},
 	},
 )
-var RoleType = graphql.NewEnum(
-	graphql.EnumConfig{
-		Name: "Role",
-		Values: graphql.EnumValueConfigMap{
-			"EMPLOYEE": &graphql.EnumValueConfig{
-				Value: "EMPLOYEE",
-			},
-			"MANAGER": &graphql.EnumValueConfig{
-				Value: "MANAGER",
-			},
-			"FINANCE": &graphql.EnumValueConfig{
-				Value: "FINANCE",
-			},
-			"EXECUTIVE": &graphql.EnumValueConfig{
-				Value: "EXECUTIVE",
-			},
-			"CHIEF": &graphql.EnumValueConfig{
-				Value: "CHIEF",
-			},
-		},
-	},
-)
 
+// change
 var StatusType = graphql.NewEnum(
 	graphql.EnumConfig{
 		Name: "Status",
@@ -648,11 +693,17 @@ var StatusType = graphql.NewEnum(
 			"MANAGER_APPROVED": &graphql.EnumValueConfig{
 				Value: "MANAGER_APPROVED",
 			},
+			"SUPERVISOR_APPROVED": &graphql.EnumValueConfig{
+				Value: "SUPERVISOR_APPROVED",
+			},
 			"FINANCE_APPROVED": &graphql.EnumValueConfig{
 				Value: "FINANCE_APPROVED",
 			},
-			"ORG_APPROVED": &graphql.EnumValueConfig{
-				Value: "ORG_APPROVED",
+			"EXECUTIVE_APPROVED": &graphql.EnumValueConfig{
+				Value: "EXECUTIVE_APPROVED",
+			},
+			"ORGANIZATION_APPROVED": &graphql.EnumValueConfig{
+				Value: "ORGANIZATION_APPROVED",
 			},
 			"REJECTED": &graphql.EnumValueConfig{
 				Value: "REJECTED",
@@ -666,19 +717,24 @@ var StatusType = graphql.NewEnum(
 		},
 	},
 )
-
-var UserInfoType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "UserInfoType",
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.ID,
+var PermissionType = graphql.NewEnum(
+	graphql.EnumConfig{
+		Name: "Permission",
+		Values: graphql.EnumValueConfigMap{
+			"EMPLOYEE": &graphql.EnumValueConfig{
+				Value: "EMPLOYEE",
 			},
-			"name": &graphql.Field{
-				Type: graphql.String,
+			"MANAGER": &graphql.EnumValueConfig{
+				Value: "MANAGER",
 			},
-			"role": &graphql.Field{
-				Type: RoleType,
+			"SUPERVISOR": &graphql.EnumValueConfig{
+				Value: "SUPERVISOR",
+			},
+			"EXECUTIVE": &graphql.EnumValueConfig{
+				Value: "EXECUTIVE",
+			},
+			"FINANCE_TEAM": &graphql.EnumValueConfig{
+				Value: "FINANCE_TEAM",
 			},
 		},
 	},
@@ -692,7 +748,7 @@ var ActionType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"user": &graphql.Field{
-				Type: UserInfoType,
+				Type: graphql.String,
 			},
 			"request_type": &graphql.Field{
 				Type: graphql.String,
@@ -764,14 +820,14 @@ var UserOverviewType = graphql.NewObject(
 			"id": &graphql.Field{
 				Type: graphql.ID,
 			},
-			"manager_id": &graphql.Field{
-				Type: graphql.ID,
-			},
 			"name": &graphql.Field{
 				Type: graphql.String,
 			},
-			"role": &graphql.Field{
-				Type: RoleType,
+			"admin": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"permissions": &graphql.Field{
+				Type: graphql.NewList(PermissionType),
 			},
 			"incomplete_action_count": &graphql.Field{
 				Type: graphql.Int,
@@ -886,7 +942,7 @@ var UserPettyCashOverview = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
@@ -918,7 +974,7 @@ var UserCheckReqOverview = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"grant": &graphql.Field{
-				Type: g.GrantType,
+				Type: models.GrantType,
 			},
 			"date": &graphql.Field{
 				Type: graphql.DateTime,
@@ -949,17 +1005,17 @@ var UserType = graphql.NewObject(
 			"id": &graphql.Field{
 				Type: graphql.ID,
 			},
-			"manager_id": &graphql.Field{
-				Type: graphql.ID,
-			},
 			"email": &graphql.Field{
 				Type: graphql.String,
 			},
 			"name": &graphql.Field{
 				Type: graphql.String,
 			},
-			"role": &graphql.Field{
-				Type: RoleType,
+			"admin": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"permissions": &graphql.Field{
+				Type: graphql.NewList(PermissionType),
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -1041,6 +1097,7 @@ var GrantType = graphql.NewObject(
 		},
 	},
 )
+
 var UserCheckRequests = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "UserTotalCheckRequests",

@@ -1,10 +1,9 @@
-package requests
+package models
 
 import (
 	"context"
 	"errors"
 	conn "financial-api/db"
-	grant "financial-api/models/grants"
 	user "financial-api/models/user"
 	"math"
 	"time"
@@ -31,28 +30,38 @@ type Petty_Cash_Request struct {
 }
 
 type Petty_Cash_Overview struct {
-	ID             string      `json:"id" bson:"_id"`
-	User_ID        string      `json:"user_id" bson:"user_id"`
-	User           user.User   `json:"user" bson:"user"`
-	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
-	Amount         float64     `json:"amount" bson:"amount"`
-	Grant          grant.Grant `json:"grant" bson:"grant"`
-	Date           time.Time   `json:"date" bson:"date"`
-	Created_At     time.Time   `json:"created_at" bson:"created_at"`
-	Current_Status string      `json:"current_status" bson:"current_status"`
-	Is_Active      bool        `json:"is_active" bson:"is_active"`
+	ID             string    `json:"id" bson:"_id"`
+	User_ID        string    `json:"user_id" bson:"user_id"`
+	User           User      `json:"user" bson:"user"`
+	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
+	Amount         float64   `json:"amount" bson:"amount"`
+	Grant          Grant     `json:"grant" bson:"grant"`
+	Date           time.Time `json:"date" bson:"date"`
+	Created_At     time.Time `json:"created_at" bson:"created_at"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
+	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
 type User_Petty_Cash struct {
 	User_ID      string               `json:"user_id" bson:"user_id"`
-	User         user.User            `json:"user" bson:"user"`
+	User         User                 `json:"user" bson:"user"`
 	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
 	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
 	Last_Request Petty_Cash_Request   `json:"last_request" bson:"last_request"`
 }
 
+type User_Monthly_Petty_Cash struct {
+	ID           string     `json:"id" bson:"_id"`
+	Name         string     `json:"name" bson:"name"`
+	Month        time.Month `json:"month" bson:"month"`
+	Year         int        `json:"year" bson:"year"`
+	Total_Amount float64    `json:"total_amount" bson:"total_amount"`
+	Request_IDS  []string   `json:"request_ids" bson:"request_ids"`
+	Receipts     []string   `json:"receipts" bson:"receipts"`
+}
+
 type Grant_Petty_Cash struct {
-	Grant        grant.Grant          `json:"grant" bson:"grant"`
+	Grant        Grant                `json:"grant" bson:"grant"`
 	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
 	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
 }
@@ -79,7 +88,8 @@ func (p *Petty_Cash_Request) Exists(user_id string, amount float64, date time.Ti
 	return true, nil
 }
 
-func (p *Petty_Cash_Request) Create(requestor user.User) (Petty_Cash_Request, error) {
+// need to updated via refactor
+func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	p.ID = uuid.NewString()
 	p.Created_At = time.Now()
@@ -186,8 +196,8 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 		panic(err)
 	}
 	for cursor.Next(context.TODO()) {
-		var user user.User
-		var grant grant.Grant
+		var user User
+		var grant Grant
 		var petty_cash_req Petty_Cash_Request
 		decode_err := cursor.Decode(&petty_cash_req)
 		if decode_err != nil {
@@ -240,7 +250,7 @@ func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_d
 	if err != nil {
 		panic(err)
 	}
-	var user user.User
+	var user User
 	user_info, user_err := user.FindByID(user_id)
 	if user_err != nil {
 		panic(user_err)
@@ -264,6 +274,7 @@ func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_d
 	}
 	return *petty_cash_overview, nil
 }
+
 func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
@@ -285,7 +296,7 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 	if err != nil {
 		panic(err)
 	}
-	var grant grant.Grant
+	var grant Grant
 	grant_info, grant_err := grant.Find(grant_id)
 	if grant_err != nil {
 		panic(grant_err)
@@ -307,4 +318,76 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 		Requests:     requests,
 	}
 	return *petty_cash_overview, nil
+}
+
+func (u *User) FindPettyCash(user_id string) (User_Petty_Cash, error) {
+	collection := conn.Db.Collection("petty_cash_requests")
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	total_amount := 0.0
+	last_request_date := time.Date(2000, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	var last_request Petty_Cash_Request
+	var requests []Petty_Cash_Request
+	for cursor.Next(context.TODO()) {
+		var petty_cash_req Petty_Cash_Request
+		decode_err := cursor.Decode(&petty_cash_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		requests = append(requests, petty_cash_req)
+		if petty_cash_req.Date.After(last_request_date) {
+			last_request = petty_cash_req
+		}
+		total_amount += math.Round(petty_cash_req.Amount*100) / 100
+		total_amount = math.Round(total_amount*100) / 100
+	}
+	return User_Petty_Cash{
+		Total_Amount: total_amount,
+		Requests:     requests,
+		Last_Request: last_request,
+		User_ID:      user_id,
+	}, nil
+}
+
+func (u *User) MonthlyPettyCash(user_id string, month int, year int) (User_Monthly_Petty_Cash, error) {
+	collection := conn.Db.Collection("petty_cash_requests")
+	var user User
+	result, err := user.FindByID(user_id)
+	if err != nil {
+		panic(err)
+	}
+	end_month := month + 1
+	start_date := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
+	end_date := time.Date(year, time.Month(end_month), 0, 0, 0, 0, 0, time.UTC)
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start_date}}, {Key: "date", Value: bson.M{"$lte": end_date}}}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	total_amount := 0.0
+	var receipts []string
+	var requestIDs []string
+	for cursor.Next(context.TODO()) {
+		var petty_cash_req Petty_Cash_Request
+		decode_err := cursor.Decode(&petty_cash_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		requestIDs = append(requestIDs, petty_cash_req.ID)
+		receipts = append(receipts, petty_cash_req.Receipts...)
+		total_amount += petty_cash_req.Amount
+	}
+	return User_Monthly_Petty_Cash{
+		ID:           user_id,
+		Name:         result.Name,
+		Month:        time.Month(month),
+		Year:         year,
+		Total_Amount: total_amount,
+		Request_IDS:  requestIDs,
+		Receipts:     receipts,
+	}, nil
 }

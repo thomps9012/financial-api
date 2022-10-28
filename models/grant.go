@@ -1,4 +1,4 @@
-package grants
+package models
 
 import (
 	"context"

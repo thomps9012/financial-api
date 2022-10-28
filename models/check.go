@@ -1,10 +1,9 @@
-package requests
+package models
 
 import (
 	"context"
 	"errors"
 	conn "financial-api/db"
-	grant "financial-api/models/grants"
 	user "financial-api/models/user"
 	"time"
 
@@ -31,22 +30,6 @@ type Purchase struct {
 	Description     string  `json:"description" bson:"description"`
 	Amount          float64 `json:"amount" bson:"amount"`
 }
-type Category string
-
-const (
-	IOP            Category = "IOP"
-	INTAKE         Category = "INTAKE"
-	PEERS          Category = "PEERS"
-	ACT_TEAM       Category = "ACT_TEAM"
-	IHBT           Category = "IHBT"
-	PERKINS        Category = "PERKINS"
-	MENS_HOUSE     Category = "MENS_HOUSE"
-	NEXT_STEP      Category = "NEXT_STEP"
-	LORAIN         Category = "LORAIN"
-	PREVENTION     Category = "PREVENTION"
-	ADMINISTRATIVE Category = "ADMINISTRATIVE"
-	FINANCE        Category = "FINANCE"
-)
 
 type Check_Request struct {
 	ID             string     `json:"id" bson:"_id"`
@@ -68,21 +51,21 @@ type Check_Request struct {
 }
 
 type Check_Request_Overview struct {
-	ID             string      `json:"id" bson:"_id"`
-	User_ID        string      `json:"user_id" bson:"user_id"`
-	User           user.User   `json:"user" bson:"user"`
-	Grant_ID       string      `json:"grant_id" bson:"grant_id"`
-	Grant          grant.Grant `json:"grant" bson:"grant"`
-	Date           time.Time   `json:"date" bson:"date"`
-	Vendor         Vendor      `json:"vendor" bson:"vendor"`
-	Order_Total    float64     `json:"order_total" bson:"order_total"`
-	Current_Status string      `json:"current_status" bson:"current_status"`
-	Created_At     time.Time   `json:"created_at" bson:"created_at"`
-	Is_Active      bool        `json:"is_active" bson:"is_active"`
+	ID             string    `json:"id" bson:"_id"`
+	User_ID        string    `json:"user_id" bson:"user_id"`
+	User           User      `json:"user" bson:"user"`
+	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
+	Grant          Grant     `json:"grant" bson:"grant"`
+	Date           time.Time `json:"date" bson:"date"`
+	Vendor         Vendor    `json:"vendor" bson:"vendor"`
+	Order_Total    float64   `json:"order_total" bson:"order_total"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
+	Created_At     time.Time `json:"created_at" bson:"created_at"`
+	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 type User_Check_Overview struct {
 	User_ID         string    `json:"user_id" bson:"user_id"`
-	User            user.User `json:"user" bson:"user"`
+	User            User      `json:"user" bson:"user"`
 	Vendors         []Vendor  `json:"vendors" bson:"vendors"`
 	Total_Amount    float64   `json:"total_amount" bson:"total_amount"`
 	Credit_Cards    string    `json:"credit_cards" bson:"credit_cards"`
@@ -92,11 +75,21 @@ type User_Check_Overview struct {
 }
 
 type Grant_Check_Overview struct {
-	Grant        grant.Grant     `json:"grant" bson:"grant"`
+	Grant        Grant           `json:"grant" bson:"grant"`
 	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
 	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
 	Credit_Cards []string        `json:"credit_cards" bson:"credit_cards"`
 	Requests     []Check_Request `json:"request_ids" bson:"request_ids"`
+}
+
+type User_Check_Requests struct {
+	ID           string          `json:"id" bson:"_id"`
+	Name         string          `json:"name" bson:"name"`
+	Start_Date   string          `json:"start_date" bson:"start_date"`
+	End_Date     string          `json:"end_date" bson:"end_date"`
+	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
+	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
+	Requests     []Check_Request `json:"requests" bson:"requests"`
 }
 
 func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) (bool, error) {
@@ -110,13 +103,15 @@ func (c *Check_Request) Exists(user_id string, vendor_name string, order_total f
 	return true, nil
 }
 
-func (c *Check_Request) Create(requestor user.User) (string, error) {
+// finish refactoring this out
+func (c *Check_Request) Create(requestor User) (string, error) {
 	collection := conn.Db.Collection("check_requests")
 	c.ID = uuid.NewString()
 	c.Created_At = time.Now()
 	c.Is_Active = true
 	c.User_ID = requestor.ID
 	c.Current_Status = "PENDING"
+	// build in logic for setting current user id
 	c.Current_User = requestor.Manager_ID
 	first_action := &Action{
 		ID: uuid.NewString(),
@@ -136,8 +131,8 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 		panic(insert_err)
 	}
 	// add in extra validation based on org chart here
-	var manager user.User
-	update_user, update_err := manager.AddNotification(user.Action(*first_action), requestor.Manager_ID)
+	var manager User
+	update_user, update_err := manager.AddNotification(*first_action, requestor.Manager_ID)
 	if update_err != nil {
 		panic(update_err)
 	}
@@ -147,12 +142,12 @@ func (c *Check_Request) Create(requestor user.User) (string, error) {
 	return c.ID, nil
 }
 
-func (c *Check_Request) Update(request Check_Request, requestor user.User) (Check_Request, error) {
+func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Request, error) {
 	collection := conn.Db.Collection("check_requests")
 	if request.Current_Status == "REJECTED" {
 		update_action := &Action{
 			ID: uuid.NewString(),
-			User: user.User_Action_Info{
+			User: User_Action_Info{
 				ID:   requestor.ID,
 				Role: requestor.Role,
 				Name: requestor.Name,
@@ -165,8 +160,8 @@ func (c *Check_Request) Update(request Check_Request, requestor user.User) (Chec
 		request.Current_Status = "PENDING"
 		request.Current_User = requestor.Manager_ID
 		request.Action_History = append(request.Action_History, *update_action)
-		var manager user.User
-		update_user, update_err := manager.AddNotification(user.Action(*update_action), requestor.Manager_ID)
+		var manager User
+		update_user, update_err := manager.AddNotification(*update_action, requestor.Manager_ID)
 		if update_err != nil {
 			panic(update_err)
 		}
@@ -221,8 +216,8 @@ func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 	}
 	for cursor.Next(context.TODO()) {
 		println("hit cursor")
-		var user user.User
-		var grant grant.Grant
+		var user User
+		var grant Grant
 		var check_req Check_Request
 		decode_err := cursor.Decode(&check_req)
 		if decode_err != nil {
@@ -281,7 +276,7 @@ func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_
 	if err != nil {
 		panic(err)
 	}
-	var user user.User
+	var user User
 	user_info, user_err := user.FindByID(user_id)
 	if user_err != nil {
 		panic(user_err)
@@ -343,7 +338,7 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 	if err != nil {
 		panic(err)
 	}
-	var grant grant.Grant
+	var grant Grant
 	grant_info, grant_err := grant.Find(grant_id)
 	if grant_err != nil {
 		panic(grant_err)
@@ -390,4 +385,62 @@ func (c *Check_Request) FindByID(check_id string) (Check_Request, error) {
 		panic(err)
 	}
 	return check_req, nil
+}
+
+func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (User_Check_Requests, error) {
+	collection := conn.Db.Collection("check_requests")
+	var user User
+	result, err := user.FindByID(user_id)
+	if err != nil {
+		panic(err)
+	}
+	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
+	if start_date != "" && end_date != "" {
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
+	} else {
+		filter = bson.D{{Key: "user_id", Value: user_id}}
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	total_amount := 0.0
+	var vendors []Vendor
+	var receipts []string
+	var purchases []Purchase
+	var requests []Check_Request
+	var vendorExists = make(map[Vendor]bool)
+	for cursor.Next(context.TODO()) {
+		var check_req Check_Request
+		decode_err := cursor.Decode(&check_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		requests = append(requests, check_req)
+		if !vendorExists[check_req.Vendor] {
+			vendors = append(vendors, check_req.Vendor)
+			vendorExists[check_req.Vendor] = true
+		}
+		purchases = append(purchases, check_req.Purchases...)
+		receipts = append(receipts, check_req.Receipts...)
+		total_amount += check_req.Order_Total
+	}
+	return User_Check_Requests{
+		ID:           user_id,
+		Name:         result.Name,
+		Start_Date:   start_date,
+		End_Date:     end_date,
+		Total_Amount: total_amount,
+		Vendors:      vendors,
+		Requests:     requests,
+	}, nil
 }
