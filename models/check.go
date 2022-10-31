@@ -76,11 +76,12 @@ type User_Check_Overview struct {
 }
 
 type Grant_Check_Overview struct {
-	Grant        Grant           `json:"grant" bson:"grant"`
-	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
-	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
-	Credit_Cards []string        `json:"credit_cards" bson:"credit_cards"`
-	Requests     []Check_Request `json:"request_ids" bson:"request_ids"`
+	Grant          Grant           `json:"grant" bson:"grant"`
+	Vendors        []Vendor        `json:"vendors" bson:"vendors"`
+	Total_Amount   float64         `json:"total_amount" bson:"total_amount"`
+	Total_Requests int             `json:"total_requests" bson:"total_requests"`
+	Credit_Cards   []string        `json:"credit_cards" bson:"credit_cards"`
+	Requests       []Check_Request `json:"request_ids" bson:"request_ids"`
 }
 
 type User_Check_Requests struct {
@@ -398,14 +399,16 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 			credit_cards = append(credit_cards, check_req.Credit_Card)
 			exists[check_req.Credit_Card] = true
 		}
-		total_amount += check_req.Order_Total
+		total_amount += math.Round(check_req.Order_Total*100) / 100
+		total_amount = math.Round(total_amount*100) / 100
 	}
 	check_overview := &Grant_Check_Overview{
-		Grant:        grant_info,
-		Vendors:      vendors,
-		Credit_Cards: credit_cards,
-		Requests:     requests,
-		Total_Amount: total_amount,
+		Grant:          grant_info,
+		Vendors:        vendors,
+		Credit_Cards:   credit_cards,
+		Requests:       requests,
+		Total_Requests: len(requests),
+		Total_Amount:   total_amount,
 	}
 	return *check_overview, nil
 }

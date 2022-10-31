@@ -33,7 +33,6 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 }
 
 func main() {
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort

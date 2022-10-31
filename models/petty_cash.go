@@ -60,9 +60,10 @@ type User_Monthly_Petty_Cash struct {
 }
 
 type Grant_Petty_Cash struct {
-	Grant        Grant                `json:"grant" bson:"grant"`
-	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
-	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
+	Grant          Grant                `json:"grant" bson:"grant"`
+	Total_Requests int                  `json:"total_requests" bson:"total_requests"`
+	Total_Amount   float64              `json:"total_amount" bson:"total_amount"`
+	Requests       []Petty_Cash_Request `json:"requests" bson:"requests"`
 }
 
 func (p *Petty_Cash_Request) DeleteAll() bool {
@@ -342,9 +343,10 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 		total_amount += petty_cash_req.Amount
 	}
 	petty_cash_overview := &Grant_Petty_Cash{
-		Grant:        grant_info,
-		Total_Amount: total_amount,
-		Requests:     requests,
+		Grant:          grant_info,
+		Total_Requests: len(requests),
+		Total_Amount:   total_amount,
+		Requests:       requests,
 	}
 	return *petty_cash_overview, nil
 }

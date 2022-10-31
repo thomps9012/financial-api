@@ -331,7 +331,7 @@ var CheckReqOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"current_status": &graphql.Field{
-				Type: StatusType,
+				Type: graphql.String,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -349,6 +349,9 @@ var AggGrantCheckReq = graphql.NewObject(
 			},
 			"vendors": &graphql.Field{
 				Type: graphql.NewList(VendorType),
+			},
+			"total_requests": &graphql.Field{
+				Type: graphql.Int,
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
@@ -436,7 +439,7 @@ var PettyCashOverviewType = graphql.NewObject(
 				Type: graphql.DateTime,
 			},
 			"current_status": &graphql.Field{
-				Type: StatusType,
+				Type: graphql.String,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -524,6 +527,9 @@ var AggGrantPettyCashReq = graphql.NewObject(
 			},
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
+			},
+			"total_requests": &graphql.Field{
+				Type: graphql.Int,
 			},
 			"requests": &graphql.Field{
 				Type: graphql.NewList(PettyCashType),
