@@ -6,6 +6,7 @@ import (
 	conn "financial-api/db"
 	"financial-api/middleware"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -84,13 +85,13 @@ type User_Monthly_Mileage struct {
 }
 
 type User_Mileage struct {
-	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
-	Mileage       int               `json:"mileage" bson:"mileage"`
-	Tolls         float64           `json:"tolls" bson:"tolls"`
-	Parking       float64           `json:"parking" bson:"parking"`
-	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
-	Requests      []Mileage_Request `json:"requests" bson:"requests"`
-	Last_Request  Mileage_Request   `json:"last_request" bson:"last_request"`
+	Vehicles       []Vehicle       `json:"vehicles" bson:"vehicles"`
+	Mileage        int             `json:"mileage" bson:"mileage"`
+	Tolls          float64         `json:"tolls" bson:"tolls"`
+	Parking        float64         `json:"parking" bson:"parking"`
+	Reimbursement  float64         `json:"reimbursement" bson:"reimbursement"`
+	Total_Requests int             `json:"total_requests" bson:"total_requests"`
+	Last_Request   Mileage_Request `json:"last_request" bson:"last_request"`
 }
 
 type User_Agg_Mileage struct {
@@ -100,6 +101,13 @@ type User_Agg_Mileage struct {
 	User          User              `json:"user" bson:"user"`
 	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
 	Requests      []Mileage_Request `json:"requests" bson:"requests"`
+}
+
+func (m *Mileage_Request) DeleteAll() bool {
+	collection := conn.Db.Collection("mileage_requests")
+	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
+	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
+	return cleared.DeletedCount == record_count
 }
 
 func (g *Grant_Mileage_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Mileage_Overview, error) {
@@ -179,7 +187,8 @@ func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
 	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
 	// set current user based off category
-	current_user_email := UserEmailHandler(m.Category, PENDING, false)
+	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
+	current_user_email := UserEmailHandler(m.Category, MANAGER_APPROVED, false)
 	var user User
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
@@ -188,14 +197,16 @@ func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	m.Current_User = current_user_id
 	// set first action and apply to mileage request
 	first_action := &Action{
-		ID:         uuid.NewString(),
-		User:       m.User_ID,
-		Request_ID: m.ID,
-		Status:     PENDING,
-		Created_At: time.Now(),
+		ID:           uuid.NewString(),
+		User:         m.User_ID,
+		Request_ID:   m.ID,
+		Request_Type: MILEAGE,
+		Status:       CREATED,
+		Created_At:   time.Now(),
 	}
 	m.Action_History = append(m.Action_History, *first_action)
 	// insert the document
+	user.AddNotification(*first_action, current_user_id)
 	_, insert_err := collection.InsertOne(context.TODO(), *m)
 	if insert_err != nil {
 		panic(insert_err)
@@ -214,37 +225,50 @@ func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 func (m *Mileage_Request) Update(request Mileage_Request, requestor User) (Mileage_Request, error) {
 	if request.Current_Status == REJECTED {
 		update_action := &Action{
-			ID:         uuid.NewString(),
-			User:       requestor.ID,
-			Request_ID: request.ID,
-			Status:     REJECTED_EDIT,
-			Created_At: time.Now(),
+			ID:           uuid.NewString(),
+			User:         requestor.ID,
+			Request_ID:   request.ID,
+			Request_Type: MILEAGE,
+			Status:       REJECTED_EDIT,
+			Created_At:   time.Now(),
 		}
-		// find out status of previous action
-		request.Current_Status = PENDING
-		prev_user_id := request.Action_History[len(request.Action_History)-1].User
-		prev_pre_rejection_action_status := request.Action_History[len(request.Action_History)-2].Status
-		// make appropiate notification based off previous action
+		prev_user_id := ReturnPrevAdminID(request.Action_History, requestor.ID)
+		request.Current_User = prev_user_id
 		var user User
 		current_user, err := user.FindByID(prev_user_id)
 		if err != nil {
 			panic(err)
 		}
 		var current_user_email = current_user.Email
-		// set the current status back to the previous action status
-		request.Current_Status = prev_pre_rejection_action_status
 		request.Action_History = append(request.Action_History, *update_action)
-		// notify the current user based off the above
-		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Mileage", requestor.Name, time.Now())
+		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
+		if clear_notification_err != nil {
+			panic(clear_notification_err)
+		}
+		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
+		if notify_err != nil {
+			panic(notify_err)
+		}
+		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 		if update_err != nil {
 			panic(update_err)
 		}
 		if !update_user {
 			panic("failed to update appropiate admin staff")
 		}
+	} else {
+		update_action := &Action{
+			ID:         uuid.NewString(),
+			User:       requestor.ID,
+			Request_ID: request.ID,
+			Status:     EDIT,
+			Created_At: time.Now(),
+		}
+		request.Action_History = append(request.Action_History, *update_action)
 	}
 	// these are all other updates made
 	var mileage_req Mileage_Request
+	request.Current_Status = PENDING
 	collection := conn.Db.Collection("mileage_requests")
 	filter := bson.D{{Key: "_id", Value: request.ID}}
 	after := options.After
@@ -465,15 +489,16 @@ func (u *User) FindMileage(user_id string) (User_Mileage, error) {
 		mileage += mileage_req.Trip_Mileage
 		tolls += mileage_req.Tolls
 		parking += mileage_req.Parking
-		reimbursement += mileage_req.Reimbursement
+		reimbursement += math.Round(mileage_req.Reimbursement*100) / 100
+		reimbursement = math.Round(reimbursement*100) / 100
 	}
 	return User_Mileage{
-		Vehicles:      result.Vehicles,
-		Mileage:       mileage,
-		Parking:       parking,
-		Tolls:         tolls,
-		Reimbursement: reimbursement,
-		Requests:      requests,
-		Last_Request:  last_request,
+		Vehicles:       result.Vehicles,
+		Mileage:        mileage,
+		Parking:        parking,
+		Tolls:          tolls,
+		Reimbursement:  reimbursement,
+		Total_Requests: len(requests),
+		Last_Request:   last_request,
 	}, nil
 }

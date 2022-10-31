@@ -65,6 +65,13 @@ type Grant_Petty_Cash struct {
 	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
 }
 
+func (p *Petty_Cash_Request) DeleteAll() bool {
+	collection := conn.Db.Collection("petty_cash_requests")
+	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
+	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
+	return cleared.DeletedCount == record_count
+}
+
 func (p *Petty_Cash_Request) FindByID(id string) (Petty_Cash_Request, error) {
 	var petty_cash Petty_Cash_Request
 	collection := conn.Db.Collection("petty_cash_requests")
@@ -95,13 +102,15 @@ func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) 
 	p.Current_Status = PENDING
 	p.User_ID = requestor.ID
 	first_action := &Action{
-		ID:         uuid.NewString(),
-		User:       requestor.ID,
-		Request_ID: p.ID,
-		Status:     PENDING,
-		Created_At: time.Now(),
+		ID:           uuid.NewString(),
+		User:         requestor.ID,
+		Request_ID:   p.ID,
+		Request_Type: PETTY_CASH,
+		Status:       CREATED,
+		Created_At:   time.Now(),
 	}
-	current_user_email := UserEmailHandler(p.Category, PENDING, false)
+	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
+	current_user_email := UserEmailHandler(p.Category, MANAGER_APPROVED, false)
 	var user User
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
@@ -109,6 +118,7 @@ func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) 
 	}
 	p.Current_User = current_user_id
 	p.Action_History = append(p.Action_History, *first_action)
+	user.AddNotification(*first_action, current_user_id)
 	_, insert_err := collection.InsertOne(context.TODO(), *p)
 	if insert_err != nil {
 		panic(insert_err)
@@ -127,32 +137,49 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor User) 
 	collection := conn.Db.Collection("petty_cash_requests")
 	if request.Current_Status == REJECTED {
 		update_action := &Action{
-			ID:         uuid.NewString(),
-			User:       requestor.ID,
-			Request_ID: request.ID,
-			Status:     REJECTED_EDIT,
-			Created_At: time.Now(),
+			ID:           uuid.NewString(),
+			User:         requestor.ID,
+			Request_ID:   request.ID,
+			Request_Type: PETTY_CASH,
+			Status:       REJECTED_EDIT,
+			Created_At:   time.Now(),
 		}
-		request.Current_Status = PENDING
-		prev_user_id := request.Action_History[len(request.Action_History)-1].User
-		prev_pre_rejection_action_status := request.Action_History[len(request.Action_History)-2].Status
+		prev_user_id := ReturnPrevAdminID(request.Action_History, requestor.ID)
+		request.Current_User = prev_user_id
 		var user User
 		current_user, err := user.FindByID(prev_user_id)
 		if err != nil {
 			panic(err)
 		}
 		var current_user_email = current_user.Email
-		request.Current_Status = prev_pre_rejection_action_status
 		request.Action_History = append(request.Action_History, *update_action)
-		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Petty Cash", requestor.Name, time.Now())
+		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
+		if clear_notification_err != nil {
+			panic(clear_notification_err)
+		}
+		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
+		if notify_err != nil {
+			panic(notify_err)
+		}
+		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 		if update_err != nil {
 			panic(update_err)
 		}
 		if !update_user {
 			panic("failed to update appropiate admin staff")
 		}
+	} else {
+		update_action := &Action{
+			ID:         uuid.NewString(),
+			User:       requestor.ID,
+			Request_ID: request.ID,
+			Status:     EDIT,
+			Created_At: time.Now(),
+		}
+		request.Action_History = append(request.Action_History, *update_action)
 	}
 	var petty_cash_req Petty_Cash_Request
+	request.Current_Status = PENDING
 	filter := bson.D{{Key: "_id", Value: request.ID}}
 	after := options.After
 	opts := options.FindOneAndReplaceOptions{
@@ -352,6 +379,47 @@ func (u *User) FindPettyCash(user_id string) (User_Petty_Cash, error) {
 		Requests:     requests,
 		Last_Request: last_request,
 		User_ID:      user_id,
+	}, nil
+}
+
+type UserAggPettyCash struct {
+	User_ID        string             `json:"user_id" bson:"user_id"`
+	User           User               `json:"user" bson:"user"`
+	Total_Amount   float64            `json:"total_amount" bson:"total_amount"`
+	Total_Requests int                `json:"total_requests" bson:"total_requests"`
+	Last_Request   Petty_Cash_Request `json:"last_request" bson:"last_request"`
+}
+
+func (u *User) AggUserPettyCash(user_id string) (UserAggPettyCash, error) {
+	collection := conn.Db.Collection("petty_cash_requests")
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	total_amount := 0.0
+	last_request_date := time.Date(2000, time.April,
+		34, 25, 72, 01, 0, time.UTC)
+	var last_request Petty_Cash_Request
+	var requests []Petty_Cash_Request
+	for cursor.Next(context.TODO()) {
+		var petty_cash_req Petty_Cash_Request
+		decode_err := cursor.Decode(&petty_cash_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		requests = append(requests, petty_cash_req)
+		if petty_cash_req.Date.After(last_request_date) {
+			last_request = petty_cash_req
+		}
+		total_amount += math.Round(petty_cash_req.Amount*100) / 100
+		total_amount = math.Round(total_amount*100) / 100
+	}
+	return UserAggPettyCash{
+		Total_Amount:   total_amount,
+		Total_Requests: len(requests),
+		Last_Request:   last_request,
+		User_ID:        user_id,
 	}, nil
 }
 

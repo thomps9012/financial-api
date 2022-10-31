@@ -515,6 +515,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if userErr != nil {
 					panic(userErr)
 				}
+				fmt.Printf("%v\n", p.Args)
 				grant_id, grantOK := p.Args["grant_id"].(string)
 				if !grantOK {
 					panic("must enter a valid grant")
@@ -560,21 +561,21 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !category_ok {
 					panic("must enter a valid request category")
 				}
-				check_request := &models.Check_Request{
-					Category:    models.Category(category),
-					Date:        checkReqArgs["date"].(time.Time),
-					Vendor:      *vendor,
-					Description: checkReqArgs["description"].(string),
-					Grant_ID:    grant_id,
-					Purchases:   purchases,
-					Order_Total: order_total,
-					Receipts:    receipts,
-					Credit_Card: checkReqArgs["credit_card"].(string),
-				}
-				exists, _ := check_request.Exists(requestor.ID, vendor.Name, order_total, check_request.Date)
+				var check_request models.Check_Request
+				check_request.Category = models.Category(category)
+				check_request.Date = checkReqArgs["date"].(time.Time)
+				check_request.Vendor = *vendor
+				check_request.Description = checkReqArgs["description"].(string)
+				check_request.Grant_ID = grant_id
+				check_request.Purchases = purchases
+				check_request.Order_Total = order_total
+				check_request.Receipts = receipts
+				check_request.Credit_Card = checkReqArgs["credit_card"].(string)
+				exists := check_request.Exists(requestor.ID, vendor.Name, order_total, check_request.Date)
 				if exists {
 					return nil, errors.New("check request already created")
 				}
+				fmt.Println("exists checker", exists)
 				check_request.Create(requestor)
 				return check_request, nil
 			},
@@ -690,13 +691,13 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(RequestType),
 				},
 				"request_category": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(CategoryType),
 				},
 				"new_status": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(StatusType),
 				},
 				"exec_review": &graphql.ArgumentConfig{
 					Type:         graphql.NewNonNull(graphql.Boolean),
@@ -733,7 +734,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you are unable to approve requests")
 				}
 				var action models.Action
-				approveReq, approveErr := action.Approve(request_id, request_type, models.Status(new_status), models.Category(request_category), exec_review)
+				approveReq, approveErr := action.Approve(request_id, models.Request_Type(request_type), models.Status(new_status), models.Category(request_category), exec_review)
 				if approveErr != nil {
 					panic(approveErr)
 				}
@@ -751,7 +752,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(RequestType),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -772,7 +773,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you are unable to reject finance requests")
 				}
 				var action models.Action
-				rejectReq, rejectErr := action.Reject(request_id, request_type)
+				rejectReq, rejectErr := action.Reject(request_id, models.Request_Type(request_type))
 				if rejectErr != nil {
 					panic(rejectErr)
 				}
@@ -790,7 +791,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(RequestType),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -809,7 +810,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				}
 				user_id := middleware.ForID(p.Context)
 				admin := middleware.ForAdmin(p.Context)
-				archiveReq, archiveErr := action.Archive(request_id, request_type, user_id, admin)
+				archiveReq, archiveErr := action.Archive(request_id, models.Request_Type(request_type), user_id, admin)
 				if archiveErr != nil {
 					panic(archiveErr)
 				}
@@ -821,7 +822,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Description: "A method for a user to clear a notification that has been dealt with",
 			Args: graphql.FieldConfigArgument{
 				"item_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -849,6 +850,32 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic(clearErr)
 				}
 				return notificationClear, nil
+			},
+		},
+		"clear_seeds": &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "A method for administrators to clear all testing data before deployment",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					return nil, errors.New("you are not an admin and thus cannot perform a seed clear")
+				}
+				var user models.User
+				user_clear := user.DeleteAll()
+
+				var check_request models.Check_Request
+				check_clear := check_request.DeleteAll()
+
+				var mileage_request models.Mileage_Request
+				mileage_clear := mileage_request.DeleteAll()
+
+				var petty_cash_request models.Petty_Cash_Request
+				petty_clear := petty_cash_request.DeleteAll()
+
+				if user_clear && check_clear && mileage_clear && petty_clear {
+					return true, nil
+				}
+				return false, nil
 			},
 		},
 	},

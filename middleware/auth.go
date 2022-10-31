@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -37,8 +36,6 @@ func Middleware() func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			fmt.Println("header expected", header)
-			fmt.Println("other headers :%s\n", r.Header)
 			tokenString := header
 			token, err := ParseToken(tokenString)
 			if err != nil {

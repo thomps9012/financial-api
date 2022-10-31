@@ -94,6 +94,23 @@ var AddressType = graphql.NewObject(
 	},
 )
 
+var RequestType = graphql.NewEnum(
+	graphql.EnumConfig{
+		Name: "RequestType",
+		Values: graphql.EnumValueConfigMap{
+			"CHECK": &graphql.EnumValueConfig{
+				Value: "CHECK",
+			},
+			"MILEAGE": &graphql.EnumValueConfig{
+				Value: "MILEAGE",
+			},
+			"PETTY_CASH": &graphql.EnumValueConfig{
+				Value: "PETTY_CASH",
+			},
+		},
+	},
+)
+
 var CategoryType = graphql.NewEnum(
 	graphql.EnumConfig{
 		Name: "Category",
@@ -234,7 +251,7 @@ var CheckRequestType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"category": &graphql.Field{
-				Type: CategoryType,
+				Type: graphql.String,
 			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -270,7 +287,7 @@ var CheckRequestType = graphql.NewObject(
 				Type: graphql.NewList(ActionType),
 			},
 			"current_status": &graphql.Field{
-				Type: StatusType,
+				Type: graphql.String,
 			},
 			"current_user": &graphql.Field{
 				Type: graphql.ID,
@@ -351,7 +368,7 @@ var PettyCashType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"category": &graphql.Field{
-				Type: CategoryType,
+				Type: graphql.String,
 			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -378,7 +395,7 @@ var PettyCashType = graphql.NewObject(
 				Type: graphql.NewList(ActionType),
 			},
 			"current_status": &graphql.Field{
-				Type: StatusType,
+				Type: graphql.String,
 			},
 			"current_user": &graphql.Field{
 				Type: graphql.ID,
@@ -428,6 +445,33 @@ var PettyCashOverviewType = graphql.NewObject(
 	},
 )
 
+var UserAggPettyCash = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name:        "UserAggPettyCash",
+		Description: "the query for a specified users petty cash requests",
+		Fields: graphql.Fields{
+			"user": &graphql.Field{
+				Type: UserType,
+			},
+			"start_date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"end_date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"total_amount": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"requests": &graphql.Field{
+				Type: graphql.NewList(PettyCashType),
+			},
+			"last_request": &graphql.Field{
+				Type: PettyCashType,
+			},
+		},
+	},
+)
+
 var AggUserPettyCash = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "AggregateUserPettyCash",
@@ -438,8 +482,11 @@ var AggUserPettyCash = graphql.NewObject(
 			"total_amount": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"requests": &graphql.Field{
-				Type: graphql.NewList(PettyCashType),
+			"total_requests": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"last_request": &graphql.Field{
+				Type: PettyCashType,
 			},
 		},
 	},
@@ -528,7 +575,7 @@ var MileageType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"category": &graphql.Field{
-				Type: CategoryType,
+				Type: graphql.String,
 			},
 			"user_id": &graphql.Field{
 				Type: graphql.ID,
@@ -576,7 +623,7 @@ var MileageType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"current_status": &graphql.Field{
-				Type: StatusType,
+				Type: graphql.String,
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -757,7 +804,7 @@ var ActionType = graphql.NewObject(
 				Type: graphql.ID,
 			},
 			"status": &graphql.Field{
-				Type: StatusType,
+				Type: graphql.String,
 			},
 			"created_at": &graphql.Field{
 				Type: graphql.DateTime,
@@ -827,7 +874,7 @@ var UserOverviewType = graphql.NewObject(
 				Type: graphql.Boolean,
 			},
 			"permissions": &graphql.Field{
-				Type: graphql.NewList(PermissionType),
+				Type: graphql.NewList(graphql.String),
 			},
 			"incomplete_action_count": &graphql.Field{
 				Type: graphql.Int,
@@ -850,7 +897,8 @@ var UserOverviewType = graphql.NewObject(
 
 var AggUserMileage = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "AggUserMileage",
+		Name:        "AggUserMileage",
+		Description: "The aggregate user mileage for the user overview query",
 		Fields: graphql.Fields{
 			"vehicles": &graphql.Field{
 				Type: graphql.NewList(VehicleType),
@@ -867,8 +915,8 @@ var AggUserMileage = graphql.NewObject(
 			"reimbursement": &graphql.Field{
 				Type: graphql.Float,
 			},
-			"requests": &graphql.Field{
-				Type: graphql.NewList(MileageType),
+			"total_requests": &graphql.Field{
+				Type: graphql.Int,
 			},
 			"last_request": &graphql.Field{
 				Type: MileageType,
@@ -892,10 +940,10 @@ var AggUserChecks = graphql.NewObject(
 			"purchases": &graphql.Field{
 				Type: graphql.NewList(UserPurchaseType),
 			},
-			"requests": &graphql.Field{
-				Type: graphql.NewList(CheckRequestType),
+			"total_requests": &graphql.Field{
+				Type: graphql.Int,
 			},
-			"last_requests": &graphql.Field{
+			"last_request": &graphql.Field{
 				Type: CheckRequestType,
 			},
 		},
@@ -1015,7 +1063,7 @@ var UserType = graphql.NewObject(
 				Type: graphql.Boolean,
 			},
 			"permissions": &graphql.Field{
-				Type: graphql.NewList(PermissionType),
+				Type: graphql.NewList(graphql.String),
 			},
 			"is_active": &graphql.Field{
 				Type: graphql.Boolean,
@@ -1033,9 +1081,37 @@ var UserType = graphql.NewObject(
 	},
 )
 
+var UserAggCheckRequests = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name:        "UserAggCheckRequests",
+		Description: "the aggregate check requests for a specified user",
+		Fields: graphql.Fields{
+			"user": &graphql.Field{
+				Type: UserType,
+			},
+			"total_amount": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"start_date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"end_date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"vendors": &graphql.Field{
+				Type: graphql.NewList(VendorType),
+			},
+			"requests": &graphql.Field{
+				Type: graphql.NewList(CheckRequestType),
+			},
+		},
+	},
+)
+
 var UserAggMileage = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "UserAggMileage",
+		Name:        "UserAggMileage",
+		Description: "the aggregate user mileage for the query that looks up mileage specific to a specified user",
 		Fields: graphql.Fields{
 			"user": &graphql.Field{
 				Type: UserType,

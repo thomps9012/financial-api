@@ -14,16 +14,16 @@ import (
 )
 
 type User_Overview struct {
-	ID                      string              `json:"id" bson:"_id"`
-	Name                    string              `json:"name" bson:"name"`
-	Last_Login              time.Time           `json:"last_login" bson:"last_login"`
-	Is_Active               bool                `json:"is_active" bson:"is_active"`
-	Permissions             []auth.Permission   `json:"permissions" bson:"permissions"`
-	Admin                   bool                `json:"admin" bson:"admin"`
-	Incomplete_Action_Count int                 `json:"incomplete_action_count" bson:"incomplete_action_count"`
-	Mileage_Requests        User_Mileage        `json:"mileage_requests" bson:"mileage_requests"`
-	Check_Requests          User_Check_Requests `json:"check_requests" bson:"check_requests"`
-	Petty_Cash_Requests     User_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
+	ID                      string            `json:"id" bson:"_id"`
+	Name                    string            `json:"name" bson:"name"`
+	Last_Login              time.Time         `json:"last_login" bson:"last_login"`
+	Is_Active               bool              `json:"is_active" bson:"is_active"`
+	Permissions             []auth.Permission `json:"permissions" bson:"permissions"`
+	Admin                   bool              `json:"admin" bson:"admin"`
+	Incomplete_Action_Count int               `json:"incomplete_action_count" bson:"incomplete_action_count"`
+	Mileage_Requests        User_Mileage      `json:"mileage_requests" bson:"mileage_requests"`
+	Check_Requests          UserAggChecks     `json:"check_requests" bson:"check_requests"`
+	Petty_Cash_Requests     UserAggPettyCash  `json:"petty_cash_requests" bson:"petty_cash_requests"`
 }
 
 type User_Detail struct {
@@ -59,6 +59,13 @@ type User struct {
 }
 
 // update to create or login based on user existing in database
+func (u *User) DeleteAll() bool {
+	collection := conn.Db.Collection("users")
+	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
+	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
+	return cleared.DeletedCount == record_count
+}
+
 func (u *User) Login(id string) (string, error) {
 	var user User
 	collection := conn.Db.Collection("users")

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/smtp"
 	"os"
 	"time"
@@ -18,6 +19,7 @@ func SendEmail(to []string, request_type string, requestor string, request_date 
 		`Please login to the finance request hub at https://finance-requests.vercel.app/ for more information.`)
 	auth := smtp.PlainAuth("", from, password, smtp_host)
 	email_err := smtp.SendMail(smtp_host+":"+smtp_port, auth, from, to, msg)
+	fmt.Println("emailing err", email_err)
 	if email_err != nil {
 		return false, email_err
 	}

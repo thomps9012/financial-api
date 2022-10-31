@@ -37,7 +37,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if mileage_err != nil {
 					panic(mileage_err)
 				}
-				check_reqs, check_err := user.AggregateChecks(user.ID, "", "")
+				check_reqs, check_err := user.FindCheckReqs(user.ID, "", "")
 				if check_err != nil {
 					panic(check_err)
 				}
@@ -110,7 +110,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if mileageErr != nil {
 					panic(mileageErr)
 				}
-				pettyCash, pettyCashErr := user.FindPettyCash(user_id)
+				pettyCash, pettyCashErr := user.AggUserPettyCash(user_id)
 				if pettyCashErr != nil {
 					panic(pettyCashErr)
 				}
@@ -171,7 +171,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"user_check_requests": &graphql.Field{
-			Type:        UserCheckRequests,
+			Type:        UserAggCheckRequests,
 			Description: "Aggregate and gather all check requests for a user over a given time period",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
@@ -205,7 +205,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
-				results, err := user.AggregateChecks(user_id, start_date, end_date)
+				results, err := user.FindCheckReqs(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -213,7 +213,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"user_petty_cash_requests": &graphql.Field{
-			Type:        AggUserPettyCash,
+			Type:        UserAggPettyCash,
 			Description: "Aggregate and gather all petty cash requests for a given user",
 			Args: graphql.FieldConfigArgument{
 				"user_id": &graphql.ArgumentConfig{

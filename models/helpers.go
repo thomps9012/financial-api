@@ -3,6 +3,7 @@ package models
 type Status string
 
 const (
+	CREATED               Status = "CREATED"
 	PENDING               Status = "PENDING"
 	MANAGER_APPROVED      Status = "MANAGER_APPROVED"
 	SUPERVISOR_APPROVED   Status = "SUPERVISOR_APPROVED"
@@ -11,6 +12,7 @@ const (
 	ORGANIZATION_APPROVED Status = "ORGANIZATION_APPROVED"
 	REJECTED              Status = "REJECTED"
 	REJECTED_EDIT         Status = "REJECTED_EDIT"
+	EDIT                  Status = "EDIT"
 	ARCHIVED              Status = "ARCHIVED"
 )
 
@@ -34,9 +36,9 @@ const (
 type Request_Type string
 
 const (
-	MILEAGE    Request_Type = "mileage_requests"
-	CHECK      Request_Type = "check_requests"
-	PETTY_CASH Request_Type = "petty_cash_requests"
+	MILEAGE    Request_Type = "MILEAGE"
+	CHECK      Request_Type = "CHECK"
+	PETTY_CASH Request_Type = "PETTY_CASH"
 )
 
 type Request_Response struct {
@@ -52,10 +54,11 @@ type Request_Info struct {
 }
 
 func UserEmailHandler(category Category, current_status Status, exec_review bool) string {
-	var to_email string
+	// possible more build out of test scenarios here
+	var to_email = ""
 	if exec_review {
 		to_email = "abradley@norainc.org"
-	} else if current_status == REJECTED {
+	} else if current_status == REJECTED || current_status == ORGANIZATION_APPROVED || current_status == FINANCE_APPROVED {
 		to_email = ""
 	} else if current_status == SUPERVISOR_APPROVED {
 		to_email = "finance_requests@norainc.org"

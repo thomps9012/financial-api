@@ -4,6 +4,8 @@ import (
 	"context"
 	conn "financial-api/db"
 	"financial-api/middleware"
+	"fmt"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -82,8 +84,7 @@ type Grant_Check_Overview struct {
 }
 
 type User_Check_Requests struct {
-	ID           string          `json:"id" bson:"_id"`
-	Name         string          `json:"name" bson:"name"`
+	User         User            `json:"user" bson:"user"`
 	Start_Date   string          `json:"start_date" bson:"start_date"`
 	End_Date     string          `json:"end_date" bson:"end_date"`
 	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
@@ -91,15 +92,22 @@ type User_Check_Requests struct {
 	Requests     []Check_Request `json:"requests" bson:"requests"`
 }
 
-func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) (bool, error) {
+func (c *Check_Request) DeleteAll() bool {
+	collection := conn.Db.Collection("check_requests")
+	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
+	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
+	return cleared.DeletedCount == record_count
+}
+
+func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) bool {
 	collection := conn.Db.Collection("check_requests")
 	var check_req Check_Request
 	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "order_total", Value: order_total}, {Key: "vendor.name", Value: vendor_name}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
 	if err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return true
 }
 
 // finish refactoring this out
@@ -111,26 +119,33 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	c.User_ID = requestor.ID
 	c.Current_Status = PENDING
 	// build in logic for setting current user id
-	current_user_email := UserEmailHandler(c.Category, PENDING, false)
+	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
+	current_user_email := UserEmailHandler(c.Category, MANAGER_APPROVED, false)
+	fmt.Printf("current user email: %s", current_user_email)
 	var user User
+	// this breaks if current user email is not in databse
+	// on production all managers will need to create signed accounts
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
 		panic(err)
 	}
 	c.Current_User = current_user_id
 	first_action := &Action{
-		ID:         uuid.NewString(),
-		User:       requestor.ID,
-		Request_ID: c.ID,
-		Status:     PENDING,
-		Created_At: time.Now(),
+		ID:           uuid.NewString(),
+		User:         requestor.ID,
+		Request_ID:   c.ID,
+		Request_Type: CHECK,
+		Status:       CREATED,
+		Created_At:   time.Now(),
 	}
 	c.Action_History = append(c.Action_History, *first_action)
-	_, insert_err := collection.InsertOne(context.TODO(), *c)
+	user.AddNotification(*first_action, current_user_id)
+	insert, insert_err := collection.InsertOne(context.TODO(), *c)
 	if insert_err != nil {
 		panic(insert_err)
 	}
 	// add in extra validation based on org chart here
+	fmt.Println("inserted test: %v", insert)
 	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 	if update_err != nil {
 		panic(update_err)
@@ -145,22 +160,30 @@ func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Req
 	collection := conn.Db.Collection("check_requests")
 	if request.Current_Status == REJECTED {
 		update_action := &Action{
-			ID:         uuid.NewString(),
-			User:       requestor.ID,
-			Request_ID: request.ID,
-			Status:     REJECTED_EDIT,
-			Created_At: time.Now(),
+			ID:           uuid.NewString(),
+			User:         requestor.ID,
+			Request_ID:   request.ID,
+			Request_Type: CHECK,
+			Status:       REJECTED_EDIT,
+			Created_At:   time.Now(),
 		}
-		prev_user_id := request.Action_History[len(request.Action_History)-1].User
-		prev_pre_rejection_action_status := request.Action_History[len(request.Action_History)-2].Status
+		prev_user_id := ReturnPrevAdminID(request.Action_History, requestor.ID)
+		request.Current_User = prev_user_id
 		var user User
 		current_user, err := user.FindByID(prev_user_id)
 		if err != nil {
 			panic(err)
 		}
 		var current_user_email = current_user.Email
-		request.Current_Status = prev_pre_rejection_action_status
 		request.Action_History = append(request.Action_History, *update_action)
+		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
+		if clear_notification_err != nil {
+			panic(clear_notification_err)
+		}
+		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
+		if notify_err != nil {
+			panic(notify_err)
+		}
 		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 		if update_err != nil {
 			panic(update_err)
@@ -168,8 +191,19 @@ func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Req
 		if !update_user {
 			panic("failed to update appropiate admin staff")
 		}
+	} else {
+		update_action := &Action{
+			ID:         uuid.NewString(),
+			User:       requestor.ID,
+			Request_ID: request.ID,
+			Status:     EDIT,
+			Created_At: time.Now(),
+		}
+		request.Action_History = append(request.Action_History, *update_action)
 	}
+	// add in edit tracker
 	var check_request Check_Request
+	request.Current_Status = PENDING
 	filter := bson.D{{Key: "_id", Value: request.ID}}
 	after := options.After
 	opts := options.FindOneAndReplaceOptions{
@@ -387,7 +421,15 @@ func (c *Check_Request) FindByID(check_id string) (Check_Request, error) {
 	return check_req, nil
 }
 
-func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (User_Check_Requests, error) {
+type UserAggChecks struct {
+	ID             string        `json:"id" bson:"_id"`
+	Name           string        `json:"name" bson:"name"`
+	Total_Amount   float64       `json:"total_amount" bson:"total_amount"`
+	Total_Requests int           `json:"total_requests" bson:"total_requests"`
+	Last_Request   Check_Request `json:"last_request" bson:"last_request"`
+}
+
+func (u *User) FindCheckReqs(user_id string, start_date string, end_date string) (User_Check_Requests, error) {
 	collection := conn.Db.Collection("check_requests")
 	var user User
 	result, err := user.FindByID(user_id)
@@ -431,12 +473,58 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		total_amount += check_req.Order_Total
 	}
 	return User_Check_Requests{
-		ID:           user_id,
-		Name:         result.Name,
+		User:         result,
+		Total_Amount: total_amount,
 		Start_Date:   start_date,
 		End_Date:     end_date,
-		Total_Amount: total_amount,
 		Vendors:      vendors,
 		Requests:     requests,
+	}, nil
+}
+
+func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (UserAggChecks, error) {
+	collection := conn.Db.Collection("check_requests")
+	var user User
+	result, err := user.FindByID(user_id)
+	if err != nil {
+		panic(err)
+	}
+	var filter bson.D
+	layout := "2006-01-02T15:04:05.000Z"
+	if start_date != "" && end_date != "" {
+		start, err := time.Parse(layout, start_date)
+		if err != nil {
+			panic(err)
+		}
+		end, enderr := time.Parse(layout, end_date)
+		if enderr != nil {
+			panic(err)
+		}
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
+	} else {
+		filter = bson.D{{Key: "user_id", Value: user_id}}
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	total_amount := 0.0
+	var requests []Check_Request
+	for cursor.Next(context.TODO()) {
+		var check_req Check_Request
+		decode_err := cursor.Decode(&check_req)
+		if decode_err != nil {
+			panic(decode_err)
+		}
+		requests = append(requests, check_req)
+		total_amount += math.Round(check_req.Order_Total*100) / 100
+		total_amount = math.Round(total_amount*100) / 100
+	}
+	return UserAggChecks{
+		ID:             user_id,
+		Name:           result.Name,
+		Total_Amount:   total_amount,
+		Total_Requests: len(requests),
+		Last_Request:   requests[len(requests)-1],
 	}, nil
 }
