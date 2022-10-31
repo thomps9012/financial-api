@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -29,7 +28,6 @@ func GenerateToken(id string, name string, admin bool, permissions []Permission)
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		log.Fatal("Error while signing JWT")
 		return "", err
 	}
 	return tokenString, nil
@@ -47,7 +45,7 @@ func ParseToken(tokenString string) (map[string]interface{}, error) {
 			"id":          claims["id"].(string),
 			"name":        claims["name"].(string),
 			"admin":       claims["admin"].(bool),
-			"permissions": claims["permissions"].([]Permission),
+			"permissions": claims["permissions"].([]interface{}),
 		}
 		return info, nil
 	}

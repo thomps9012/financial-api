@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
@@ -36,6 +37,8 @@ func Middleware() func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
+			fmt.Println("header expected", header)
+			fmt.Println("other headers :%s\n", r.Header)
 			tokenString := header
 			token, err := ParseToken(tokenString)
 			if err != nil {
@@ -45,7 +48,11 @@ func Middleware() func(http.Handler) http.Handler {
 			id := token["id"].(string)
 			name := token["name"].(string)
 			admin := token["admin"].(bool)
-			permissions := token["permissions"].([]Permission)
+			permissions_unformated := token["permissions"].([]interface{})
+			var permissions []Permission
+			for _, permission := range permissions_unformated {
+				permissions = append(permissions, Permission(permission.(string)))
+			}
 			contextInfo := &contextInfo{id, name, admin, permissions}
 			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)
 			r = r.WithContext(ctx)
