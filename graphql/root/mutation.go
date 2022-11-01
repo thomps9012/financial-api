@@ -99,7 +99,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"add_vehicle": &graphql.Field{
-			Type:        user_detail,
+			Type:        user_vehicle,
 			Description: "Allows a user to add a vehicle to their account",
 			Args: graphql.FieldConfigArgument{
 				"name": &graphql.ArgumentConfig{
