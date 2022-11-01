@@ -17,7 +17,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 	Fields: graphql.Fields{
 		"login": &graphql.Field{
 			Type:        graphql.String,
-			Description: "Either creates a new user or logs a user in based on their account history",
+			Description: "A mutation that either creates, or logs a user in, dependent on whether or not they have an account in the database.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -67,7 +67,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"deactivate_user": &graphql.Field{
-			Type:        UserType,
+			Type:        user_detail,
 			Description: "Deactivates a user by setting the status to inactive",
 			Args: graphql.FieldConfigArgument{
 				"user_id": &graphql.ArgumentConfig{
@@ -99,8 +99,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"add_vehicle": &graphql.Field{
-			Type:        VehicleType,
-			Description: "Allow a user to add a vehicle to their account",
+			Type:        user_detail,
+			Description: "Allows a user to add a vehicle to their account",
 			Args: graphql.FieldConfigArgument{
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -138,7 +138,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"remove_vehicle": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "Allow a user to remove a vehicle from their account",
+			Description: "Removes a specific vehicle from a user's account.",
 			Args: graphql.FieldConfigArgument{
 				"vehicle_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -164,14 +164,14 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// mileage mutations
 		"create_mileage": &graphql.Field{
-			Type:        MileageType,
-			Description: "Creates a new mileage request for a given user",
+			Type:        mileage_request,
+			Description: "Creates a new mileage request for a given user based on the logged in user context.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(MileageInputType),
+					Type: graphql.NewNonNull(mileage_input),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -247,8 +247,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"edit_mileage": &graphql.Field{
-			Type:        MileageType,
-			Description: "Allows a user to edit one of their rejected or pending mileage requests",
+			Type:        mileage_request,
+			Description: "Allows a user to edit one of their rejected or pending mileage requests, requests that have been approved (at any stage) may not be edited.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -257,7 +257,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.ID,
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: MileageInputType,
+					Type: mileage_input,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -344,14 +344,14 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// petty cash mutations
 		"create_petty_cash": &graphql.Field{
-			Type:        PettyCashType,
-			Description: "Creates a new petty cash request for a given user",
+			Type:        petty_cash_request,
+			Description: "Creates a new petty cash request for a given user, based on the logged in user context.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(PettyCashInput),
+					Type: graphql.NewNonNull(petty_cash_input),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -411,8 +411,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"edit_petty_cash": &graphql.Field{
-			Type:        PettyCashType,
-			Description: "Allows a user to edit one of their rejected or pending petty cash requests",
+			Type:        petty_cash_request,
+			Description: "Allows a user to edit one of their rejected or pending petty cash requests, requests that have been approved (at any stage) may not be edited.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -421,7 +421,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.ID,
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: PettyCashInput,
+					Type: petty_cash_input,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -491,17 +491,17 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// check request mutations
 		"create_check_request": &graphql.Field{
-			Type:        CheckRequestType,
-			Description: "Creates a new check request for a given user",
+			Type:        check_request,
+			Description: "Creates a new check request for a given user, based on the logged in user context.",
 			Args: graphql.FieldConfigArgument{
 				"vendor": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(VendorInput),
+					Type: graphql.NewNonNull(vendor_input),
 				},
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(CheckRequestInput),
+					Type: graphql.NewNonNull(check_request_input),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -581,20 +581,20 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"edit_check_request": &graphql.Field{
-			Type:        CheckRequestType,
-			Description: "Allows a user to edit one of their rejected or pending check requests",
+			Type:        check_request,
+			Description: "Allows a user to edit one of their rejected or pending check requests, requests that have been approved (at any stage) may not be edited.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"vendor": &graphql.ArgumentConfig{
-					Type: VendorInput,
+					Type: vendor_input,
 				},
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.ID,
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: CheckRequestInput,
+					Type: check_request_input,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -657,6 +657,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					result.Description = checkReqArgs["description"].(string)
 					result.Order_Total = order_total
 					result.Receipts = receipts
+					result.Purchases = purchases
 					result.Credit_Card = checkReqArgs["credit_card"].(string)
 				}
 				if p.Args["vendor"] != nil {
@@ -685,19 +686,19 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		// action mutations
 		"approve_request": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a manager to approve a financial request",
+			Description: "Allows an administrator or manager to approve a specific financial request.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(RequestType),
+					Type: graphql.NewNonNull(request_type),
 				},
 				"request_category": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(CategoryType),
+					Type: graphql.NewNonNull(request_category),
 				},
 				"new_status": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(StatusType),
+					Type: graphql.NewNonNull(request_status),
 				},
 				"exec_review": &graphql.ArgumentConfig{
 					Type:         graphql.NewNonNull(graphql.Boolean),
@@ -738,7 +739,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if approveErr != nil {
 					panic(approveErr)
 				}
-				if approveReq == false {
+				if !approveReq {
 					panic("error approving request")
 				}
 				return approveReq, nil
@@ -746,13 +747,13 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"reject_request": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a manager to reject a financial request",
+			Description: "Allows a manager or administrator to reject a financial request and kicks it back to the user for further revisions.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(RequestType),
+					Type: graphql.NewNonNull(request_type),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -785,13 +786,13 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"archive_request": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a user or manager to archive a financial request",
+			Description: "Allows a user or manager to archive a specified financial request, taking it out of the approval process.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(RequestType),
+					Type: graphql.NewNonNull(request_type),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -819,20 +820,20 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"clear_notification": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a user to clear a notification that has been dealt with",
+			Description: "Clears a logged in user's notification based on the notification id.",
 			Args: graphql.FieldConfigArgument{
-				"item_id": &graphql.ArgumentConfig{
+				"notification_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				item_id, idOK := p.Args["item_id"].(string)
+				notification_id, idOK := p.Args["notification_id"].(string)
 				if !idOK {
 					panic("must enter a valid action id")
 				}
 				var user models.User
 				user_id := middleware.ForID(p.Context)
-				notificationClear, clearErr := user.ClearNotification(item_id, user_id)
+				notificationClear, clearErr := user.ClearNotificationByID(notification_id, user_id)
 				if clearErr != nil {
 					panic(clearErr)
 				}
@@ -841,7 +842,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"clear_all_notifications": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a user to clear all of their notifications",
+			Description: "Clears all of a logged in user's notifications.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var user models.User
 				user_id := middleware.ForID(p.Context)
@@ -854,7 +855,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"clear_seeds": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for administrators to clear all testing data before deployment",
+			Description: "Clears all of the existing test records (withholding the grant information) before a live deployment.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				isAdmin := middleware.ForAdmin(p.Context)
 				if !isAdmin {

@@ -4,7 +4,6 @@ import (
 	conn "financial-api/db"
 	r "financial-api/graphql/root"
 	auth "financial-api/middleware"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -21,17 +20,6 @@ var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 	Mutation: r.RootMutations,
 })
 
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
-	result := graphql.Do(graphql.Params{
-		Schema:        schema,
-		RequestString: query,
-	})
-	if len(result.Errors) > 0 {
-		fmt.Printf("errors: %v", result.Errors)
-	}
-	return result
-}
-
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -47,10 +35,6 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
-	// router.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
-	// 	result := executeQuery(r.URL.Query().Get("query"), rootSchema)
-	// 	json.NewEncoder(w).Encode(result)
-	// })
 	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})

@@ -135,7 +135,7 @@ func (a *Action) Reject(request_id string, request_type Request_Type) (bool, err
 	if !prev_user_clear_notification {
 		panic("error clearing the previous reviewer's notifications")
 	}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": request.User_ID}}, {Key: "$set", Value: bson.M{"current_status": "REJECTED"}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_user": request.User_ID}}, {Key: "$set", Value: bson.M{"current_status": REJECTED}}}
 	// updates the request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateDoc == nil {

@@ -20,18 +20,15 @@ type Address struct {
 	State    string `json:"state" bson:"state"`
 	Zip_Code int    `json:"zip" bson:"zip"`
 }
-
 type Vendor struct {
 	Name    string  `json:"name" bson:"name"`
 	Address Address `json:"address" bson:"address"`
 }
-
 type Purchase struct {
 	Grant_Line_Item string  `json:"line_item" bson:"line_item"`
 	Description     string  `json:"description" bson:"description"`
 	Amount          float64 `json:"amount" bson:"amount"`
 }
-
 type Check_Request struct {
 	ID             string     `json:"id" bson:"_id"`
 	Date           time.Time  `json:"date" bson:"date"`
@@ -50,7 +47,6 @@ type Check_Request struct {
 	Current_Status Status     `json:"current_status" bson:"current_status"`
 	Is_Active      bool       `json:"is_active" bson:"is_active"`
 }
-
 type Check_Request_Overview struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
@@ -64,34 +60,6 @@ type Check_Request_Overview struct {
 	Created_At     time.Time `json:"created_at" bson:"created_at"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
-type User_Check_Overview struct {
-	User_ID         string    `json:"user_id" bson:"user_id"`
-	User            User      `json:"user" bson:"user"`
-	Vendors         []Vendor  `json:"vendors" bson:"vendors"`
-	Total_Amount    float64   `json:"total_amount" bson:"total_amount"`
-	Credit_Cards    string    `json:"credit_cards" bson:"credit_cards"`
-	Request_IDS     []string  `json:"request_ids" bson:"request_ids"`
-	Last_Request    time.Time `json:"last_request" bson:"last_request"`
-	Last_Request_ID string    `json:"last_request_id" bson:"last_request_id"`
-}
-
-type Grant_Check_Overview struct {
-	Grant          Grant           `json:"grant" bson:"grant"`
-	Vendors        []Vendor        `json:"vendors" bson:"vendors"`
-	Total_Amount   float64         `json:"total_amount" bson:"total_amount"`
-	Total_Requests int             `json:"total_requests" bson:"total_requests"`
-	Credit_Cards   []string        `json:"credit_cards" bson:"credit_cards"`
-	Requests       []Check_Request `json:"request_ids" bson:"request_ids"`
-}
-
-type User_Check_Requests struct {
-	User         User            `json:"user" bson:"user"`
-	Start_Date   string          `json:"start_date" bson:"start_date"`
-	End_Date     string          `json:"end_date" bson:"end_date"`
-	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
-	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
-	Requests     []Check_Request `json:"requests" bson:"requests"`
-}
 
 func (c *Check_Request) DeleteAll() bool {
 	collection := conn.Db.Collection("check_requests")
@@ -99,7 +67,6 @@ func (c *Check_Request) DeleteAll() bool {
 	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
 	return cleared.DeletedCount == record_count
 }
-
 func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) bool {
 	collection := conn.Db.Collection("check_requests")
 	var check_req Check_Request
@@ -111,7 +78,6 @@ func (c *Check_Request) Exists(user_id string, vendor_name string, order_total f
 	return true
 }
 
-// finish refactoring this out
 func (c *Check_Request) Create(requestor User) (string, error) {
 	collection := conn.Db.Collection("check_requests")
 	c.ID = uuid.NewString()
@@ -156,7 +122,6 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	}
 	return c.ID, nil
 }
-
 func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Request, error) {
 	collection := conn.Db.Collection("check_requests")
 	if request.Current_Status == REJECTED {
@@ -216,7 +181,6 @@ func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Req
 	}
 	return check_request, nil
 }
-
 func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, error) {
 	collection := conn.Db.Collection("check_requests")
 	var check_request Check_Request
@@ -241,7 +205,6 @@ func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, err
 	}
 	return true, nil
 }
-
 func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 	collection := conn.Db.Collection("check_requests")
 	var overviews []Check_Request_Overview
@@ -289,67 +252,24 @@ func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
 	}
 	return overviews, nil
 }
-
-func (u *User_Check_Overview) FindByUser(user_id string, start_date string, end_date string) (User_Check_Overview, error) {
+func (c *Check_Request) FindByID(check_id string) (Check_Request, error) {
 	collection := conn.Db.Collection("check_requests")
-	var filter bson.D
-	layout := "2006-01-02T15:04:05.000Z"
-	if start_date != "" && end_date != "" {
-		start, err := time.Parse(layout, start_date)
-		if err != nil {
-			panic(err)
-		}
-		end, enderr := time.Parse(layout, end_date)
-		if enderr != nil {
-			panic(err)
-		}
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
-	} else {
-		filter = bson.D{{Key: "user_id", Value: user_id}}
-	}
-	cursor, err := collection.Find(context.TODO(), filter)
+	var check_req Check_Request
+	filter := bson.D{{Key: "_id", Value: check_id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
 	if err != nil {
 		panic(err)
 	}
-	var user User
-	user_info, user_err := user.FindByID(user_id)
-	if user_err != nil {
-		panic(user_err)
-	}
-	last_request := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
-	total_amount := 0.0
-	var vendors []Vendor
-	last_request_id := ""
-	var request_ids []string
-	var vendorExists = make(map[Vendor]bool)
-	for cursor.Next(context.TODO()) {
-		var check_req Check_Request
-		decode_err := cursor.Decode(&check_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		request_ids = append(request_ids, check_req.ID)
-		if !vendorExists[check_req.Vendor] {
-			vendors = append(vendors, check_req.Vendor)
-			vendorExists[check_req.Vendor] = true
-		}
-		if check_req.Date.After(last_request) {
-			last_request = check_req.Date
-			last_request_id = check_req.ID
-		}
-		total_amount += check_req.Order_Total
-	}
-	check_overview := &User_Check_Overview{
-		User_ID:         user_id,
-		User:            user_info,
-		Vendors:         vendors,
-		Request_IDS:     request_ids,
-		Last_Request:    last_request,
-		Last_Request_ID: last_request_id,
-		Total_Amount:    total_amount,
-	}
-	return *check_overview, nil
+	return check_req, nil
+}
+
+type Grant_Check_Overview struct {
+	Grant          Grant           `json:"grant" bson:"grant"`
+	Vendors        []Vendor        `json:"vendors" bson:"vendors"`
+	Total_Amount   float64         `json:"total_amount" bson:"total_amount"`
+	Total_Requests int             `json:"total_requests" bson:"total_requests"`
+	Credit_Cards   []string        `json:"credit_cards" bson:"credit_cards"`
+	Requests       []Check_Request `json:"request_ids" bson:"request_ids"`
 }
 
 func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Check_Overview, error) {
@@ -413,17 +333,14 @@ func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, e
 	return *check_overview, nil
 }
 
-func (c *Check_Request) FindByID(check_id string) (Check_Request, error) {
-	collection := conn.Db.Collection("check_requests")
-	var check_req Check_Request
-	filter := bson.D{{Key: "_id", Value: check_id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
-	if err != nil {
-		panic(err)
-	}
-	return check_req, nil
+type User_Check_Requests struct {
+	User         User            `json:"user" bson:"user"`
+	Start_Date   string          `json:"start_date" bson:"start_date"`
+	End_Date     string          `json:"end_date" bson:"end_date"`
+	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
+	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
+	Requests     []Check_Request `json:"requests" bson:"requests"`
 }
-
 type UserAggChecks struct {
 	ID             string        `json:"id" bson:"_id"`
 	Name           string        `json:"name" bson:"name"`
@@ -484,7 +401,6 @@ func (u *User) FindCheckReqs(user_id string, start_date string, end_date string)
 		Requests:     requests,
 	}, nil
 }
-
 func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (UserAggChecks, error) {
 	collection := conn.Db.Collection("check_requests")
 	var user User

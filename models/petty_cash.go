@@ -41,31 +41,6 @@ type Petty_Cash_Overview struct {
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
-type User_Petty_Cash struct {
-	User_ID      string               `json:"user_id" bson:"user_id"`
-	User         User                 `json:"user" bson:"user"`
-	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
-	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
-	Last_Request Petty_Cash_Request   `json:"last_request" bson:"last_request"`
-}
-
-type User_Monthly_Petty_Cash struct {
-	ID           string     `json:"id" bson:"_id"`
-	Name         string     `json:"name" bson:"name"`
-	Month        time.Month `json:"month" bson:"month"`
-	Year         int        `json:"year" bson:"year"`
-	Total_Amount float64    `json:"total_amount" bson:"total_amount"`
-	Request_IDS  []string   `json:"request_ids" bson:"request_ids"`
-	Receipts     []string   `json:"receipts" bson:"receipts"`
-}
-
-type Grant_Petty_Cash struct {
-	Grant          Grant                `json:"grant" bson:"grant"`
-	Total_Requests int                  `json:"total_requests" bson:"total_requests"`
-	Total_Amount   float64              `json:"total_amount" bson:"total_amount"`
-	Requests       []Petty_Cash_Request `json:"requests" bson:"requests"`
-}
-
 func (p *Petty_Cash_Request) DeleteAll() bool {
 	collection := conn.Db.Collection("petty_cash_requests")
 	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
@@ -258,7 +233,6 @@ func (p *Petty_Cash_Overview) FindAll() ([]Petty_Cash_Overview, error) {
 	return overviews, nil
 }
 
-// refactor inputs to start and end dates to allow for flexibility in data search
 func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_date string) (User_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	var filter bson.D
@@ -303,6 +277,13 @@ func (p *Petty_Cash_Request) FindByUser(user_id string, start_date string, end_d
 		Requests:     requests,
 	}
 	return *petty_cash_overview, nil
+}
+
+type Grant_Petty_Cash struct {
+	Grant          Grant                `json:"grant" bson:"grant"`
+	Total_Requests int                  `json:"total_requests" bson:"total_requests"`
+	Total_Amount   float64              `json:"total_amount" bson:"total_amount"`
+	Requests       []Petty_Cash_Request `json:"requests" bson:"requests"`
 }
 
 func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Petty_Cash, error) {
@@ -351,6 +332,32 @@ func (g *Grant_Petty_Cash) FindByGrant(grant_id string, start_date string, end_d
 	return *petty_cash_overview, nil
 }
 
+type UserAggPettyCash struct {
+	User_ID        string             `json:"user_id" bson:"user_id"`
+	User           User               `json:"user" bson:"user"`
+	Total_Amount   float64            `json:"total_amount" bson:"total_amount"`
+	Total_Requests int                `json:"total_requests" bson:"total_requests"`
+	Last_Request   Petty_Cash_Request `json:"last_request" bson:"last_request"`
+}
+
+type User_Petty_Cash struct {
+	User_ID      string               `json:"user_id" bson:"user_id"`
+	User         User                 `json:"user" bson:"user"`
+	Total_Amount float64              `json:"total_amount" bson:"total_amount"`
+	Requests     []Petty_Cash_Request `json:"requests" bson:"requests"`
+	Last_Request Petty_Cash_Request   `json:"last_request" bson:"last_request"`
+}
+
+type User_Monthly_Petty_Cash struct {
+	ID           string     `json:"id" bson:"_id"`
+	Name         string     `json:"name" bson:"name"`
+	Month        time.Month `json:"month" bson:"month"`
+	Year         int        `json:"year" bson:"year"`
+	Total_Amount float64    `json:"total_amount" bson:"total_amount"`
+	Request_IDS  []string   `json:"request_ids" bson:"request_ids"`
+	Receipts     []string   `json:"receipts" bson:"receipts"`
+}
+
 func (u *User) FindPettyCash(user_id string) (User_Petty_Cash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	filter := bson.D{{Key: "user_id", Value: user_id}}
@@ -384,15 +391,7 @@ func (u *User) FindPettyCash(user_id string) (User_Petty_Cash, error) {
 	}, nil
 }
 
-type UserAggPettyCash struct {
-	User_ID        string             `json:"user_id" bson:"user_id"`
-	User           User               `json:"user" bson:"user"`
-	Total_Amount   float64            `json:"total_amount" bson:"total_amount"`
-	Total_Requests int                `json:"total_requests" bson:"total_requests"`
-	Last_Request   Petty_Cash_Request `json:"last_request" bson:"last_request"`
-}
-
-func (u *User) AggUserPettyCash(user_id string) (UserAggPettyCash, error) {
+func (u *User) AggregatePettyCash(user_id string) (UserAggPettyCash, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	cursor, err := collection.Find(context.TODO(), filter)

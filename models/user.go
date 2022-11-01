@@ -27,17 +27,17 @@ type User_Overview struct {
 }
 
 type User_Detail struct {
-	ID                      string              `json:"id" bson:"_id"`
-	Name                    string              `json:"name" bson:"name"`
-	Permissions             []auth.Permission   `json:"permissions" bson:"permissions"`
-	Admin                   bool                `json:"admin" bson:"admin"`
-	Vehicles                []Vehicle           `json:"vehicles" bson:"vehicles"`
-	Last_Login              time.Time           `json:"last_login" bson:"last_login"`
-	Incomplete_Actions      []Action            `json:"incomplete_actions" bson:"incomplete_actions"`
-	Incomplete_Action_Count int                 `json:"incomplete_action_count" bson:"incomplete_action_count"`
-	Mileage_Requests        User_Mileage        `json:"mileage_requests" bson:"mileage_requests"`
-	Check_Requests          User_Check_Requests `json:"check_requests" bson:"check_requests"`
-	Petty_Cash_Requests     User_Petty_Cash     `json:"petty_cash_requests" bson:"petty_cash_requests"`
+	ID                      string            `json:"id" bson:"_id"`
+	Name                    string            `json:"name" bson:"name"`
+	Permissions             []auth.Permission `json:"permissions" bson:"permissions"`
+	Admin                   bool              `json:"admin" bson:"admin"`
+	Vehicles                []Vehicle         `json:"vehicles" bson:"vehicles"`
+	Last_Login              time.Time         `json:"last_login" bson:"last_login"`
+	Incomplete_Actions      []Action          `json:"incomplete_actions" bson:"incomplete_actions"`
+	Incomplete_Action_Count int               `json:"incomplete_action_count" bson:"incomplete_action_count"`
+	Mileage_Requests        User_Mileage      `json:"mileage_requests" bson:"mileage_requests"`
+	Check_Requests          UserAggChecks     `json:"check_requests" bson:"check_requests"`
+	Petty_Cash_Requests     User_Petty_Cash   `json:"petty_cash_requests" bson:"petty_cash_requests"`
 }
 
 type Vehicle struct {
@@ -58,7 +58,6 @@ type User struct {
 	Permissions        []auth.Permission `json:"permissions" bson:"permissions"`
 }
 
-// update to create or login based on user existing in database
 func (u *User) DeleteAll() bool {
 	collection := conn.Db.Collection("users")
 	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
@@ -275,6 +274,16 @@ func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
 	collection := conn.Db.Collection("users")
 	filter := bson.D{{Key: "_id", Value: user_id}}
 	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": bson.D{{Key: "request_id", Value: item_id}}}}})
+	if updateManager == nil {
+		return false, errors.New("error clearing notification second lvl")
+	}
+	return true, nil
+}
+
+func (u *User) ClearNotificationByID(notification_id string, user_id string) (bool, error) {
+	collection := conn.Db.Collection("users")
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": bson.D{{Key: "_id", Value: notification_id}}}}})
 	if updateManager == nil {
 		return false, errors.New("error clearing notification second lvl")
 	}

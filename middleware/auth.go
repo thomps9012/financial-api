@@ -59,6 +59,9 @@ func Middleware() func(http.Handler) http.Handler {
 }
 
 func LoggedIn(ctx context.Context) bool {
+	if ctx.Value(userCtxKey) == nil {
+		return false
+	}
 	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
 	return raw.id != ""
 }
