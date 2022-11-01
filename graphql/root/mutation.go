@@ -706,6 +706,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -725,10 +729,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				exec_review, execReview := p.Args["exec_review"].(bool)
 				if !execReview {
 					panic("must enter a valid option for executive review")
-				}
-				loggedIn := middleware.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
 				}
 				admin := middleware.ForAdmin(p.Context)
 				if !admin {
@@ -757,6 +757,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -764,10 +768,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				request_type, typeOk := p.Args["request_type"].(string)
 				if !typeOk {
 					panic("must enter a valid request type")
-				}
-				loggedIn := middleware.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
 				}
 				admin := middleware.ForAdmin(p.Context)
 				if !admin {
@@ -796,6 +796,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
+				}
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -805,10 +809,6 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("must enter a valid request type")
 				}
 				var action models.Action
-				loggedIn := middleware.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you must be logged in")
-				}
 				user_id := middleware.ForID(p.Context)
 				admin := middleware.ForAdmin(p.Context)
 				archiveReq, archiveErr := action.Archive(request_id, models.Request_Type(request_type), user_id, admin)
@@ -827,6 +827,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
+				}
 				notification_id, idOK := p.Args["notification_id"].(string)
 				if !idOK {
 					panic("must enter a valid action id")
@@ -844,6 +848,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.Boolean,
 			Description: "Clears all of a logged in user's notifications.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
+				}
 				var user models.User
 				user_id := middleware.ForID(p.Context)
 				notificationClear, clearErr := user.ClearNotifications(user_id)
