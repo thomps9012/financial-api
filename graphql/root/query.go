@@ -29,7 +29,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if userErr != nil {
 					panic(userErr)
 				}
-				petty_cash_reqs, petty_err := user.FindPettyCash(user.ID)
+				petty_cash_reqs, petty_err := user.AggregatePettyCash(user.ID)
 				if petty_err != nil {
 					panic(petty_err)
 				}

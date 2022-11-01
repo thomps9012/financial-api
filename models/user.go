@@ -37,7 +37,7 @@ type User_Detail struct {
 	Incomplete_Action_Count int               `json:"incomplete_action_count" bson:"incomplete_action_count"`
 	Mileage_Requests        User_Mileage      `json:"mileage_requests" bson:"mileage_requests"`
 	Check_Requests          UserAggChecks     `json:"check_requests" bson:"check_requests"`
-	Petty_Cash_Requests     User_Petty_Cash   `json:"petty_cash_requests" bson:"petty_cash_requests"`
+	Petty_Cash_Requests     UserAggPettyCash  `json:"petty_cash_requests" bson:"petty_cash_requests"`
 }
 
 type Vehicle struct {
