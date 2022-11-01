@@ -475,17 +475,12 @@ func (u *User) FindMileage(user_id string) (User_Mileage, error) {
 	parking := 0.0
 	reimbursement := 0.0
 	var requests []Mileage_Request
-	last_request_date := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
-	var last_request Mileage_Request
+
 	for cursor.Next(context.TODO()) {
 		var mileage_req Mileage_Request
 		decode_err := cursor.Decode(&mileage_req)
 		if decode_err != nil {
 			panic(decode_err)
-		}
-		if mileage_req.Date.After(last_request_date) {
-			last_request = mileage_req
 		}
 		requests = append(requests, mileage_req)
 		mileage += mileage_req.Trip_Mileage
@@ -493,6 +488,14 @@ func (u *User) FindMileage(user_id string) (User_Mileage, error) {
 		parking += mileage_req.Parking
 		reimbursement += math.Round(mileage_req.Reimbursement*100) / 100
 		reimbursement = math.Round(reimbursement*100) / 100
+	}
+	var last_request Mileage_Request
+	if len(requests) > 1 {
+		last_request = requests[len(requests)-1]
+	} else if len(requests) == 1 {
+		last_request = requests[0]
+	} else {
+		last_request = Mileage_Request{}
 	}
 	return User_Mileage{
 		Vehicles:       result.Vehicles,

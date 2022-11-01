@@ -399,9 +399,6 @@ func (u *User) AggregatePettyCash(user_id string) (UserAggPettyCash, error) {
 		panic(err)
 	}
 	total_amount := 0.0
-	last_request_date := time.Date(2000, time.April,
-		34, 25, 72, 01, 0, time.UTC)
-	var last_request Petty_Cash_Request
 	var requests []Petty_Cash_Request
 	for cursor.Next(context.TODO()) {
 		var petty_cash_req Petty_Cash_Request
@@ -410,11 +407,16 @@ func (u *User) AggregatePettyCash(user_id string) (UserAggPettyCash, error) {
 			panic(decode_err)
 		}
 		requests = append(requests, petty_cash_req)
-		if petty_cash_req.Date.After(last_request_date) {
-			last_request = petty_cash_req
-		}
 		total_amount += math.Round(petty_cash_req.Amount*100) / 100
 		total_amount = math.Round(total_amount*100) / 100
+	}
+	var last_request Petty_Cash_Request
+	if len(requests) > 1 {
+		last_request = requests[len(requests)-1]
+	} else if len(requests) == 1 {
+		last_request = requests[0]
+	} else {
+		last_request = Petty_Cash_Request{}
 	}
 	return UserAggPettyCash{
 		Total_Amount:   total_amount,

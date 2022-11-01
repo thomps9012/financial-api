@@ -439,11 +439,19 @@ func (u *User) AggregateChecks(user_id string, start_date string, end_date strin
 		total_amount += math.Round(check_req.Order_Total*100) / 100
 		total_amount = math.Round(total_amount*100) / 100
 	}
+	var last_request Check_Request
+	if len(requests) > 1 {
+		last_request = requests[len(requests)-1]
+	} else if len(requests) == 1 {
+		last_request = requests[0]
+	} else {
+		last_request = Check_Request{}
+	}
 	return UserAggChecks{
 		ID:             user_id,
 		Name:           result.Name,
 		Total_Amount:   total_amount,
 		Total_Requests: len(requests),
-		Last_Request:   requests[len(requests)-1],
+		Last_Request:   last_request,
 	}, nil
 }
