@@ -56,11 +56,11 @@ type Request_Info struct {
 func UserEmailHandler(category Category, current_status Status, exec_review bool) string {
 	// possible more build out of test scenarios here
 	var to_email = ""
-	if exec_review {
+	if exec_review || current_status == FINANCE_APPROVED {
 		to_email = "abradley@norainc.org"
-	} else if current_status == REJECTED || current_status == ORGANIZATION_APPROVED || current_status == FINANCE_APPROVED {
+	} else if current_status == REJECTED || current_status == ORGANIZATION_APPROVED {
 		to_email = ""
-	} else if current_status == SUPERVISOR_APPROVED {
+	} else if current_status == SUPERVISOR_APPROVED || current_status == EXECUTIVE_APPROVED {
 		to_email = "finance_requests@norainc.org"
 	} else if current_status == MANAGER_APPROVED {
 		switch category {
