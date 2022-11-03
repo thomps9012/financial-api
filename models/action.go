@@ -182,7 +182,7 @@ func (a *Action) Archive(request_id string, request_type Request_Type, user_id s
 	if !prev_user_clear_notification {
 		panic("error clearing the previous reviewer's notifications")
 	}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}, {Key: "$set", Value: bson.M{"current_user": bson.TypeNull}}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": *current_action}}, {Key: "$set", Value: bson.M{"current_status": ARCHIVED, "is_active": false}}, {Key: "$set", Value: bson.M{"current_user": "null"}}}
 	// updates the request
 	updateDoc := collection.FindOneAndUpdate(context.TODO(), filter, update)
 	if updateDoc == nil {
