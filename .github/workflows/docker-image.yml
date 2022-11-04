@@ -1,7 +1,7 @@
 name: Docker Image CI
 on:
   push:
-    branches: [ "public" ]
+    branches: [ "public-dev" ]
 
 jobs:
 
