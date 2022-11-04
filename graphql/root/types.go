@@ -848,41 +848,29 @@ var request_category = graphql.NewEnum(
 		Name:        "request_category",
 		Description: "The category for a specific request, used to determine which supervisors and managers are responsible for approving the request.",
 		Values: graphql.EnumValueConfigMap{
-			"IOP": &graphql.EnumValueConfig{
-				Value: "IOP",
+			"FINANCE": &graphql.EnumValueConfig{
+				Value: "FINANCE",
 			},
-			"INTAKE": &graphql.EnumValueConfig{
-				Value: "INTAKE",
-			},
-			"PEERS": &graphql.EnumValueConfig{
-				Value: "PEERS",
-			},
-			"ACT_TEAM": &graphql.EnumValueConfig{
-				Value: "ACT_TEAM",
-			},
-			"IHBT": &graphql.EnumValueConfig{
-				Value: "IHBT",
-			},
-			"PERKINS": &graphql.EnumValueConfig{
-				Value: "PERKINS",
-			},
-			"MENS_HOUSE": &graphql.EnumValueConfig{
-				Value: "MENS_HOUSE",
-			},
-			"NEXT_STEP": &graphql.EnumValueConfig{
-				Value: "NEXT_STEP",
-			},
-			"LORAIN": &graphql.EnumValueConfig{
-				Value: "LORAIN",
-			},
-			"PREVENTION": &graphql.EnumValueConfig{
-				Value: "PREVENTION",
+			"HOUSING": &graphql.EnumValueConfig{
+				Value: "HOUSING",
 			},
 			"ADMINISTRATIVE": &graphql.EnumValueConfig{
 				Value: "ADMINISTRATIVE",
 			},
-			"FINANCE": &graphql.EnumValueConfig{
-				Value: "FINANCE",
+			"FESTIVUS": &graphql.EnumValueConfig{
+				Value: "FESTIVUS",
+			},
+			"TRANSPORTATION": &graphql.EnumValueConfig{
+				Value: "TRANSPORTATION",
+			},
+			"DEPARTMENT_1": &graphql.EnumValueConfig{
+				Value: "DEPARTMENT_1",
+			},
+			"DEPARTMENT_2": &graphql.EnumValueConfig{
+				Value: "DEPARTMENT_2",
+			},
+			"DEPARTMENT_3": &graphql.EnumValueConfig{
+				Value: "DEPARTMENT_3",
 			},
 		},
 	},

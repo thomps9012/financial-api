@@ -37,53 +37,29 @@ func (g *Grant) FindAll() ([]Grant, error) {
 	}
 	return grantArr, nil
 }
-func (g *Grant) BulkInsert() (bool, error) {
+func (g *Grant) BulkInsert() bool {
 	grants := []interface{}{
 		Grant{
 			ID:   "H79TI082369",
-			Name: "BCORR"},
+			Name: "ROADS ACROSS AMERICA"},
 		Grant{
 			ID:   "H79SP082264",
-			Name: "HIV Navigator"},
+			Name: "HOUSING"},
 		Grant{
 			ID:   "H79SP082475",
-			Name: "SPF (HOPE 1)"},
+			Name: "PUBLIC TRANSIT"},
 		Grant{
-			ID:   "SOR_PEER",
-			Name: "SOR Peer"},
+			ID:   "C718972H789087",
+			Name: "PAPER AND PRINTING"},
 		Grant{
-			ID:   "SOR_HOUSING",
-			Name: "SOR Recovery Housing"},
+			ID:   "Z651681AS6D5F15",
+			Name: "SUPPLIES"},
 		Grant{
-			ID:   "SOR_TWR",
-			Name: "SOR 2.0 - Together We Rise"},
+			ID:   "G654A531F3A51",
+			Name: "NONDESCRIPT GRANT"},
 		Grant{
-			ID:   "TANF",
-			Name: "TANF"},
-		Grant{
-			ID:   "2020-JY-FX-0014",
-			Name: "JSBT (OJJDP) - Jumpstart For A Better Tomorrow"},
-		Grant{
-			ID:   "SOR_LORAIN",
-			Name: "SOR Lorain 2.0"},
-		Grant{
-			ID:   "H79SP081048",
-			Name: "STOP Grant"},
-		Grant{
-			ID:   "H79TI083370",
-			Name: "BSW (Bridge to Success Workforce)"},
-		Grant{
-			ID:   "H79SM085150",
-			Name: "CCBHC"},
-		Grant{
-			ID:   "H79TI083662",
-			Name: "IOP New Syrenity Intensive outpatient Program"},
-		Grant{
-			ID:   "H79TI085495",
-			Name: "RAP AID (Recover from Addition to Prevent Aids)"},
-		Grant{
-			ID:   "H79TI085410",
-			Name: "N MAT (NORA Medication-Assisted Treatment Program)"},
+			ID:   "Y681651Y651YA3",
+			Name: "NONDESCRIPT GRANT 2"},
 	}
 	collection := conn.Db.Collection("grants")
 	result, err := collection.InsertMany(context.TODO(), grants)
@@ -93,5 +69,5 @@ func (g *Grant) BulkInsert() (bool, error) {
 	for _, id := range result.InsertedIDs {
 		fmt.Printf("\t%s\n", id)
 	}
-	return true, nil
+	return true
 }

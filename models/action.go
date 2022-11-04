@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	conn "financial-api/db"
-	"fmt"
 	"strings"
 	"time"
 
@@ -46,8 +45,6 @@ func (a *Action) Approve(request_id string, request_type Request_Type, new_statu
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("request type: ", request_type)
-	fmt.Printf("request info: %q", request)
 	if request.Current_Status == new_status {
 		panic("current action has already been taken")
 	}
@@ -62,7 +59,6 @@ func (a *Action) Approve(request_id string, request_type Request_Type, new_statu
 	current_user_email := UserEmailHandler(request_category, new_status, exec_review)
 	var user User
 	var user_id string
-	fmt.Println("\n current user email: ", current_user_email)
 	if current_user_email == "" {
 		user_id = request.User_ID
 	} else {

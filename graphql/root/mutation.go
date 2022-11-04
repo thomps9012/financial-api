@@ -877,6 +877,24 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return notificationClear, nil
 			},
 		},
+		"seed_grants_and_users": &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "Seeds the initial test users and grants for the application",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					return nil, errors.New("you are not an admin and cannot seed the database")
+				}
+				var user models.User
+				user_seed := user.BulkInsert()
+				var grant models.Grant
+				grant_seed := grant.BulkInsert()
+				if user_seed && grant_seed {
+					return true, nil
+				}
+				return false, nil
+			},
+		},
 		"clear_seeds": &graphql.Field{
 			Type:        graphql.Boolean,
 			Description: "Clears all of the existing test records (withholding the grant information) before a live deployment.",

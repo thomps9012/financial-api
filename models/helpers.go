@@ -19,18 +19,14 @@ const (
 type Category string
 
 const (
-	IOP            Category = "IOP"
-	INTAKE         Category = "INTAKE"
-	PEERS          Category = "PEERS"
-	ACT_TEAM       Category = "ACT_TEAM"
-	IHBT           Category = "IHBT"
-	PERKINS        Category = "PERKINS"
-	MENS_HOUSE     Category = "MENS_HOUSE"
-	NEXT_STEP      Category = "NEXT_STEP"
-	LORAIN         Category = "LORAIN"
-	PREVENTION     Category = "PREVENTION"
-	ADMINISTRATIVE Category = "ADMINISTRATIVE"
 	FINANCE        Category = "FINANCE"
+	HOUSING        Category = "HOUSING"
+	ADMINISTRATIVE Category = "ADMINISTRATIVE"
+	FESTIVUS       Category = "FESTIVUS"
+	TRANSPORTATION Category = "TRANSPORTATION"
+	DEPARTMENT_1   Category = "DEPARTMENT_1"
+	DEPARTMENT_2   Category = "DEPARTMENT_2"
+	DEPARTMENT_3   Category = "DEPARTMENT_3"
 )
 
 type Request_Type string
@@ -54,56 +50,17 @@ type Request_Info struct {
 }
 
 func UserEmailHandler(category Category, current_status Status, exec_review bool) string {
-	// possible more build out of test scenarios here
-	var to_email = ""
 	if exec_review || current_status == FINANCE_APPROVED {
-		to_email = "abradley@norainc.org"
-	} else if current_status == REJECTED || current_status == ORGANIZATION_APPROVED {
-		to_email = ""
+		return "test_exec@finance.com"
 	} else if current_status == SUPERVISOR_APPROVED || current_status == EXECUTIVE_APPROVED {
-		to_email = "finance_requests@norainc.org"
+		return "test_finance@finance.com"
 	} else if current_status == MANAGER_APPROVED {
-		switch category {
-		case LORAIN:
-			to_email = "jward@norainc.org"
-		case NEXT_STEP:
-			to_email = "cwoods@norainc.org"
-		case PERKINS:
-			to_email = "jward@norainc.org"
-		case PREVENTION:
-			to_email = "cwoods@norainc.org"
-		default:
-			to_email = "finance_requests@norainc.org"
-		}
+		return "test_supervisor@finance.com"
+	} else if current_status == PENDING {
+		return "test_manager@finance.com"
+	} else if current_status == REJECTED || current_status == ORGANIZATION_APPROVED {
+		return ""
 	} else {
-		switch category {
-		case ADMINISTRATIVE:
-			to_email = "bgriffin@norainc.org"
-		case IOP:
-			to_email = "jward@norainc.org"
-		case INTAKE:
-			to_email = "cwoods@norainc.org"
-		case PEERS:
-			to_email = "jward@norainc.org"
-		case ACT_TEAM:
-			to_email = "jjordan@norainc.org"
-		case IHBT:
-			to_email = "bgriffin@norainc.org"
-		case FINANCE:
-			to_email = "lfuentes@norainc.org"
-		case LORAIN:
-			to_email = "rgiusti@norainc.org"
-		case MENS_HOUSE:
-			to_email = "jward@norainc.org"
-		case NEXT_STEP:
-			to_email = "dbaker@norainc.org"
-		case PERKINS:
-			to_email = "churt@norainc.org"
-		case PREVENTION:
-			to_email = "lamanor@norainc.org"
-		default:
-			to_email = "finance_requests@norainc.org"
-		}
+		return ""
 	}
-	return to_email
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	conn "financial-api/db"
 	auth "financial-api/middleware"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,6 +58,72 @@ type User struct {
 	Permissions        []auth.Permission `json:"permissions" bson:"permissions"`
 }
 
+func (u *User) BulkInsert() bool {
+	users := []interface{}{
+		User{
+			ID:                 uuid.NewString(),
+			Email:              "test_exec@finance.com",
+			Name:               "Test Executive",
+			Last_Login:         time.Now(),
+			Vehicles:           []Vehicle{},
+			InComplete_Actions: []Action{},
+			Is_Active:          true,
+			Admin:              true,
+			Permissions: []auth.Permission{
+				auth.EXECUTIVE, auth.MANAGER, auth.SUPERVISOR,
+			},
+		},
+		User{
+			ID:                 uuid.NewString(),
+			Email:              "test_supervisor@finance.com",
+			Name:               "Test Supervisor",
+			Last_Login:         time.Now(),
+			Vehicles:           []Vehicle{},
+			InComplete_Actions: []Action{},
+			Is_Active:          true,
+			Admin:              true,
+			Permissions: []auth.Permission{
+				auth.MANAGER, auth.SUPERVISOR,
+			},
+		},
+		User{
+			ID:                 uuid.NewString(),
+			Email:              "test_manager@finance.com",
+			Name:               "Test Manager",
+			Last_Login:         time.Now(),
+			Vehicles:           []Vehicle{},
+			InComplete_Actions: []Action{},
+			Is_Active:          true,
+			Admin:              true,
+			Permissions: []auth.Permission{
+				auth.MANAGER,
+			},
+		},
+		User{
+			ID:                 uuid.NewString(),
+			Email:              "test_financec@finance.com",
+			Name:               "Test Finance",
+			Last_Login:         time.Now(),
+			Vehicles:           []Vehicle{},
+			InComplete_Actions: []Action{},
+			Is_Active:          true,
+			Admin:              true,
+			Permissions: []auth.Permission{
+				auth.FINANCE_TEAM, auth.MANAGER, auth.SUPERVISOR,
+			},
+		},
+	}
+	collection := conn.Db.Collection("users")
+	result, err := collection.InsertMany(context.TODO(), users)
+	if err != nil {
+		panic(err)
+	}
+	for _, id := range result.InsertedIDs {
+		fmt.Printf("\t%s\n", id)
+	}
+	return true
+}
+
 func (u *User) DeleteAll() bool {
 	collection := conn.Db.Collection("users")
 	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
@@ -94,9 +161,9 @@ func (u *User) Login(id string) (string, error) {
 func (u *User) SetPermissions(permissions string) []auth.Permission {
 	switch permissions {
 	case "EXECUTIVE":
-		return []auth.Permission{auth.EXECUTIVE}
+		return []auth.Permission{auth.EXECUTIVE, auth.SUPERVISOR, auth.MANAGER}
 	case "FINANCE_TEAM":
-		return []auth.Permission{auth.FINANCE_TEAM}
+		return []auth.Permission{auth.FINANCE_TEAM, auth.SUPERVISOR, auth.MANAGER}
 	case "SUPERVISOR":
 		return []auth.Permission{auth.SUPERVISOR, auth.MANAGER}
 	case "MANAGER":
