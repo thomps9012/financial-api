@@ -5,7 +5,6 @@ import (
 	"errors"
 	conn "financial-api/db"
 	auth "financial-api/middleware"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -92,45 +91,19 @@ func (u *User) Login(id string) (string, error) {
 	return token, nil
 }
 
-var admin_arr = [10]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes", "jward", "cwoods", "abradley", "finance_requests"}
-var mgr_arr = [6]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes"}
-var supervisor_arr = [2]string{"jward", "cwoods"}
-var exec_arr = [1]string{"abradley"}
-var fin_arr = [1]string{"finance_requests"}
-
-func isAdmin(user_email string) bool {
-	user_name := strings.Split(user_email, "@")[0]
-	for _, name := range admin_arr {
-		if name == user_name {
-			return true
-		}
+func (u *User) SetPermissions(permissions string) []auth.Permission {
+	switch permissions {
+	case "EXECUTIVE":
+		return []auth.Permission{auth.EXECUTIVE}
+	case "FINANCE_TEAM":
+		return []auth.Permission{auth.FINANCE_TEAM}
+	case "SUPERVISOR":
+		return []auth.Permission{auth.SUPERVISOR, auth.MANAGER}
+	case "MANAGER":
+		return []auth.Permission{auth.MANAGER}
+	default:
+		return []auth.Permission{auth.EMPLOYEE}
 	}
-	return false
-}
-
-func setPermissions(user_email string) []auth.Permission {
-	user_name := strings.Split(user_email, "@")[0]
-	for _, name := range exec_arr {
-		if name == user_name {
-			return []auth.Permission{auth.EXECUTIVE}
-		}
-	}
-	for _, name := range fin_arr {
-		if name == user_name {
-			return []auth.Permission{auth.FINANCE_TEAM}
-		}
-	}
-	for _, name := range supervisor_arr {
-		if name == user_name {
-			return []auth.Permission{auth.SUPERVISOR, auth.MANAGER}
-		}
-	}
-	for _, name := range mgr_arr {
-		if name == user_name {
-			return []auth.Permission{auth.MANAGER}
-		}
-	}
-	return []auth.Permission{auth.EMPLOYEE}
 }
 
 func (u *User) Create() (string, error) {
@@ -139,8 +112,6 @@ func (u *User) Create() (string, error) {
 	u.InComplete_Actions = make([]Action, 0)
 	u.Last_Login = time.Now()
 	u.Vehicles = make([]Vehicle, 0)
-	u.Admin = isAdmin(u.Email)
-	u.Permissions = setPermissions(u.Email)
 	_, err := collection.InsertOne(context.TODO(), *u)
 	if err != nil {
 		panic(err)

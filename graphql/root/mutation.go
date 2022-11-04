@@ -28,15 +28,21 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
+				"permissions": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"admin": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.Boolean),
+				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				email, okEmail := p.Args["email"].(string)
 				if !okEmail {
 					panic(okEmail)
 				}
-				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
+				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@[a-z0-9!#$%&'*+/=?^_{|}~-]*.[a-z0-9!#$%&'*+/=?^_{|}~-]*", email)
 				if !emailCheck {
-					panic("must have a Northern Ohio Recovery Association Email to register")
+					panic("must have a conventional email to register")
 				}
 				name, okName := p.Args["name"].(string)
 				if !okName {
@@ -45,6 +51,14 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				id, okid := p.Args["id"].(string)
 				if !okid {
 					panic(okid)
+				}
+				permissions, okpermissions := p.Args["permissions"].(string)
+				if !okpermissions {
+					panic(okpermissions)
+				}
+				admin, okadmin := p.Args["admin"].(bool)
+				if !okadmin {
+					panic(okadmin)
 				}
 				var user models.User
 				exists, _ := user.Exists(id)
@@ -56,6 +70,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					return result, nil
 				} else {
 					user.ID = id
+					user.Permissions = user.SetPermissions(permissions)
+					user.Admin = admin
 					user.Email = email
 					user.Name = name
 					result, err := user.Create()
