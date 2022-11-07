@@ -861,31 +861,5 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return notificationClear, nil
 			},
 		},
-		"clear_seeds": &graphql.Field{
-			Type:        graphql.Boolean,
-			Description: "Clears all of the existing test records (withholding the grant information) before a live deployment.",
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				isAdmin := middleware.ForAdmin(p.Context)
-				if !isAdmin {
-					return nil, errors.New("you are not an admin and thus cannot perform a seed clear")
-				}
-				var user models.User
-				user_clear := user.DeleteAll()
-
-				var check_request models.Check_Request
-				check_clear := check_request.DeleteAll()
-
-				var mileage_request models.Mileage_Request
-				mileage_clear := mileage_request.DeleteAll()
-
-				var petty_cash_request models.Petty_Cash_Request
-				petty_clear := petty_cash_request.DeleteAll()
-
-				if user_clear && check_clear && mileage_clear && petty_clear {
-					return true, nil
-				}
-				return false, nil
-			},
-		},
 	},
 })
