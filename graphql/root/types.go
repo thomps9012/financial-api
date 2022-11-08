@@ -857,20 +857,11 @@ var request_category = graphql.NewEnum(
 			"ADMINISTRATIVE": &graphql.EnumValueConfig{
 				Value: "ADMINISTRATIVE",
 			},
-			"FESTIVUS": &graphql.EnumValueConfig{
-				Value: "FESTIVUS",
+			"EMPLOYMENT": &graphql.EnumValueConfig{
+				Value: "EMPLOYMENT",
 			},
-			"TRANSPORTATION": &graphql.EnumValueConfig{
-				Value: "TRANSPORTATION",
-			},
-			"DEPARTMENT_1": &graphql.EnumValueConfig{
-				Value: "DEPARTMENT_1",
-			},
-			"DEPARTMENT_2": &graphql.EnumValueConfig{
-				Value: "DEPARTMENT_2",
-			},
-			"DEPARTMENT_3": &graphql.EnumValueConfig{
-				Value: "DEPARTMENT_3",
+			"MENTAL_HEALTH": &graphql.EnumValueConfig{
+				Value: "MENTAL_HEALTH",
 			},
 		},
 	},
