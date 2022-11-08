@@ -131,10 +131,10 @@ func (u *User) DeleteAll() bool {
 	return cleared.DeletedCount == record_count
 }
 
-func (u *User) Login(id string) (string, error) {
+func (u *User) Login(email string) (string, error) {
 	var user User
 	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: id}}
+	filter := bson.D{{Key: "email", Value: email}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		panic("there was an error logging you into your account")
@@ -190,10 +190,10 @@ func (u *User) Create() (string, error) {
 	return token, nil
 }
 
-func (u *User) Exists(id string) (bool, error) {
+func (u *User) Exists(email string) (bool, error) {
 	var user User
 	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: id}}
+	filter := bson.D{{Key: "email", Value: email}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return false, err

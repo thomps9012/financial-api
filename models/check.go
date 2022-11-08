@@ -85,13 +85,9 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	c.Is_Active = true
 	c.User_ID = requestor.ID
 	c.Current_Status = PENDING
-	// build in logic for setting current user id
-	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
-	current_user_email := UserEmailHandler(c.Category, MANAGER_APPROVED, false)
+	current_user_email := UserEmailHandler(c.Category, PENDING, false)
 	fmt.Printf("current user email: %s", current_user_email)
 	var user User
-	// this breaks if current user email is not in databse
-	// on production all managers will need to create signed accounts
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
 		panic(err)
@@ -107,12 +103,10 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	}
 	c.Action_History = append(c.Action_History, *first_action)
 	user.AddNotification(*first_action, current_user_id)
-	insert, insert_err := collection.InsertOne(context.TODO(), *c)
+	_, insert_err := collection.InsertOne(context.TODO(), *c)
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	// add in extra validation based on org chart here
-	fmt.Println("inserted test: %v", insert)
 	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 	if update_err != nil {
 		panic(update_err)
