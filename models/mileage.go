@@ -2,9 +2,7 @@ package models
 
 import (
 	"context"
-	"errors"
 	conn "financial-api/db"
-	"financial-api/middleware"
 	"fmt"
 	"math"
 	"time"
@@ -116,14 +114,6 @@ func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	// notify the current user based off the above
-	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Mileage", requestor.Name, time.Now())
-	if update_err != nil {
-		panic(update_err)
-	}
-	if !update_user {
-		return *m, errors.New("failed to update appropiate admin staff")
-	}
 	return *m, nil
 }
 
@@ -144,7 +134,6 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor User) (Milea
 		if err != nil {
 			panic(err)
 		}
-		var current_user_email = current_user.Email
 		request.Action_History = append(request.Action_History, *update_action)
 		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
 		if clear_notification_err != nil {
@@ -153,13 +142,6 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor User) (Milea
 		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
 		if notify_err != nil {
 			panic(notify_err)
-		}
-		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
-		if update_err != nil {
-			panic(update_err)
-		}
-		if !update_user {
-			panic("failed to update appropiate admin staff")
 		}
 	} else {
 		update_action := &Action{
