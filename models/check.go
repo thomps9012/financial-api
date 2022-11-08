@@ -86,8 +86,7 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	c.User_ID = requestor.ID
 	c.Current_Status = PENDING
 	// build in logic for setting current user id
-	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
-	current_user_email := UserEmailHandler(c.Category, MANAGER_APPROVED, false)
+	current_user_email := UserEmailHandler(c.Category, PENDING, false)
 	fmt.Printf("current user email: %s", current_user_email)
 	var user User
 	// this breaks if current user email is not in databse

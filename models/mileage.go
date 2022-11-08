@@ -92,9 +92,7 @@ func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	m.Current_Status = PENDING
 	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
 	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
-	// set current user based off category
-	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
-	current_user_email := UserEmailHandler(m.Category, MANAGER_APPROVED, false)
+	current_user_email := UserEmailHandler(m.Category, PENDING, false)
 	var user User
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {

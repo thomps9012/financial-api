@@ -85,8 +85,7 @@ func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) 
 		Status:       CREATED,
 		Created_At:   time.Now(),
 	}
-	// current_user_email := UserEmailHandler(c.Category, PENDING, false)
-	current_user_email := UserEmailHandler(p.Category, MANAGER_APPROVED, false)
+	current_user_email := UserEmailHandler(p.Category, PENDING, false)
 	var user User
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
