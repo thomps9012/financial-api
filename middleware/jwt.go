@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -12,22 +11,23 @@ import (
 var jwtKey = []byte(os.Getenv("JWT_KEY"))
 
 type Claims struct {
-	id   string
-	name string
-	role string
+	id          string
+	name        string
+	admin       bool
+	permissions []Permission
 	jwt.StandardClaims
 }
 
-func GenerateToken(id string, name string, role string) (string, error) {
+func GenerateToken(id string, name string, admin bool, permissions []Permission) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = id
 	claims["name"] = name
-	claims["role"] = role
+	claims["admin"] = admin
+	claims["permissions"] = permissions
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		log.Fatal("Error while signing JWT")
 		return "", err
 	}
 	return tokenString, nil
@@ -42,9 +42,10 @@ func ParseToken(tokenString string) (map[string]interface{}, error) {
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var info = map[string]interface{}{
-			"id":   claims["id"].(string),
-			"name": claims["name"].(string),
-			"role": claims["role"].(string),
+			"id":          claims["id"].(string),
+			"name":        claims["name"].(string),
+			"admin":       claims["admin"].(bool),
+			"permissions": claims["permissions"].([]interface{}),
 		}
 		return info, nil
 	}

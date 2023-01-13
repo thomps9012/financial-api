@@ -4,10 +4,9 @@ import (
 	conn "financial-api/db"
 	r "financial-api/graphql/root"
 	auth "financial-api/middleware"
-	"fmt"
 	"net/http"
 	"os"
-	// "encoding/json"
+
 	"github.com/go-chi/chi"
 	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
@@ -21,17 +20,6 @@ var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 	Mutation: r.RootMutations,
 })
 
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
-	result := graphql.Do(graphql.Params{
-		Schema: schema,
-		RequestString: query,
-	})
-	if len(result.Errors) > 0 {
-		fmt.Printf("errors: %v", result.Errors)
-	}
-	return result
-}
-
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -39,17 +27,16 @@ func main() {
 	}
 	conn.InitDB()
 	defer conn.CloseDB()
+	// delete below on final production push
 	rootRequestHandler := handler.New(&handler.Config{
-		Schema:     &rootSchema,
-		Pretty:     true,
-		GraphiQL:   true,
+		Schema: &rootSchema,
+		Pretty: true,
 	})
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
-	http.Handle("/graphql", rootRequestHandler)
-	originsOK := handlers.AllowedOrigins([]string{"https://agile-tundra-78417.herokuapp.com/graphql", "http://localhost:3000", "https://finance-requests.vercel.app"})
+	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app", "http://localhost:3000"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(router))
+	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(auth.LimitApiCalls(router)))
 }

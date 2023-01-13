@@ -11,10 +11,21 @@ type contextKey struct {
 	name string
 }
 
+type Permission string
+
+const (
+	EMPLOYEE     Permission = "EMPLOYEE"
+	MANAGER      Permission = "MANAGER"
+	SUPERVISOR   Permission = "SUPERVISOR"
+	EXECUTIVE    Permission = "EXECUTIVE"
+	FINANCE_TEAM Permission = "FINANCE_TEAM"
+)
+
 type contextInfo struct {
-	id   string `json:"id" bson:"role"`
-	name string `json:"name" bson:"name"`
-	role string `json:"role" bson:"role"`
+	id          string
+	name        string
+	admin       bool
+	permissions []Permission
 }
 
 func Middleware() func(http.Handler) http.Handler {
@@ -33,13 +44,26 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 			id := token["id"].(string)
 			name := token["name"].(string)
-			role := token["role"].(string)
-			contextInfo := &contextInfo{id, name, role}
+			admin := token["admin"].(bool)
+			permissions_unformated := token["permissions"].([]interface{})
+			var permissions []Permission
+			for _, permission := range permissions_unformated {
+				permissions = append(permissions, Permission(permission.(string)))
+			}
+			contextInfo := &contextInfo{id, name, admin, permissions}
 			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func LoggedIn(ctx context.Context) bool {
+	if ctx.Value(userCtxKey) == nil {
+		return false
+	}
+	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
+	return raw.id != ""
 }
 
 func ForID(ctx context.Context) string {
@@ -52,7 +76,12 @@ func ForName(ctx context.Context) string {
 	return raw.name
 }
 
-func ForRole(ctx context.Context) string {
+func ForAdmin(ctx context.Context) bool {
 	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.role
+	return raw.admin
+}
+
+func ForPermissions(ctx context.Context) []Permission {
+	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
+	return raw.permissions
 }

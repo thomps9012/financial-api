@@ -1,11 +1,10 @@
-package grants
+package models
 
 import (
 	"context"
 	conn "financial-api/db"
 	"fmt"
 
-	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -24,7 +23,6 @@ func (g *Grant) Find(grant_id string) (Grant, error) {
 	}
 	return grant, nil
 }
-
 func (g *Grant) FindAll() ([]Grant, error) {
 	collection := conn.Db.Collection("grants")
 	var grantArr []Grant
@@ -39,7 +37,6 @@ func (g *Grant) FindAll() ([]Grant, error) {
 	}
 	return grantArr, nil
 }
-
 func (g *Grant) BulkInsert() (bool, error) {
 	grants := []interface{}{
 		Grant{
@@ -98,17 +95,3 @@ func (g *Grant) BulkInsert() (bool, error) {
 	}
 	return true, nil
 }
-
-var GrantType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "GrantInformation",
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.ID,
-			},
-			"name": &graphql.Field{
-				Type: graphql.String,
-			},
-		},
-	},
-)

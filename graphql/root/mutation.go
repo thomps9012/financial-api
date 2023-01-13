@@ -2,8 +2,8 @@ package root
 
 import (
 	"errors"
-	r "financial-api/models/requests"
-	u "financial-api/models/user"
+	"financial-api/middleware"
+	"financial-api/models"
 	"fmt"
 	"math"
 	"regexp"
@@ -15,10 +15,13 @@ import (
 var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootMutations",
 	Fields: graphql.Fields{
-		"sign_in": &graphql.Field{
+		"login": &graphql.Field{
 			Type:        graphql.String,
-			Description: "Either creates a new user or logs a user in based on their account history",
+			Description: "A mutation that either creates, or logs a user in, dependent on whether or not they have an account in the database.",
 			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
 				"email": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
@@ -39,92 +42,32 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !okName {
 					panic(okName)
 				}
-				var user u.User
-				result, err := user.Login(name, email)
-				if err != nil {
-					panic(err)
+				id, okid := p.Args["id"].(string)
+				if !okid {
+					panic(okid)
 				}
-				return result, nil
-			},
-		},
-		"add_user": &graphql.Field{
-			Type:        UserType,
-			Description: "Creates a new user for the application",
-			Args: graphql.FieldConfigArgument{
-				"name": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"email": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"role": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"manager_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-				"manager_email": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
-				}
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are not authorized to create new users")
-				}
-				email, okEmail := p.Args["email"].(string)
-				if !okEmail {
-					panic(okEmail)
-				}
-				emailCheck, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_{|}~-]*@norainc.org", email)
-				if !emailCheck {
-					panic("users must have a Northern Ohio Recovery Association Email")
-				}
-				name, okName := p.Args["name"].(string)
-				if !okName {
-					panic(okName)
-				}
-				role, okRole := p.Args["role"].(string)
-				if !okRole {
-					panic(okRole)
-				}
-				managerID, okManagerID := p.Args["manager_id"].(string)
-				if !okManagerID {
-					panic(okManagerID)
-				}
-				managerEmail, okManagerEmail := p.Args["manager_email"].(string)
-				if !okManagerEmail {
-					panic(okManagerEmail)
-				}
-				newUser := u.User{
-					Name:               name,
-					Email:              email,
-					Role:               role,
-					Manager_ID:         managerID,
-					Manager_Email:      managerEmail,
-					InComplete_Actions: []u.Action{},
-					Vehicles:           []u.Vehicle{},
-					Last_Login:         time.Now(),
-					Is_Active:          true,
-				}
-				exists, _ := user.Exists(email)
+				var user models.User
+				exists, _ := user.Exists(id)
 				if exists {
-					return nil, errors.New("user already exists for specified email")
+					result, err := user.Login(id)
+					if err != nil {
+						panic(err)
+					}
+					return result, nil
+				} else {
+					user.ID = id
+					user.Email = email
+					user.Name = name
+					result, err := user.Create()
+					if err != nil {
+						panic(err)
+					}
+					return result, nil
 				}
-				newUserInfo, createErr := newUser.Create()
-				if createErr != nil {
-					panic(createErr)
-				}
-				return newUserInfo, nil
 			},
 		},
 		"deactivate_user": &graphql.Field{
-			Type:        UserType,
+			Type:        user_detail,
 			Description: "Deactivates a user by setting the status to inactive",
 			Args: graphql.FieldConfigArgument{
 				"user_id": &graphql.ArgumentConfig{
@@ -132,8 +75,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
@@ -141,10 +84,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !idOK {
 					panic("you must enter a valid user id")
 				}
-				isAdmin := user.CheckAdmin(p.Context)
-				contextuser, _ := user.FindContextID(p.Context)
+				isAdmin := middleware.ForAdmin(p.Context)
+				context_user := middleware.ForID(p.Context)
 				if !isAdmin {
-					if contextuser.ID != user_id {
+					if context_user != user_id {
 						panic("You are unauthorized to deactivate this user")
 					}
 				}
@@ -156,8 +99,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"add_vehicle": &graphql.Field{
-			Type:        VehicleType,
-			Description: "Allow a user to add a vehicle to their account",
+			Type:        user_vehicle,
+			Description: "Allows a user to add a vehicle to their account",
 			Args: graphql.FieldConfigArgument{
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -167,15 +110,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				user, userErr := user.FindContextID(p.Context)
-				if userErr != nil {
-					panic(userErr)
-				}
+				user_id := middleware.ForID(p.Context)
 				name, nameOK := p.Args["name"].(string)
 				if !nameOK {
 					panic("you must enter a valid vehicle name")
@@ -184,12 +124,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !descriptionOK {
 					panic("you must enter a valid vehicle description")
 				}
-				result, err := user.AddVehicle(user.ID, name, description)
+				result, err := user.AddVehicle(user_id, name, description)
 				println(result)
 				if err != nil {
 					panic(err)
 				}
-				return &u.Vehicle{
+				return &models.Vehicle{
 					ID:          result,
 					Name:        name,
 					Description: description,
@@ -198,27 +138,24 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"remove_vehicle": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "Allow a user to remove a vehicle from their account",
+			Description: "Removes a specific vehicle from a user's account.",
 			Args: graphql.FieldConfigArgument{
 				"vehicle_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				user, userErr := user.FindContextID(p.Context)
-				if userErr != nil {
-					panic(userErr)
-				}
+				user_id := middleware.ForID(p.Context)
 				vehicle_id, vehicle_idOK := p.Args["vehicle_id"].(string)
 				if !vehicle_idOK {
 					panic("you must enter a valid vehicle id")
 				}
-				result, err := user.RemoveVehicle(user.ID, vehicle_id)
+				result, err := user.RemoveVehicle(user_id, vehicle_id)
 				if err != nil {
 					panic(err)
 				}
@@ -227,26 +164,22 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// mileage mutations
 		"create_mileage": &graphql.Field{
-			Type:        MileageType,
-			Description: "Creates a new mileage request for a given user",
+			Type:        mileage_request,
+			Description: "Creates a new mileage request for a given user based on the logged in user context.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(MileageInputType),
+					Type: graphql.NewNonNull(mileage_input),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				requestor, userErr := user.FindContextID(p.Context)
-				if userErr != nil {
-					panic(userErr)
-				}
+				requestor_id := middleware.ForID(p.Context)
 				grant_id, grantOK := p.Args["grant_id"].(string)
 				if !grantOK {
 					panic("must enter a valid grant id")
@@ -284,8 +217,13 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !parkingisOK {
 					panic("must enter a valid parking amount")
 				}
-				mileage_req := &r.Mileage_Request{
+				category, category_ok := mileageArgs["category"].(string)
+				if !category_ok {
+					panic("must enter a valid category type")
+				}
+				mileage_req := &models.Mileage_Request{
 					Date:              date,
+					Category:          models.Category(category),
 					Grant_ID:          grant_id,
 					Starting_Location: start,
 					Destination:       destination,
@@ -295,17 +233,22 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Tolls:             tolls,
 					Parking:           parking,
 				}
-				exists, _ := mileage_req.Exists(requestor.ID, date, start_odo, end_odo)
+				exists, _ := mileage_req.Exists(requestor_id, date, start_odo, end_odo)
 				if exists {
 					return nil, errors.New("mileage request already created")
+				}
+				var user models.User
+				requestor, err := user.FindByID(requestor_id)
+				if err != nil {
+					panic("error finding user with that id")
 				}
 				mileage_req.Create(requestor)
 				return mileage_req, nil
 			},
 		},
 		"edit_mileage": &graphql.Field{
-			Type:        MileageType,
-			Description: "Allows a user to edit one of their rejected or pending mileage requests",
+			Type:        mileage_request,
+			Description: "Allows a user to edit one of their rejected or pending mileage requests, requests that have been approved (at any stage) may not be edited.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -314,12 +257,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.ID,
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: MileageInputType,
+					Type: mileage_input,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
@@ -327,16 +270,17 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !idOK {
 					panic("must enter a valid mileage id")
 				}
-				var milage_req r.Mileage_Request
+				var milage_req models.Mileage_Request
 				result, err := milage_req.FindByID(request_id)
-				contextuser, _ := user.FindContextID(p.Context)
+				user_id := middleware.ForID(p.Context)
+				contextuser, _ := user.FindByID(user_id)
 				if contextuser.ID != result.User_ID {
 					panic("you are unauthorized to edit this record")
 				}
 				if err != nil {
 					panic(err)
 				}
-				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+				if result.Current_Status != models.PENDING && result.Current_Status != models.REJECTED {
 					panic("this request is already being processed")
 				}
 				// add in conditional update of fields based on input
@@ -377,6 +321,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					if !parkingisOK {
 						panic("must enter a valid parking amount")
 					}
+					category, category_ok := mileageArgs["category"].(string)
+					if !category_ok {
+						panic("must enter a valid request category")
+					}
 					result.Date = date
 					result.Starting_Location = start
 					result.Destination = destination
@@ -385,6 +333,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					result.End_Odometer = end_odo
 					result.Tolls = tolls
 					result.Parking = parking
+					result.Category = models.Category(category)
 				}
 				updatedDoc, updateErr := milage_req.Update(result, contextuser)
 				if updateErr != nil {
@@ -395,23 +344,24 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// petty cash mutations
 		"create_petty_cash": &graphql.Field{
-			Type:        PettyCashType,
-			Description: "Creates a new petty cash request for a given user",
+			Type:        petty_cash_request,
+			Description: "Creates a new petty cash request for a given user, based on the logged in user context.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(PettyCashInput),
+					Type: graphql.NewNonNull(petty_cash_input),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				requestor, userErr := user.FindContextID(p.Context)
+				requestor_id := middleware.ForID(p.Context)
+				requestor, userErr := user.FindByID(requestor_id)
 				if userErr != nil {
 					panic(userErr)
 				}
@@ -440,7 +390,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !descriptionOK {
 					panic("must enter a valid description")
 				}
-				petty_cash_req := &r.Petty_Cash_Request{
+				category, category_ok := requestArgs["category"].(string)
+				if !category_ok {
+					panic("must enter a valid request category")
+				}
+				petty_cash_req := &models.Petty_Cash_Request{
+					Category:    models.Category(category),
 					Date:        date,
 					Grant_ID:    grant_id,
 					Amount:      amount,
@@ -456,8 +411,8 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"edit_petty_cash": &graphql.Field{
-			Type:        PettyCashType,
-			Description: "Allows a user to edit one of their rejected or pending petty cash requests",
+			Type:        petty_cash_request,
+			Description: "Allows a user to edit one of their rejected or pending petty cash requests, requests that have been approved (at any stage) may not be edited.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -466,17 +421,18 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					Type: graphql.ID,
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: PettyCashInput,
+					Type: petty_cash_input,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				var petty_cash r.Petty_Cash_Request
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				var petty_cash models.Petty_Cash_Request
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				contextuser, _ := user.FindContextID(p.Context)
+				user_id := middleware.ForID(p.Context)
+				contextuser, _ := user.FindByID(user_id)
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -488,7 +444,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if contextuser.ID != result.User_ID {
 					panic("you are unauthorized to edit this record")
 				}
-				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+				if result.Current_Status != models.PENDING && result.Current_Status != models.REJECTED {
 					panic("this request is currently being processed")
 				}
 				if p.Args["request"] != nil {
@@ -513,6 +469,11 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					if !descriptionOK {
 						panic("must enter a valid description")
 					}
+					category, category_ok := requestArgs["category"].(string)
+					if !category_ok {
+						panic("must enter a valid request category")
+					}
+					result.Category = models.Category(category)
 					result.Amount = amount
 					result.Date = date
 					result.Receipts = receipts
@@ -530,49 +491,51 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// check request mutations
 		"create_check_request": &graphql.Field{
-			Type:        CheckRequestType,
-			Description: "Creates a new check request for a given user",
+			Type:        check_request,
+			Description: "Creates a new check request for a given user, based on the logged in user context.",
 			Args: graphql.FieldConfigArgument{
 				"vendor": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(VendorInput),
+					Type: graphql.NewNonNull(vendor_input),
 				},
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(CheckRequestInput),
+					Type: graphql.NewNonNull(check_request_input),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				requestor, userErr := user.FindContextID(p.Context)
+				requestor_id := middleware.ForID(p.Context)
+				requestor, userErr := user.FindByID(requestor_id)
 				if userErr != nil {
 					panic(userErr)
 				}
+				fmt.Printf("%v\n", p.Args)
 				grant_id, grantOK := p.Args["grant_id"].(string)
 				if !grantOK {
 					panic("must enter a valid grant")
 				}
 				vendor_input := p.Args["vendor"].(map[string]interface{})
 				vendor_address_input := vendor_input["address"].(map[string]interface{})
-				vendor_address := &r.Address{
+				vendor_address := &models.Address{
 					Website:  vendor_address_input["website"].(string),
 					Street:   vendor_address_input["street"].(string),
 					City:     vendor_address_input["city"].(string),
 					State:    vendor_address_input["state"].(string),
 					Zip_Code: vendor_address_input["zip"].(int),
 				}
-				vendor := &r.Vendor{
+				vendor := &models.Vendor{
 					Name:    vendor_input["name"].(string),
 					Address: *vendor_address,
 				}
 				checkReqArgs := p.Args["request"].(map[string]interface{})
 				purchases_input := checkReqArgs["purchases"].([]interface{})
-				var purchases []r.Purchase
+				var purchases []models.Purchase
 				var order_total = 0.0
 				for _, purchase_item_obj := range purchases_input {
 					fmt.Printf("%s\n", purchase_item_obj)
@@ -580,7 +543,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					amount := purchase_item["amount"].(float64)
 					description := purchase_item["description"].(string)
 					grant_line_item := purchase_item["grant_line_item"].(string)
-					purchase := &r.Purchase{
+					purchase := &models.Purchase{
 						Grant_Line_Item: grant_line_item,
 						Description:     description,
 						Amount:          (math.Round(amount*100) / 100),
@@ -594,44 +557,49 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				for item := range receiptArgs {
 					receipts = append(receipts, receiptArgs[item].(string))
 				}
-				check_request := &r.Check_Request{
-					Date:        checkReqArgs["date"].(time.Time),
-					Vendor:      *vendor,
-					Description: checkReqArgs["description"].(string),
-					Grant_ID:    grant_id,
-					Purchases:   purchases,
-					Order_Total: order_total,
-					Receipts:    receipts,
-					Credit_Card: checkReqArgs["credit_card"].(string),
+				category, category_ok := checkReqArgs["category"].(string)
+				if !category_ok {
+					panic("must enter a valid request category")
 				}
-				exists, _ := check_request.Exists(requestor.ID, vendor.Name, order_total, check_request.Date)
+				var check_request models.Check_Request
+				check_request.Category = models.Category(category)
+				check_request.Date = checkReqArgs["date"].(time.Time)
+				check_request.Vendor = *vendor
+				check_request.Description = checkReqArgs["description"].(string)
+				check_request.Grant_ID = grant_id
+				check_request.Purchases = purchases
+				check_request.Order_Total = order_total
+				check_request.Receipts = receipts
+				check_request.Credit_Card = checkReqArgs["credit_card"].(string)
+				exists := check_request.Exists(requestor.ID, vendor.Name, order_total, check_request.Date)
 				if exists {
 					return nil, errors.New("check request already created")
 				}
+				fmt.Println("exists checker", exists)
 				check_request.Create(requestor)
 				return check_request, nil
 			},
 		},
 		"edit_check_request": &graphql.Field{
-			Type:        CheckRequestType,
-			Description: "Allows a user to edit one of their rejected or pending check requests",
+			Type:        check_request,
+			Description: "Allows a user to edit one of their rejected or pending check requests, requests that have been approved (at any stage) may not be edited.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"vendor": &graphql.ArgumentConfig{
-					Type: VendorInput,
+					Type: vendor_input,
 				},
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.ID,
 				},
 				"request": &graphql.ArgumentConfig{
-					Type: CheckRequestInput,
+					Type: check_request_input,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
@@ -639,16 +607,17 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !idOK {
 					panic("must enter a valid mileage id")
 				}
-				var check_req r.Check_Request
+				var check_req models.Check_Request
 				result, err := check_req.FindByID(request_id)
-				contextuser, _ := user.FindContextID(p.Context)
+				user_id := middleware.ForID(p.Context)
+				contextuser, _ := user.FindByID(user_id)
 				if contextuser.ID != result.User_ID {
 					panic("you are unauthorized to edit this record")
 				}
 				if err != nil {
 					panic(err)
 				}
-				if result.Current_Status != "PENDING" && result.Current_Status != "REJECTED" {
+				if result.Current_Status != models.PENDING && result.Current_Status != models.REJECTED {
 					panic("this request is already being processed")
 				}
 				if p.Args["grant_id"] != nil {
@@ -657,7 +626,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if p.Args["request"] != nil {
 					checkReqArgs := p.Args["request"].(map[string]interface{})
 					purchases_input := checkReqArgs["purchases"].([]interface{})
-					var purchases []r.Purchase
+					var purchases []models.Purchase
 					var order_total = 0.0
 					for _, purchase_item_obj := range purchases_input {
 						fmt.Printf("%s\n", purchase_item_obj)
@@ -665,7 +634,7 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 						amount := purchase_item["amount"].(float64)
 						description := purchase_item["description"].(string)
 						grant_line_item := purchase_item["grant_line_item"].(string)
-						purchase := &r.Purchase{
+						purchase := &models.Purchase{
 							Grant_Line_Item: grant_line_item,
 							Description:     description,
 							Amount:          (math.Round(amount*100) / 100),
@@ -679,23 +648,29 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					for item := range receiptArgs {
 						receipts = append(receipts, receiptArgs[item].(string))
 					}
+					category, category_ok := checkReqArgs["category"].(string)
+					if !category_ok {
+						panic("must enter a valid request category")
+					}
+					result.Category = models.Category(category)
 					result.Date = checkReqArgs["date"].(time.Time)
 					result.Description = checkReqArgs["description"].(string)
 					result.Order_Total = order_total
 					result.Receipts = receipts
+					result.Purchases = purchases
 					result.Credit_Card = checkReqArgs["credit_card"].(string)
 				}
 				if p.Args["vendor"] != nil {
 					vendor_input := p.Args["vendor"].(map[string]interface{})
 					vendor_address_input := vendor_input["address"].(map[string]interface{})
-					vendor_address := &r.Address{
+					vendor_address := &models.Address{
 						Website:  vendor_address_input["website"].(string),
 						Street:   vendor_address_input["street"].(string),
 						City:     vendor_address_input["city"].(string),
 						State:    vendor_address_input["state"].(string),
 						Zip_Code: vendor_address_input["zip"].(int),
 					}
-					vendor := r.Vendor{
+					vendor := models.Vendor{
 						Name:    vendor_input["name"].(string),
 						Address: *vendor_address,
 					}
@@ -711,16 +686,30 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		// action mutations
 		"approve_request": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a manager to approve a financial request",
+			Description: "Allows an administrator or manager to approve a specific financial request.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(request_type),
+				},
+				"request_category": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(request_category),
+				},
+				"new_status": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(request_status),
+				},
+				"exec_review": &graphql.ArgumentConfig{
+					Type:         graphql.NewNonNull(graphql.Boolean),
+					DefaultValue: false,
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -729,28 +718,28 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !typeOk {
 					panic("must enter a valid request type")
 				}
-				var user u.User
-				var action r.Action
-				// get request user id from request
-				request, err := action.FindOne(request_id, request_type)
-				if err != nil {
-					panic(err)
+				request_category, catOK := p.Args["request_category"].(string)
+				if !catOK {
+					panic("must enter a valid request category")
 				}
-				// get manager id from context
-				// get manager role from context
-				loggedIn := user.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
+				new_status, statusOK := p.Args["new_status"].(string)
+				if !statusOK {
+					panic("must enter a valid request status")
 				}
-				manager, managerErr := user.FindContextID(p.Context)
-				if managerErr != nil {
-					panic(managerErr)
+				exec_review, execReview := p.Args["exec_review"].(bool)
+				if !execReview {
+					panic("must enter a valid option for executive review")
 				}
-				approveReq, approveErr := action.Approve(request_id, request, manager, request_type)
+				admin := middleware.ForAdmin(p.Context)
+				if !admin {
+					panic("you are unable to approve requests")
+				}
+				var action models.Action
+				approveReq, approveErr := action.Approve(request_id, models.Request_Type(request_type), models.Status(new_status), models.Category(request_category), exec_review)
 				if approveErr != nil {
 					panic(approveErr)
 				}
-				if approveReq == false {
+				if !approveReq {
 					panic("error approving request")
 				}
 				return approveReq, nil
@@ -758,16 +747,20 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"reject_request": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a manager to reject a financial request",
+			Description: "Allows a manager or administrator to reject a financial request and kicks it back to the user for further revisions.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(request_type),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -776,19 +769,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !typeOk {
 					panic("must enter a valid request type")
 				}
-				var action r.Action
-				var user u.User
-				// get request user id from request
-				request, err := action.FindOne(request_id, request_type)
-				if err != nil {
-					panic(err)
+				admin := middleware.ForAdmin(p.Context)
+				if !admin {
+					panic("you are unable to reject finance requests")
 				}
-				// get manager id from context
-				manager, managerErr := user.FindContextID(p.Context)
-				if managerErr != nil {
-					panic(managerErr)
-				}
-				rejectReq, rejectErr := action.Reject(request_id, request, manager.ID, request_type)
+				var action models.Action
+				rejectReq, rejectErr := action.Reject(request_id, models.Request_Type(request_type))
 				if rejectErr != nil {
 					panic(rejectErr)
 				}
@@ -800,16 +786,20 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"archive_request": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a manager to reject a financial request",
+			Description: "Allows a user or manager to archive a specified financial request, taking it out of the approval process.",
 			Args: graphql.FieldConfigArgument{
 				"request_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"request_type": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+					Type: graphql.NewNonNull(request_type),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
+				}
 				request_id, idOK := p.Args["request_id"].(string)
 				if !idOK {
 					panic("must enter a valid request id")
@@ -818,13 +808,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !typeOk {
 					panic("must enter a valid request type")
 				}
-				var action r.Action
-				var user u.User
-				user, userErr := user.FindContextID(p.Context)
-				if userErr != nil {
-					panic(userErr)
-				}
-				archiveReq, archiveErr := action.Archive(request_id, request_type, user.ID)
+				var action models.Action
+				user_id := middleware.ForID(p.Context)
+				admin := middleware.ForAdmin(p.Context)
+				archiveReq, archiveErr := action.Archive(request_id, models.Request_Type(request_type), user_id, admin)
 				if archiveErr != nil {
 					panic(archiveErr)
 				}
@@ -833,23 +820,24 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"clear_notification": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a user to clear a notification that has been dealt with",
+			Description: "Clears a logged in user's notification based on the notification id.",
 			Args: graphql.FieldConfigArgument{
-				"item_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+				"notification_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				item_id, idOK := p.Args["item_id"].(string)
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
+				}
+				notification_id, idOK := p.Args["notification_id"].(string)
 				if !idOK {
 					panic("must enter a valid action id")
 				}
-				var user u.User
-				userInfo, idErr := user.FindContextID(p.Context)
-				if idErr != nil {
-					panic(idErr)
-				}
-				notificationClear, clearErr := user.ClearNotification(item_id, userInfo.ID)
+				var user models.User
+				user_id := middleware.ForID(p.Context)
+				notificationClear, clearErr := user.ClearNotificationByID(notification_id, user_id)
 				if clearErr != nil {
 					panic(clearErr)
 				}
@@ -858,14 +846,15 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"clear_all_notifications": &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "A method for a user to clear all of their notifications",
+			Description: "Clears all of a logged in user's notifications.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				userInfo, idErr := user.FindContextID(p.Context)
-				if idErr != nil {
-					panic(idErr)
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
 				}
-				notificationClear, clearErr := user.ClearNotifications(userInfo.ID)
+				var user models.User
+				user_id := middleware.ForID(p.Context)
+				notificationClear, clearErr := user.ClearNotifications(user_id)
 				if clearErr != nil {
 					panic(clearErr)
 				}

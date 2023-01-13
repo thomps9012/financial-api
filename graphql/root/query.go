@@ -3,9 +3,8 @@ package root
 import (
 	"context"
 	conn "financial-api/db"
-	g "financial-api/models/grants"
-	r "financial-api/models/requests"
-	u "financial-api/models/user"
+	"financial-api/middleware"
+	"financial-api/models"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -17,19 +16,20 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 	Fields: graphql.Fields{
 		// user queries
 		"me": &graphql.Field{
-			Type:        UserDetailType,
-			Description: "Gather Information for a specific user on login",
+			Type:        user_overview,
+			Description: "Gathers overview information for a specific logged in user.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				loggedIn := user.LoggedIn(p.Context)
+				var user models.User
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				user, userErr := user.FindContextID(p.Context)
+				user_id := middleware.ForID(p.Context)
+				user, userErr := user.FindByID(user_id)
 				if userErr != nil {
 					panic(userErr)
 				}
-				petty_cash_reqs, petty_err := user.FindPettyCash(user.ID)
+				petty_cash_reqs, petty_err := user.AggregatePettyCash(user.ID)
 				if petty_err != nil {
 					panic(petty_err)
 				}
@@ -41,11 +41,11 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if check_err != nil {
 					panic(check_err)
 				}
-				return &u.User_Detail{
+				return &models.User_Detail{
 					ID:                      user.ID,
 					Name:                    user.Name,
-					Role:                    user.Role,
-					Manager_ID:              user.Manager_ID,
+					Admin:                   user.Admin,
+					Permissions:             user.Permissions,
 					Incomplete_Actions:      user.InComplete_Actions,
 					Incomplete_Action_Count: len(user.InComplete_Actions),
 					Last_Login:              user.Last_Login,
@@ -57,17 +57,17 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"all_users": &graphql.Field{
-			Type:        graphql.NewList(UserType),
+			Type:        graphql.NewList(user_detail),
 			Description: "Gather basic information for all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
+				}
+				var user models.User
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
 				}
 				results, err := user.Findall()
 				if err != nil {
@@ -77,22 +77,22 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"user_overview": &graphql.Field{
-			Type:        UserOverviewType,
-			Description: "Gather overview information for a user (all requests, and basic info)",
+			Type:        user_overview,
+			Description: "Overview information for a user (all requests, and basic info), used in administrative queries and views.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
+				}
+				var user models.User
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
 				}
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
@@ -110,17 +110,17 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if mileageErr != nil {
 					panic(mileageErr)
 				}
-				pettyCash, pettyCashErr := user.FindPettyCash(user_id)
+				pettyCash, pettyCashErr := user.AggregatePettyCash(user_id)
 				if pettyCashErr != nil {
 					panic(pettyCashErr)
 				}
-				return u.User_Overview{
+				return models.User_Overview{
 					ID:                      user_id,
 					Name:                    user.Name,
 					Last_Login:              user.Last_Login,
 					Is_Active:               user.Is_Active,
-					Role:                    user.Role,
-					Manager_ID:              user.Manager_ID,
+					Permissions:             user.Permissions,
+					Admin:                   user.Admin,
 					Incomplete_Action_Count: len(user.InComplete_Actions),
 					Check_Requests:          check_requests,
 					Mileage_Requests:        mileage,
@@ -129,8 +129,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"user_mileage": &graphql.Field{
-			Type:        UserAggMileage,
-			Description: "Aggregate and gather all mileage requests for a user for a given time period",
+			Type:        total_user_mileage,
+			Description: "All mileage requests and information pertaining to those requests, for a specified user, over a specified time period.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -145,21 +145,21 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				var user models.User
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
 				}
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
-				loggedIn := user.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
-				}
-				isAdmin := user.CheckAdmin(p.Context)
-				contextuser, _ := user.FindContextID(p.Context)
+				isAdmin := middleware.ForAdmin(p.Context)
+				contextuser := middleware.ForID(p.Context)
 				if !isAdmin {
-					if user_id != contextuser.ID {
+					if user_id != contextuser {
 						panic("you are unauthorized to view this page")
 					}
 				}
@@ -171,8 +171,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"user_check_requests": &graphql.Field{
-			Type:        UserCheckRequests,
-			Description: "Aggregate and gather all check requests for a user over a given time period",
+			Type:        total_user_check_requests,
+			Description: "All check requests and information pertaining to those requests, for a specified user, over a specified time period.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -187,25 +187,67 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				var user models.User
 				user_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid user id")
 				}
-				isAdmin := user.CheckAdmin(p.Context)
-				loggedIn := user.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
-				}
-				contextuser, _ := user.FindContextID(p.Context)
+				isAdmin := middleware.ForAdmin(p.Context)
+				contextuser := middleware.ForID(p.Context)
 				if !isAdmin {
-					if user_id != contextuser.ID {
+					if user_id != contextuser {
 						panic("you are unauthorized to view this page")
 					}
 				}
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
-				results, err := user.AggregateChecks(user_id, start_date, end_date)
+				results, err := user.FindCheckReqs(user_id, start_date, end_date)
+				if err != nil {
+					panic(err)
+				}
+				return results, nil
+			},
+		},
+		"user_petty_cash_requests": &graphql.Field{
+			Type:        total_user_petty_cash,
+			Description: "All petty cash requests and information pertaining to those requests, for a specified user, over a specified time period.",
+			Args: graphql.FieldConfigArgument{
+				"user_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"start_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+				"end_date": &graphql.ArgumentConfig{
+					Type:         graphql.String,
+					DefaultValue: "",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				user_id, isOK := p.Args["user_id"].(string)
+				if !isOK {
+					panic("need to enter a valid user id")
+				}
+				isAdmin := middleware.ForAdmin(p.Context)
+				contextuser := middleware.ForID(p.Context)
+				if !isAdmin {
+					if user_id != contextuser {
+						panic("you are unauthorized to view this page")
+					}
+				}
+				var user_petty_cash models.Petty_Cash_Request
+				start_date := p.Args["start_date"].(string)
+				end_date := p.Args["end_date"].(string)
+				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)
 				if err != nil {
 					panic(err)
 				}
@@ -214,19 +256,18 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// mileage queries
 		"mileage_overview": &graphql.Field{
-			Type:        graphql.NewList(MileageOverviewType),
-			Description: "Gather overview information for all mileage requests, and basic info",
+			Type:        graphql.NewList(mileage_request_overview),
+			Description: "Overview information for a mileage request, used in administrative views.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				var mileage_req r.Mileage_Overview
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
+				}
+				var mileage_req models.Mileage_Overview
 				results, err := mileage_req.FindAll()
 				if err != nil {
 					panic(err)
@@ -235,8 +276,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"mileage_monthly_report": &graphql.Field{
-			Type:        graphql.NewList(AggMonthlyMileageType),
-			Description: "Aggregate and gather all mileage requests for a given month and year",
+			Type:        graphql.NewList(monthly_mileage_report),
+			Description: "Aggregate and gather all mileage requests for a given month and year.",
 			Args: graphql.FieldConfigArgument{
 				"month": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.Int),
@@ -246,14 +287,13 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
+				}
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
 				}
 				month, validMo := p.Args["month"].(int)
 				if !validMo {
@@ -267,9 +307,9 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				var records []r.Monthly_Mileage_Overview
+				var records []models.Monthly_Mileage_Overview
 				for users.Next(context.TODO()) {
-					var user u.User
+					var user models.User
 					decode_err := users.Decode(&user)
 					if decode_err != nil {
 						panic(decode_err)
@@ -278,7 +318,7 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 					if err != nil {
 						panic(err)
 					}
-					user_record := &r.Monthly_Mileage_Overview{
+					user_record := &models.Monthly_Mileage_Overview{
 						Grant_IDS:     user_mileage.Grant_IDS,
 						User_ID:       user.ID,
 						Name:          user.Name,
@@ -297,29 +337,28 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"mileage_detail": &graphql.Field{
-			Type:        MileageType,
-			Description: "Detailed information for a single mileage request by id",
+			Type:        mileage_request,
+			Description: "Detailed information for a single mileage request, specified by id.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				var milage_req r.Mileage_Request
+				isAdmin := middleware.ForAdmin(p.Context)
+				var milage_req models.Mileage_Request
 				mileage_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid request id")
 				}
 				results, err := milage_req.FindByID(mileage_id)
-				contextuser, _ := user.FindContextID(p.Context)
+				contextuser := middleware.ForID(p.Context)
 				if !isAdmin {
-					if contextuser.ID != results.User_ID {
+					if contextuser != results.User_ID {
 						panic("you are unauthorized to view this record")
 					}
 				}
@@ -329,10 +368,9 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		// build out grant mileage report
 		"grant_mileage_report": &graphql.Field{
-			Type:        AggGrantMileage,
-			Description: "Aggregate and gather all mileage requests for a given grant",
+			Type:        grant_mileage,
+			Description: "Aggregate and gather all mileage requests for a given grant.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -347,16 +385,15 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
+				isAdmin := middleware.ForAdmin(p.Context)
 				if !isAdmin {
 					panic("you are unauthorized to view this page")
 				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				var mileage_request r.Grant_Mileage_Overview
+				var mileage_request models.Grant_Mileage_Overview
 				grant_id, isOk := p.Args["grant_id"].(string)
 				if !isOk {
 					panic("must enter a valid grant id")
@@ -372,18 +409,17 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// petty cash queries
 		"petty_cash_overview": &graphql.Field{
-			Type:        graphql.NewList(PettyCashOverviewType),
-			Description: "Gather overview information for all petty cash requests, and basic info",
+			Type:        graphql.NewList(petty_cash_overview),
+			Description: "Gather overview information for all petty cash requests, and basic info, used in administrative views and queries.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var petty_cash_overview r.Petty_Cash_Overview
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
+				}
+				var petty_cash_overview models.Petty_Cash_Overview
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
 				}
 				results, err := petty_cash_overview.FindAll()
 				if err != nil {
@@ -392,10 +428,9 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		// ensure consistent return type below
-		"petty_cash_grant_requests": &graphql.Field{
-			Type:        AggGrantPettyCashReq,
-			Description: "Aggregate and gather all petty cash requests for a given grant",
+		"grant_petty_cash_requests": &graphql.Field{
+			Type:        grant_petty_cash,
+			Description: "Aggregate and gather all petty cash requests for a given grant.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -410,20 +445,19 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
+				}
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
 				}
 				grant_id, isOK := p.Args["grant_id"].(string)
 				if !isOK {
 					panic("need to enter a valid grant id")
 				}
-				var grant_petty_cash r.Grant_Petty_Cash
+				var grant_petty_cash models.Grant_Petty_Cash
 				start_date := p.Args["start_date"].(string)
 				end_date := p.Args["end_date"].(string)
 				results, err := grant_petty_cash.FindByGrant(grant_id, start_date, end_date)
@@ -433,75 +467,31 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return results, nil
 			},
 		},
-		"petty_cash_user_requests": &graphql.Field{
-			Type:        AggUserPettyCash,
-			Description: "Aggregate and gather all petty cash requests for a given user",
-			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-				"start_date": &graphql.ArgumentConfig{
-					Type:         graphql.String,
-					DefaultValue: "",
-				},
-				"end_date": &graphql.ArgumentConfig{
-					Type:         graphql.String,
-					DefaultValue: "",
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				user_id, isOK := p.Args["user_id"].(string)
-				if !isOK {
-					panic("need to enter a valid user id")
-				}
-				isAdmin := user.CheckAdmin(p.Context)
-				loggedIn := user.LoggedIn(p.Context)
-				if !loggedIn {
-					panic("you are not logged in")
-				}
-				contextuser, _ := user.FindContextID(p.Context)
-				if !isAdmin {
-					if user_id != contextuser.ID {
-						panic("you are unauthorized to view this page")
-					}
-				}
-				var user_petty_cash r.Petty_Cash_Request
-				start_date := p.Args["start_date"].(string)
-				end_date := p.Args["end_date"].(string)
-				results, err := user_petty_cash.FindByUser(user_id, start_date, end_date)
-				if err != nil {
-					panic(err)
-				}
-				return results, nil
-			},
-		},
 		"petty_cash_detail": &graphql.Field{
-			Type:        PettyCashType,
-			Description: "Detailed information for a single petty cash request by id",
+			Type:        petty_cash_request,
+			Description: "Detailed information for a single petty cash request, specified by id.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
+				isAdmin := middleware.ForAdmin(p.Context)
 				request_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid check request id")
 				}
-				var petty_cash_req r.Petty_Cash_Request
+				var petty_cash_req models.Petty_Cash_Request
 				collection := conn.Db.Collection("petty_cash_requests")
 				filter := bson.D{{Key: "_id", Value: request_id}}
 				err := collection.FindOne(context.TODO(), filter).Decode(&petty_cash_req)
-				contextuser, _ := user.FindContextID(p.Context)
+				contextuser := middleware.ForID(p.Context)
 				if !isAdmin {
-					if contextuser.ID != petty_cash_req.User_ID {
+					if contextuser != petty_cash_req.User_ID {
 						panic("you are unauthorized to view this record")
 					}
 				}
@@ -513,19 +503,18 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 		},
 		// check request queries
 		"check_request_overview": &graphql.Field{
-			Type:        graphql.NewList(CheckReqOverviewType),
-			Description: "Gather overview information for all check requests, and basic info",
+			Type:        graphql.NewList(check_request_overview),
+			Description: "Gather overview information for all check requests, and basic info, used in administrative views and queries.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				var check_request r.Check_Request_Overview
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
+				}
+				var check_request models.Check_Request_Overview
 				results, err := check_request.FindAll()
 				if err != nil {
 					panic(err)
@@ -534,8 +523,8 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"grant_check_requests": &graphql.Field{
-			Type:        AggGrantCheckReq,
-			Description: "Aggregate and gather all check requests for a given grant",
+			Type:        grant_check_requests,
+			Description: "Aggregate and gather all check requests for a given grant.",
 			Args: graphql.FieldConfigArgument{
 				"grant_id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
@@ -550,16 +539,15 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				if !isAdmin {
-					panic("you are unauthorized to view this page")
-				}
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				var check_request r.Grant_Check_Overview
+				isAdmin := middleware.ForAdmin(p.Context)
+				if !isAdmin {
+					panic("you are unauthorized to view this page")
+				}
+				var check_request models.Grant_Check_Overview
 				grant_id, isOk := p.Args["grant_id"].(string)
 				if !isOk {
 					panic("must enter a valid grant id")
@@ -574,31 +562,30 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"check_request_detail": &graphql.Field{
-			Type:        CheckRequestType,
-			Description: "Detailed information for a single check request by id",
+			Type:        check_request,
+			Description: "Detailed information for a single check request, identified by id.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				isAdmin := user.CheckAdmin(p.Context)
-				loggedIn := user.LoggedIn(p.Context)
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
+				isAdmin := middleware.ForAdmin(p.Context)
 				request_id, isOk := p.Args["id"].(string)
 				if !isOk {
 					panic("must enter a valid check request id")
 				}
-				var check_request r.Check_Request
+				var check_request models.Check_Request
 				collection := conn.Db.Collection("check_requests")
 				filter := bson.D{{Key: "_id", Value: request_id}}
 				err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
-				contextuser, _ := user.FindContextID(p.Context)
+				contextuser := middleware.ForID(p.Context)
 				if !isAdmin {
-					if contextuser.ID != check_request.User_ID {
+					if contextuser != check_request.User_ID {
 						panic("you are unauthorized to view this record")
 					}
 				}
@@ -608,13 +595,13 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				return check_request, nil
 			},
 		},
+		// grant queries
 		"all_grants": &graphql.Field{
-			Type:        graphql.NewList(GrantType),
-			Description: "Returns all grant information in the database",
+			Type:        graphql.NewList(grant),
+			Description: "Returns all grant information in the database.",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				var grant g.Grant
-				loggedIn := user.LoggedIn(p.Context)
+				var grant models.Grant
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
@@ -626,17 +613,16 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"single_grant": &graphql.Field{
-			Type:        GrantType,
-			Description: "Returns grant information based off an id",
+			Type:        grant,
+			Description: "Returns information for a single grant, queried by id.",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				var user u.User
-				var grant g.Grant
-				loggedIn := user.LoggedIn(p.Context)
+				var grant models.Grant
+				loggedIn := middleware.LoggedIn(p.Context)
 				if !loggedIn {
 					panic("you are not logged in")
 				}
