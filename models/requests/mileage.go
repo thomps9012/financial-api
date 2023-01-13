@@ -49,25 +49,25 @@ type Mileage_Overview struct {
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 type Grant_Mileage_Overview struct {
-	Grant		g.Grant		`json:"grant" bson:"grant"`
-	Mileage       int        `json:"mileage" bson:"mileage"`
-	Tolls         float64    `json:"tolls" bson:"tolls"`
-	Parking       float64    `json:"parking" bson:"parking"`
-	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
-	Requests   []Mileage_Request   `json:"requests" bson:"requests"`
+	Grant         g.Grant           `json:"grant" bson:"grant"`
+	Mileage       int               `json:"mileage" bson:"mileage"`
+	Tolls         float64           `json:"tolls" bson:"tolls"`
+	Parking       float64           `json:"parking" bson:"parking"`
+	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
+	Requests      []Mileage_Request `json:"requests" bson:"requests"`
 }
 type Monthly_Mileage_Overview struct {
-	User_ID       string     `json:"user_id" bson:"user_id"`
-	Grant_IDS     []string   `json:"grant_id" bson:"grant_id"`
-	Name          string     `json:"name" bson:"name"`
-	Month         time.Month `json:"month" bson:"month"`
-	Year          int        `json:"year" bson:"year"`
-	Mileage       int        `json:"mileage" bson:"mileage"`
-	Tolls         float64    `json:"tolls" bson:"tolls"`
-	Parking       float64    `json:"parking" bson:"parking"`
-	Current_User  string     `json:"current_user" bson:"current_user"`
-	Reimbursement float64    `json:"reimbursement" bson:"reimbursement"`
-	Requests   []user.Mileage_Request   `json:"requests" bson:"requests"`
+	User_ID       string                 `json:"user_id" bson:"user_id"`
+	Grant_IDS     []string               `json:"grant_id" bson:"grant_id"`
+	Name          string                 `json:"name" bson:"name"`
+	Month         time.Month             `json:"month" bson:"month"`
+	Year          int                    `json:"year" bson:"year"`
+	Mileage       int                    `json:"mileage" bson:"mileage"`
+	Tolls         float64                `json:"tolls" bson:"tolls"`
+	Parking       float64                `json:"parking" bson:"parking"`
+	Current_User  string                 `json:"current_user" bson:"current_user"`
+	Reimbursement float64                `json:"reimbursement" bson:"reimbursement"`
+	Requests      []user.Mileage_Request `json:"requests" bson:"requests"`
 }
 
 func (g *Grant_Mileage_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Mileage_Overview, error) {
@@ -115,12 +115,12 @@ func (g *Grant_Mileage_Overview) FindByGrant(grant_id string, start_date string,
 		requests = append(requests, mileage_req)
 	}
 	return Grant_Mileage_Overview{
-		Grant: grant_info,
-		Mileage: total_mileage,
-		Tolls: total_tolls,
-		Parking: total_parking,
+		Grant:         grant_info,
+		Mileage:       total_mileage,
+		Tolls:         total_tolls,
+		Parking:       total_parking,
 		Reimbursement: total_reimbursement,
-		Requests: requests,
+		Requests:      requests,
 	}, nil
 }
 
@@ -139,7 +139,7 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 	fmt.Printf("%s\n", m.Date)
 	collection := conn.Db.Collection("mileage_requests")
-	var currentMileageRate = 62.5
+	var currentMileageRate = 65.5
 	m.ID = uuid.NewString()
 	m.Created_At = time.Now()
 	m.Is_Active = true
@@ -150,9 +150,9 @@ func (m *Mileage_Request) Create(requestor user.User) (Mileage_Request, error) {
 	first_action := &Action{
 		ID: uuid.NewString(),
 		User: user.User_Action_Info{
-			ID:         requestor.ID,
-			Role:       requestor.Role,
-			Name:       requestor.Name,
+			ID:   requestor.ID,
+			Role: requestor.Role,
+			Name: requestor.Name,
 		},
 		Request_Type: "mileage_requests",
 		Request_ID:   m.ID,
@@ -181,9 +181,9 @@ func (m *Mileage_Request) Update(request Mileage_Request, requestor user.User) (
 		update_action := &Action{
 			ID: uuid.NewString(),
 			User: user.User_Action_Info{
-				ID:         requestor.ID,
-				Role:       requestor.Role,
-				Name:       requestor.Name,
+				ID:   requestor.ID,
+				Role: requestor.Role,
+				Name: requestor.Name,
 			},
 			Request_Type: "mileage_requests",
 			Request_ID:   request.ID,
