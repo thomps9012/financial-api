@@ -84,7 +84,7 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 
 func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	collection := conn.Db.Collection("mileage_requests")
-	var currentMileageRate = 62.5
+	var currentMileageRate = 65.5
 	m.ID = uuid.NewString()
 	m.Created_At = time.Now()
 	m.Is_Active = true
