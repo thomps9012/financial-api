@@ -35,7 +35,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
-	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app", "http://localhost:3000"})
+	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app", "https://public-finance-requests.vercel.app/"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
 	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(auth.LimitApiCalls(router)))
