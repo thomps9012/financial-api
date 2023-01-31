@@ -106,12 +106,11 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	}
 	c.Action_History = append(c.Action_History, *first_action)
 	user.AddNotification(*first_action, current_user_id)
-	insert, insert_err := collection.InsertOne(context.TODO(), *c)
+	_, insert_err := collection.InsertOne(context.TODO(), *c)
 	if insert_err != nil {
 		panic(insert_err)
 	}
 	// add in extra validation based on org chart here
-	fmt.Println("inserted test: %v", insert)
 	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
 	if update_err != nil {
 		panic(update_err)

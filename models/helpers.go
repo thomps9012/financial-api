@@ -53,6 +53,7 @@ type Request_Info struct {
 	Current_Status Status `json:"current_status" bson:"current_status"`
 }
 
+// test coverage
 func UserEmailHandler(category Category, current_status Status, exec_review bool) string {
 	// possible more build out of test scenarios here
 	var to_email = ""

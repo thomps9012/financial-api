@@ -20,6 +20,7 @@ type Action struct {
 	Created_At   time.Time    `json:"created_at" bson:"created_at"`
 }
 
+// test coverage
 func ReturnPrevAdminID(action_history []Action, requestor_id string) string {
 	for i := len(action_history) - 1; i > 0; i-- {
 		if action_history[i].Status == REJECTED {
@@ -29,25 +30,37 @@ func ReturnPrevAdminID(action_history []Action, requestor_id string) string {
 	return requestor_id
 }
 
+// test coverage
 func format_request_type(request_type Request_Type) string {
 	var lowered = strings.ToLower(string(request_type))
 	var collection_name = lowered + "_requests"
 	return collection_name
 }
 
+// func (a *Action) Create() error {
+// 	var collection_name = format_request_type(a.Request_Type)
+// 	var collection = db.GetCollection(collection_name)
+// 	var err = collection.Insert(a)
+// 	return err
+// }
+
+// func (a *Action) Get() error {
+// 	var collection_name = format_request_type(a.Request_Type)
+// 	var collection = db.GetCollection(collection_name)
+// 	var err = collection.Find(bson.M{"_id": a.ID}).One(a)
+// 	return err
+// }
+
 func (a *Action) Approve(request_id string, request_type Request_Type, new_status Status, request_category Category, exec_review bool) (bool, error) {
 	// request type will be collection name
 	// i.e. mileage_requests
 	collection := conn.Db.Collection(format_request_type(request_type))
 	filter := bson.D{{Key: "_id", Value: request_id}}
-	// possible expansion here
 	var request Request_Info
 	err := collection.FindOne(context.TODO(), filter).Decode(&request)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("request type: ", request_type)
-	fmt.Printf("request info: %q", request)
 	if request.Current_Status == new_status {
 		panic("current action has already been taken")
 	}
