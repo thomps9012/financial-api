@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Mileage_Points struct {
@@ -50,10 +51,10 @@ const (
 )
 
 type ResponseCompare struct {
-	Matrix_Distance  float64        `json:"matrix_distance"`
-	Snapped_Distance float64        `json:"snapped_distance"`
-	Difference       float64        `json:"difference"`
-	Variance         Variance_Level `json:"variance"`
+	Matrix_Distance   float64        `json:"matrix_distance"`
+	Traveled_Distance float64        `json:"traveled_distance"`
+	Difference        float64        `json:"difference"`
+	Variance          Variance_Level `json:"variance"`
 }
 
 const API_KEY = "AIzaSyAf7mF7egyl3Ip35hN1n9gXP854_u5-Zsk"
@@ -161,10 +162,36 @@ func (s *Snapped_Points_Response) calculateSnapAPIDistance() (float64, error) {
 	panic("unimplemented function")
 }
 
-func (m *Mileage_Points) caclulatePreSnapDistance() (float64, error) {
-	panic("unimplemented function")
+func (m *Mileage_Points) calculatePreSnapDistance() float64 {
+	var running_total float64
+	for i, point := range m.LocationPoints {
+		if i != len(m.LocationPoints)-1 {
+			next_point := m.LocationPoints[i+1]
+			distance := calculateDistanceBetweenPoints(point, next_point)
+			running_total += distance
+		}
+	}
+	return running_total
 }
 
-func (mr *Matrix_Response) compareToMatrix(point_distance float64) (ResponseCompare, error) {
-	panic("unimplemented function")
+func (mr *Matrix_Response) compareToMatrix(traveled_distance float64) (ResponseCompare, error) {
+	matrix_distance, err := strconv.ParseFloat(strings.Split(mr.Rows[0].Elements[0].Distance.Text, " ")[0], 64)
+	if err != nil {
+		panic(err)
+	}
+	variance := math.Round(traveled_distance - matrix_distance)
+	var variance_lvl Variance_Level
+	if variance > 10 {
+		variance_lvl = HIGH
+	} else if variance > 1 {
+		variance_lvl = MEDIUM
+	} else {
+		variance_lvl = LOW
+	}
+	return ResponseCompare{
+		Matrix_Distance:   matrix_distance,
+		Traveled_Distance: traveled_distance,
+		Variance:          variance_lvl,
+		Difference:        variance,
+	}, nil
 }

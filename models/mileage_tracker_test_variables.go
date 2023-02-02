@@ -636,3 +636,22 @@ var Test_formatted_matrix_res = Matrix_Response{
 	},
 	Status: "OK",
 }
+
+var Test_low_variance = ResponseCompare{
+	Matrix_Distance:   0.5,
+	Traveled_Distance: 0.5215077466938861,
+	Variance:          LOW,
+	Difference:        0,
+}
+var Test_med_variance = ResponseCompare{
+	Matrix_Distance:   0.5,
+	Traveled_Distance: 7.07,
+	Variance:          MEDIUM,
+	Difference:        7,
+}
+var Test_high_variance = ResponseCompare{
+	Matrix_Distance:   0.5,
+	Traveled_Distance: 20.02,
+	Variance:          HIGH,
+	Difference:        20,
+}

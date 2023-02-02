@@ -130,10 +130,67 @@ func TestSnapCalculation(t *testing.T) {
 
 }
 
-func TestPointCaclulation(t *testing.T) {
-
+func TestPointCalculation(t *testing.T) {
+	dist_1 := 0.162064
+	dist_2 := 0.04789
+	dist_3 := 0.04389
+	dist_4 := 0.03615
+	dist_5 := 0.066283
+	dist_6 := 0.04447
+	dist_7 := 0.120761
+	expected := dist_1 + dist_2 + dist_3 + dist_4 + dist_5 + dist_6 + dist_7
+	input := Test_mileage_points
+	actual := input.calculatePreSnapDistance()
+	if math.Round(expected) != math.Round(actual) {
+		t.Errorf("Calculating Pre Snap Distance Failed => expected: %f, got: %f", expected, actual)
+	}
 }
 
 func TestResponseCompare(t *testing.T) {
-
+	input := Test_mileage_points
+	var calculated_dist = input.calculatePreSnapDistance()
+	api_string := input.formatMatrixAPICall()
+	matrix_res := mockDistanceMatrixAPI(api_string)
+	expected_low := Test_low_variance
+	expected_med := Test_med_variance
+	expected_high := Test_high_variance
+	var res_compare, err = matrix_res.compareToMatrix(calculated_dist)
+	if err != nil {
+		t.Error(err)
+	}
+	if res_compare != expected_low {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	if res_compare == expected_med {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	if res_compare == expected_high {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	res_compare, err = matrix_res.compareToMatrix(7.07)
+	if err != nil {
+		t.Error(err)
+	}
+	if res_compare == expected_low {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	if res_compare != expected_med {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	if res_compare == expected_high {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	res_compare, err = matrix_res.compareToMatrix(20.02)
+	if err != nil {
+		t.Error(err)
+	}
+	if res_compare == expected_low {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	if res_compare == expected_med {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
+	if res_compare != expected_high {
+		t.Errorf("Failed Test Response Compare => expected: %v, got: %v", expected_low, res_compare)
+	}
 }
