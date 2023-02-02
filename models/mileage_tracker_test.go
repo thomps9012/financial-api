@@ -22,10 +22,39 @@ func TestSnapJSONToEncode(t *testing.T) {
 	}
 }
 func TestFormSnapAPICall(t *testing.T) {
-
+	var expected = Test_snap_api_call
+	input := Test_mileage_points
+	actual := input.formatSnapAPICall()
+	if actual != expected {
+		t.Errorf("Format Snap API Call Failed => expected: %s, got: %s", expected, actual)
+	}
 }
-func TestFormMatrixAPICall(t *testing.T) {
 
+func TestMatrixStartForm(t *testing.T) {
+	var expected = Test_origin
+	input := Test_mileage_points
+	actual := input.formatMatrixStart()
+	if actual != expected {
+		t.Errorf("Format Matrix Start Failed => expected: %s, got: %s", expected, actual)
+	}
+}
+
+func TestMatrixDestinationForm(t *testing.T) {
+	var expected = Test_destination
+	input := Test_mileage_points
+	actual := input.formatMatrixDestination()
+	if actual != expected {
+		t.Errorf("Format Matrix Destination Failed => expected: %s, got: %s", expected, actual)
+	}
+}
+
+func TestFormMatrixAPICall(t *testing.T) {
+	var expected = Test_matrix_api_call
+	input := Test_mileage_points
+	actual := input.formatMatrixAPICall()
+	if actual != expected {
+		t.Errorf("Format Matrix API Call Failed => expected: %s, got: %s", expected, actual)
+	}
 }
 func TestFormatSnapAPIResponse(t *testing.T) {
 

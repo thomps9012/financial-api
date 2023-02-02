@@ -59,6 +59,10 @@ type ResponseCompare struct {
 	Variance         Variance_Level `json:"variance"`
 }
 
+const API_KEY = "AIzaSyAf7mF7egyl3Ip35hN1n9gXP854_u5-Zsk"
+const SNAP_API_BASE = "https://roads.googleapis.com/v1/snapToRoads?path="
+const MATRIX_API_BASE = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
+
 func (m *Mileage_Points) formatSnapJSONPoints() string {
 	var location_points = m.LocationPoints
 	var api_points string
@@ -74,12 +78,25 @@ func (m *Mileage_Points) formatSnapJSONPoints() string {
 	return api_points
 }
 
-func formatSnapAPICall(api_points string) (string, error) {
-	return "", nil
+func (m *Mileage_Points) formatSnapAPICall() string {
+	var api_points = m.formatSnapJSONPoints()
+	return SNAP_API_BASE + api_points + "&interpolate=true&key=" + API_KEY
 }
 
-func (m *Mileage_Points) formatMatrixAPICall() (string, error) {
-	return "", nil
+func (m *Mileage_Points) formatMatrixStart() string {
+	var starting_point = m.Starting_Point
+	return strconv.FormatFloat(starting_point.Latitude, 'f', 5, 64) + "," + strconv.FormatFloat(starting_point.Longitude, 'f', 5, 64)
+}
+
+func (m *Mileage_Points) formatMatrixDestination() string {
+	var destination = m.Destination
+	return strconv.FormatFloat(destination.Latitude, 'f', 5, 64) + "," + strconv.FormatFloat(destination.Longitude, 'f', 5, 64)
+}
+
+func (m *Mileage_Points) formatMatrixAPICall() string {
+	var start_string = m.formatMatrixStart()
+	var destination_string = m.formatMatrixDestination()
+	return MATRIX_API_BASE + start_string + "&destinations=" + destination_string + "&units=imperial&key=" + API_KEY
 }
 
 func callAPI(api_url string) ([]byte, error) {
