@@ -14,6 +14,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type New_Mileage_Request struct {
+	ID                string          `json:"id" bson:"_id"`
+	Grant_ID          string          `json:"grant_id" bson:"grant_id"`
+	User_ID           string          `json:"user_id" bson:"user_id"`
+	Date              time.Time       `json:"date" bson:"date"`
+	Category          Category        `json:"category" bson:"category"`
+	Starting_Location Location        `json:"starting_location" bson:"starting_location"`
+	Destination       Location        `json:"destination" bson:"destination"`
+	LocationPoints    []Location      `json:"location_points" bson:"location_points"`
+	Trip_Purpose      string          `json:"trip_purpose" bson:"trip_purpose"`
+	Tolls             float64         `json:"tolls" bson:"tolls"`
+	Parking           float64         `json:"parking" bson:"parking"`
+	Trip_Mileage      float64         `json:"trip_mileage" bson:"trip_mileage"`
+	Reimbursement     float64         `json:"reimbursement" bson:"reimbursement"`
+	Created_At        time.Time       `json:"created_at" bson:"created_at"`
+	Action_History    []Action        `json:"action_history" bson:"action_history"`
+	Current_User      string          `json:"current_user" bson:"current_user"`
+	Current_Status    Status          `json:"current_status" bson:"current_status"`
+	Request_Variance  ResponseCompare `json:"request_variance" bson:"request_variance"`
+	Is_Active         bool            `json:"is_active" bson:"is_active"`
+}
+
 type Mileage_Request struct {
 	ID                string    `json:"id" bson:"_id"`
 	Grant_ID          string    `json:"grant_id" bson:"grant_id"`
@@ -70,6 +92,16 @@ func (m *Mileage_Request) DeleteAll() bool {
 	return cleared.DeletedCount == record_count
 }
 
+func (nm *New_Mileage_Request) NewExists(user_id string, date time.Time, start Location, end Location) (bool, error) {
+	var milage_req New_Mileage_Request
+	collection := conn.Db.Collection("test_mileage_requests")
+	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "starting_location", Value: start}, {Key: "destination", Value: end}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
+}
 func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end int) (bool, error) {
 	var milage_req Mileage_Request
 	collection := conn.Db.Collection("mileage_requests")
@@ -81,7 +113,53 @@ func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end 
 	}
 	return true, nil
 }
-
+func (nm *New_Mileage_Request) NewCreate(requestor User) (New_Mileage_Request, error) {
+	collection := conn.Db.Collection("test_mileage_requests")
+	var currentMileageRate = 65.5
+	nm.ID = uuid.NewString()
+	nm.Created_At = time.Now()
+	nm.Is_Active = true
+	nm.User_ID = requestor.ID
+	nm.Current_Status = PENDING
+	if nm.Request_Variance.Variance != HIGH {
+		nm.Trip_Mileage = nm.Request_Variance.Traveled_Distance
+	} else {
+		nm.Trip_Mileage = nm.Request_Variance.Matrix_Distance
+	}
+	nm.Reimbursement = nm.Trip_Mileage*currentMileageRate/100 + nm.Tolls + nm.Parking
+	// current_user_email := UserEmailHandler(nm.Category, PENDING, false)
+	// var user User
+	// current_user_id, err := user.FindID(current_user_email)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// nm.Current_User = current_user_id
+	// set first action and apply to mileage request
+	first_action := &Action{
+		ID:           uuid.NewString(),
+		User:         nm.User_ID,
+		Request_ID:   nm.ID,
+		Request_Type: MILEAGE,
+		Status:       CREATED,
+		Created_At:   time.Now(),
+	}
+	nm.Action_History = append(nm.Action_History, *first_action)
+	// insert the document
+	// user.AddNotification(*first_action, current_user_id)
+	_, insert_err := collection.InsertOne(context.TODO(), *nm)
+	if insert_err != nil {
+		panic(insert_err)
+	}
+	// notify the current user based off the above
+	// update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Mileage", requestor.Name, time.Now())
+	// if update_err != nil {
+	// 	panic(update_err)
+	// }
+	// if !update_user {
+	// 	return *nm, errors.New("failed to update appropriate admin staff")
+	// }
+	return *nm, nil
+}
 func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
 	collection := conn.Db.Collection("mileage_requests")
 	var currentMileageRate = 65.5
