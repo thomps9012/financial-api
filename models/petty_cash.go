@@ -167,6 +167,18 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor User) 
 	return petty_cash_req, nil
 }
 
+func (p *Petty_Cash_Request) UpdateActionHistory(new_action Action, user_id string) (Request_Info_With_Action_History, error) {
+	var request_info Request_Info_With_Action_History
+	collection := conn.Db.Collection("petty_cash_requests")
+	filter := bson.D{{Key: "_id", Value: new_action.Request_ID}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": new_action}}, {Key: "$set", Value: bson.M{"current_user": user_id}}, {Key: "$set", Value: bson.M{"current_status": new_action.Status}}}
+	if err := collection.FindOneAndUpdate(context.TODO(), filter, update, options.FindOneAndUpdate().SetReturnDocument(1)).Decode(&request_info); err != nil {
+		panic(err)
+	}
+	request_info.Type = PETTY_CASH
+	return request_info, nil
+}
+
 func (p *Petty_Cash_Request) Delete(request Petty_Cash_Request, user_id string) (bool, error) {
 	collection := conn.Db.Collection("petty_cash_requests")
 	var petty_cash_req Petty_Cash_Request

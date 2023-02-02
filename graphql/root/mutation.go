@@ -710,24 +710,24 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				request_id, idOK := p.Args["request_id"].(string)
-				if !idOK {
+				request_id, isOK := p.Args["request_id"].(string)
+				if !isOK {
 					panic("must enter a valid request id")
 				}
-				request_type, typeOk := p.Args["request_type"].(string)
-				if !typeOk {
+				request_type, isOK := p.Args["request_type"].(string)
+				if !isOK {
 					panic("must enter a valid request type")
 				}
-				request_category, catOK := p.Args["request_category"].(string)
-				if !catOK {
+				request_category, isOK := p.Args["request_category"].(string)
+				if !isOK {
 					panic("must enter a valid request category")
 				}
-				new_status, statusOK := p.Args["new_status"].(string)
-				if !statusOK {
+				new_status, isOK := p.Args["new_status"].(string)
+				if !isOK {
 					panic("must enter a valid request status")
 				}
-				exec_review, execReview := p.Args["exec_review"].(bool)
-				if !execReview {
+				exec_review, isOK := p.Args["exec_review"].(bool)
+				if !isOK {
 					panic("must enter a valid option for executive review")
 				}
 				admin := middleware.ForAdmin(p.Context)
@@ -735,14 +735,47 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you are unable to approve requests")
 				}
 				var action models.Action
-				approveReq, approveErr := action.Approve(request_id, models.Request_Type(request_type), models.Status(new_status), models.Category(request_category), exec_review)
-				if approveErr != nil {
-					panic(approveErr)
+				request_info, err := action.Get(request_id, models.Request_Type(request_type))
+				if err != nil {
+					panic(err)
 				}
-				if !approveReq {
-					panic("error approving request")
+				if !request_info.CheckStatus(models.Status(new_status)) {
+					panic("current action has already been taken")
 				}
-				return approveReq, nil
+				new_action := action.Create(models.Status(new_status), request_info)
+				current_user_email := models.UserEmailHandler(models.Category(request_category), models.Status(new_status), exec_review)
+				user_id, err := models.DetermineUserID(current_user_email, request_info)
+				if err != nil {
+					panic(err)
+				}
+				var user models.User
+				prev_user_clear_notification, err := user.ClearNotification(request_id, request_info.Current_User)
+				if err != nil {
+					panic(err)
+				}
+				if !prev_user_clear_notification {
+					panic("error clearing the previous reviewer's notifications")
+				}
+				updated_doc, err := models.UpdateRequest(new_action, user_id)
+				if err != nil || !updated_doc {
+					panic("error updating the request")
+				}
+				current_user_notified, err := user.AddNotification(new_action, user_id)
+				if err != nil {
+					panic(err)
+				}
+				if !current_user_notified {
+					panic("error notifying new request reviewer")
+				}
+				if request_info.User_ID != user_id {
+					requestor_notified, err := user.AddNotification(new_action, request_info.User_ID)
+					if err != nil {
+						panic(err)
+					}
+					return requestor_notified, nil
+				} else {
+					return current_user_notified, nil
+				}
 			},
 		},
 		"reject_request": &graphql.Field{
@@ -761,12 +794,12 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if !loggedIn {
 					panic("you are not logged in")
 				}
-				request_id, idOK := p.Args["request_id"].(string)
-				if !idOK {
+				request_id, isOK := p.Args["request_id"].(string)
+				if !isOK {
 					panic("must enter a valid request id")
 				}
-				request_type, typeOk := p.Args["request_type"].(string)
-				if !typeOk {
+				request_type, isOK := p.Args["request_type"].(string)
+				if !isOK {
 					panic("must enter a valid request type")
 				}
 				admin := middleware.ForAdmin(p.Context)
@@ -774,14 +807,32 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("you are unable to reject finance requests")
 				}
 				var action models.Action
-				rejectReq, rejectErr := action.Reject(request_id, models.Request_Type(request_type))
-				if rejectErr != nil {
-					panic(rejectErr)
+				var new_status = models.REJECTED
+				request_info, err := action.Get(request_id, models.Request_Type(request_type))
+				if err != nil {
+					panic(err)
 				}
-				if !rejectReq {
-					panic("error rejecting request")
+				if !request_info.CheckStatus(models.Status(new_status)) {
+					panic("current action has already been taken")
 				}
-				return rejectReq, nil
+				new_action := action.Create(models.Status(new_status), request_info)
+				var user models.User
+				prev_user_clear_notification, err := user.ClearNotification(request_id, request_info.Current_User)
+				if err != nil {
+					panic(err)
+				}
+				if !prev_user_clear_notification {
+					panic("error clearing previous user's notification")
+				}
+				updated_doc, err := models.UpdateRequest(new_action, request_info.User_ID)
+				if err != nil || !updated_doc {
+					panic("error updating the request")
+				}
+				requestor_notified, err := user.AddNotification(new_action, request_info.User_ID)
+				if err != nil {
+					panic(err)
+				}
+				return requestor_notified, nil
 			},
 		},
 		"archive_request": &graphql.Field{
@@ -811,11 +862,35 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				var action models.Action
 				user_id := middleware.ForID(p.Context)
 				admin := middleware.ForAdmin(p.Context)
-				archiveReq, archiveErr := action.Archive(request_id, models.Request_Type(request_type), user_id, admin)
-				if archiveErr != nil {
-					panic(archiveErr)
+				var new_status = models.ARCHIVED
+				request_info, err := action.Get(request_id, models.Request_Type(request_type))
+				if err != nil {
+					panic(err)
 				}
-				return archiveReq, nil
+				if !admin && request_info.User_ID != user_id {
+					panic("you are unauthorized to archive this request")
+				}
+				if !request_info.CheckStatus(models.Status(new_status)) {
+					panic("current action has already been taken")
+				}
+				new_action := action.Create(models.Status(new_status), request_info)
+				var user models.User
+				prev_user_clear_notification, err := user.ClearNotification(request_id, request_info.Current_User)
+				if err != nil {
+					panic(err)
+				}
+				if !prev_user_clear_notification {
+					panic("error clearing previous user's notification")
+				}
+				updated_doc, err := models.UpdateRequest(new_action, request_info.User_ID)
+				if err != nil || !updated_doc {
+					panic("error updating the request")
+				}
+				requestor_notified, err := user.AddNotification(new_action, request_info.User_ID)
+				if err != nil {
+					panic(err)
+				}
+				return requestor_notified, nil
 			},
 		},
 		"clear_notification": &graphql.Field{

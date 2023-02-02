@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 type Status string
 
 const (
@@ -48,9 +50,70 @@ type Request_Response struct {
 }
 
 type Request_Info struct {
-	User_ID        string `json:"user_id" bson:"user_id"`
-	Current_User   string `json:"current_user" bson:"current_user"`
-	Current_Status Status `json:"current_status" bson:"current_status"`
+	User_ID        string       `json:"user_id" bson:"user_id"`
+	Current_User   string       `json:"current_user" bson:"current_user"`
+	Current_Status Status       `json:"current_status" bson:"current_status"`
+	Type           Request_Type `json:"type" bson:"type"`
+	ID             string       `json:"id" bson:"_id"`
+}
+
+type Request_Info_With_Action_History struct {
+	User_ID        string       `json:"user_id" bson:"user_id"`
+	Current_User   string       `json:"current_user" bson:"current_user"`
+	Current_Status Status       `json:"current_status" bson:"current_status"`
+	Type           Request_Type `json:"type" bson:"type"`
+	ID             string       `json:"id" bson:"_id"`
+	Action_History []Action     `json:"action_history" bson:"action_history"`
+}
+
+// test coverage
+func (r *Request_Info) CheckStatus(new_status Status) bool {
+	return r.Current_Status == new_status
+}
+
+// loose test coverage
+func UpdateRequest(new_action Action, user_id string) (bool, error) {
+	var mileage Mileage_Request
+	var check Check_Request
+	var petty Petty_Cash_Request
+	switch new_action.Request_Type {
+	case MILEAGE:
+		_, err := mileage.UpdateActionHistory(new_action, user_id)
+		if err != nil {
+			panic(err)
+		} else {
+			return true, nil
+		}
+	case CHECK:
+		_, err := check.UpdateActionHistory(new_action, user_id)
+		if err != nil {
+			panic(err)
+		} else {
+			return true, nil
+		}
+	case PETTY_CASH:
+		_, err := petty.UpdateActionHistory(new_action, user_id)
+		if err != nil {
+			panic(err)
+		} else {
+			return true, nil
+		}
+	}
+	return false, errors.New("request not updated")
+}
+
+func DetermineUserID(current_user_email string, request_info Request_Info) (string, error) {
+	var user User
+	if current_user_email == "" {
+		user_id := request_info.User_ID
+		return user_id, nil
+	} else {
+		user_id, err := user.FindID(current_user_email)
+		if err != nil {
+			panic(err)
+		}
+		return user_id, nil
+	}
 }
 
 // test coverage

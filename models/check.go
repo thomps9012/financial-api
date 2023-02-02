@@ -89,7 +89,7 @@ func (c *Check_Request) Create(requestor User) (string, error) {
 	current_user_email := UserEmailHandler(c.Category, PENDING, false)
 	fmt.Printf("current user email: %s", current_user_email)
 	var user User
-	// this breaks if current user email is not in databse
+	// this breaks if current user email is not in database
 	// on production all managers will need to create signed accounts
 	current_user_id, err := user.FindID(current_user_email)
 	if err != nil {
@@ -178,6 +178,18 @@ func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Req
 		panic(err)
 	}
 	return check_request, nil
+}
+
+func (c *Check_Request) UpdateActionHistory(new_action Action, user_id string) (Request_Info_With_Action_History, error) {
+	var request_info Request_Info_With_Action_History
+	collection := conn.Db.Collection("check_requests")
+	filter := bson.D{{Key: "_id", Value: new_action.Request_ID}}
+	update := bson.D{{Key: "$push", Value: bson.M{"action_history": new_action}}, {Key: "$set", Value: bson.M{"current_user": user_id}}, {Key: "$set", Value: bson.M{"current_status": new_action.Status}}}
+	if err := collection.FindOneAndUpdate(context.TODO(), filter, update, options.FindOneAndUpdate().SetReturnDocument(1)).Decode(&request_info); err != nil {
+		panic(err)
+	}
+	request_info.Type = CHECK
+	return request_info, nil
 }
 func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, error) {
 	collection := conn.Db.Collection("check_requests")
