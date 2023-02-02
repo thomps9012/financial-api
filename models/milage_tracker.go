@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -17,14 +18,8 @@ type Location struct {
 	Longitude float64 `json:"longitude"`
 }
 
-type Snapped_Point struct {
-	Location Location `json:"location"`
-}
-
 type Snapped_Points_Response struct {
-	Snapped_Points []Snapped_Point `json:"snappedPoints"`
-	Original_Index int             `json:"originalIndex"`
-	Place_ID       string          `json:"placeId"`
+	Snapped_Points []Location `json:"snappedPoints"`
 }
 type Matrix_Sub_Element struct {
 	Text  string `json:"text"`
@@ -33,15 +28,16 @@ type Matrix_Sub_Element struct {
 type Matrix_Elements struct {
 	Distance Matrix_Sub_Element `json:"distance"`
 	Duration Matrix_Sub_Element `json:"duration"`
+	Status   string             `json:"status"`
 }
 type Matrix_Row struct {
 	Elements []Matrix_Elements `json:"elements"`
 }
 type Matrix_Response struct {
-	Destination_Addresses string       `json:"destination_addresses"`
-	Origin_Addresses      string       `json:"origin_addresses"`
+	Destination_Addresses []string     `json:"destination_addresses"`
+	Origin_Addresses      []string     `json:"origin_addresses"`
 	Rows                  []Matrix_Row `json:"rows"`
-	Status                `json:"status"`
+	Status                string       `json:"status"`
 }
 
 type Variance_Level string
@@ -99,7 +95,32 @@ func (m *Mileage_Points) formatMatrixAPICall() string {
 	return MATRIX_API_BASE + start_string + "&destinations=" + destination_string + "&units=imperial&key=" + API_KEY
 }
 
-func callAPI(api_url string) ([]byte, error) {
+func (m *Mileage_Points) callSnapAPI() (Snapped_Points_Response, error) {
+	client := &http.Client{}
+	api_url := m.formatSnapAPICall()
+	req, err := http.NewRequest("GET", api_url, nil)
+	if err != nil {
+		panic(err)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+	var snapped_points Snapped_Points_Response
+	json_err := json.Unmarshal(body, &snapped_points)
+	if json_err != nil {
+		panic(json_err)
+	}
+	return snapped_points, nil
+}
+
+func (m *Mileage_Points) callMatrixAPI() (Matrix_Response, error) {
+	api_url := m.formatMatrixAPICall()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", api_url, nil)
 	if err != nil {
@@ -114,15 +135,12 @@ func callAPI(api_url string) ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
-	return body, nil
-}
-
-func formatSnapAPIResponse(api_response []byte) (Snapped_Points_Response, error) {
-	panic("unimplemented function")
-}
-
-func formatMatrixAPIResponse(api_response []byte) (Matrix_Response, error) {
-	panic("unimplemented function")
+	var matrix_res Matrix_Response
+	json_err := json.Unmarshal(body, &matrix_res)
+	if json_err != nil {
+		panic(json_err)
+	}
+	return matrix_res, nil
 }
 
 func calculateDistanceBetweenPoints(point_one Location, point_two Location) float64 {
@@ -134,5 +152,9 @@ func calculateSnapAPIDistance(snapped_points Snapped_Points_Response) (float64, 
 }
 
 func compareSnapToMatrix(snapped_distance float64, matrix_res Matrix_Response) (ResponseCompare, error) {
+	panic("unimplemented function")
+}
+
+func comparePreSnapToMatrix(pre_snapped_distance float64, matrix_res Matrix_Response) (ResponseCompare, error) {
 	panic("unimplemented function")
 }
