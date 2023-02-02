@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 )
@@ -144,17 +145,26 @@ func (m *Mileage_Points) callMatrixAPI() (Matrix_Response, error) {
 }
 
 func calculateDistanceBetweenPoints(point_one Location, point_two Location) float64 {
+	lat_one := (point_one.Latitude * math.Pi) / 180
+	long_one := (point_one.Longitude * math.Pi) / 180
+	lat_two := (point_two.Latitude * math.Pi) / 180
+	long_two := (point_two.Longitude * math.Pi) / 180
+	diff_long := long_two - long_one
+	diff_lat := lat_two - lat_one
+	haver_1 := math.Pow(math.Sin(diff_lat/2), 2) + math.Cos(lat_one)*math.Cos(lat_two)*math.Pow(math.Sin(diff_long/2), 2)
+	haver_2 := 2 * math.Asin(math.Sqrt(haver_1))
+	radius := 3956.00
+	return haver_2 * radius
+}
+
+func (s *Snapped_Points_Response) calculateSnapAPIDistance() (float64, error) {
 	panic("unimplemented function")
 }
 
-func calculateSnapAPIDistance(snapped_points Snapped_Points_Response) (float64, error) {
+func (m *Mileage_Points) caclulatePreSnapDistance() (float64, error) {
 	panic("unimplemented function")
 }
 
-func compareSnapToMatrix(snapped_distance float64, matrix_res Matrix_Response) (ResponseCompare, error) {
-	panic("unimplemented function")
-}
-
-func comparePreSnapToMatrix(pre_snapped_distance float64, matrix_res Matrix_Response) (ResponseCompare, error) {
+func (mr *Matrix_Response) compareToMatrix(point_distance float64) (ResponseCompare, error) {
 	panic("unimplemented function")
 }

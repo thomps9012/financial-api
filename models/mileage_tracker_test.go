@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -116,10 +117,20 @@ func TestFormatMatrixAPIResponse(t *testing.T) {
 }
 
 func TestDistanceBetweenTwoPoints(t *testing.T) {
-
+	expected := 129.047273
+	point_a := Location{Latitude: 38.8976, Longitude: -77.0366}
+	point_b := Location{Latitude: 39.9496, Longitude: -75.0366}
+	actual := calculateDistanceBetweenPoints(point_a, point_b)
+	if math.Round(actual) != math.Round(expected) {
+		t.Errorf("Distance Between Two Points Failed => expected: %f, got: %f", expected, actual)
+	}
 }
 
 func TestSnapCalculation(t *testing.T) {
+
+}
+
+func TestPointCaclulation(t *testing.T) {
 
 }
 
