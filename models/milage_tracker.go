@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -16,12 +17,17 @@ type Mileage_Points struct {
 }
 
 type Location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
+	Latitude  float64 `json:"latitude" bson:"latitude"`
+	Longitude float64 `json:"longitude" bson:"longitude"`
+}
+
+type Snapped_Point struct {
+	Location Location `json:"location"`
+	PlaceID  string   `json:"placeId"`
 }
 
 type Snapped_Points_Response struct {
-	Snapped_Points []Location `json:"snappedPoints"`
+	Snapped_Points []Snapped_Point `json:"snappedPoints"`
 }
 type Matrix_Sub_Element struct {
 	Text  string `json:"text"`
@@ -57,7 +63,8 @@ type ResponseCompare struct {
 	Variance          Variance_Level `json:"variance"`
 }
 
-const API_KEY = "AIzaSyAf7mF7egyl3Ip35hN1n9gXP854_u5-Zsk"
+var API_KEY = os.Getenv("MAPS_API_KEY")
+
 const SNAP_API_BASE = "https://roads.googleapis.com/v1/snapToRoads?path="
 const MATRIX_API_BASE = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
 
@@ -121,7 +128,7 @@ func (m *Mileage_Points) callSnapAPI() (Snapped_Points_Response, error) {
 	return snapped_points, nil
 }
 
-func (m *Mileage_Points) callMatrixAPI() (Matrix_Response, error) {
+func (m *Mileage_Points) CallMatrixAPI() (Matrix_Response, error) {
 	api_url := m.formatMatrixAPICall()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", api_url, nil)
@@ -158,11 +165,20 @@ func calculateDistanceBetweenPoints(point_one Location, point_two Location) floa
 	return haver_2 * radius
 }
 
-func (s *Snapped_Points_Response) calculateSnapAPIDistance() (float64, error) {
+func (s *Snapped_Points_Response) calculateSnapAPIDistance() float64 {
 	panic("unimplemented function")
+	var running_total float64
+	for i, point := range s.Snapped_Points {
+		if i != len(s.Snapped_Points)-1 {
+			next_point := s.Snapped_Points[i+1].Location
+			distance := calculateDistanceBetweenPoints(point.Location, next_point)
+			running_total += distance
+		}
+	}
+	return running_total
 }
 
-func (m *Mileage_Points) calculatePreSnapDistance() float64 {
+func (m *Mileage_Points) CalculatePreSnapDistance() float64 {
 	var running_total float64
 	for i, point := range m.LocationPoints {
 		if i != len(m.LocationPoints)-1 {
@@ -174,7 +190,7 @@ func (m *Mileage_Points) calculatePreSnapDistance() float64 {
 	return running_total
 }
 
-func (mr *Matrix_Response) compareToMatrix(traveled_distance float64) (ResponseCompare, error) {
+func (mr *Matrix_Response) CompareToMatrix(traveled_distance float64) (ResponseCompare, error) {
 	matrix_distance, err := strconv.ParseFloat(strings.Split(mr.Rows[0].Elements[0].Distance.Text, " ")[0], 64)
 	if err != nil {
 		panic(err)

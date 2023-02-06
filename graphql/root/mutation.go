@@ -1,6 +1,7 @@
 package root
 
 import (
+	"encoding/json"
 	"errors"
 	"financial-api/middleware"
 	"financial-api/models"
@@ -185,42 +186,43 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("must enter a valid grant id")
 				}
 				mileageArgs := p.Args["request"].(map[string]interface{})
-				date, dateisOK := mileageArgs["date"].(time.Time)
-				if !dateisOK {
+				date, isOK := mileageArgs["date"].(time.Time)
+				if !isOK {
 					panic("must enter a valid date")
 				}
-				start, startisOK := mileageArgs["starting_location"].(string)
-				if !startisOK {
+				start, isOK := mileageArgs["starting_location"].(string)
+				if !isOK {
 					panic("must enter a valid starting location")
 				}
-				destination, destinationisOK := mileageArgs["destination"].(string)
-				if !destinationisOK {
+				destination, isOK := mileageArgs["destination"].(string)
+				if !isOK {
 					panic("must enter a valid destination")
 				}
-				purpose, purposeisOK := mileageArgs["trip_purpose"].(string)
-				if !purposeisOK {
+				purpose, isOK := mileageArgs["trip_purpose"].(string)
+				if !isOK {
 					panic("must enter a valid trip purpose")
 				}
-				start_odo, start_odoisOK := mileageArgs["start_odometer"].(int)
-				if !start_odoisOK {
+				start_odo, isOK := mileageArgs["start_odometer"].(int)
+				if !isOK {
 					panic("must enter a valid starting odometer")
 				}
-				end_odo, end_odoisOK := mileageArgs["end_odometer"].(int)
-				if !end_odoisOK {
+				end_odo, isOK := mileageArgs["end_odometer"].(int)
+				if !isOK {
 					panic("must enter a valid end odometer")
 				}
-				tolls, tollsisOK := mileageArgs["tolls"].(float64)
-				if !tollsisOK {
+				tolls, isOK := mileageArgs["tolls"].(float64)
+				if !isOK {
 					panic("must enter a valid tolls amount")
 				}
-				parking, parkingisOK := mileageArgs["parking"].(float64)
-				if !parkingisOK {
+				parking, isOK := mileageArgs["parking"].(float64)
+				if !isOK {
 					panic("must enter a valid parking amount")
 				}
-				category, category_ok := mileageArgs["category"].(string)
-				if !category_ok {
+				category, isOK := mileageArgs["category"].(string)
+				if !isOK {
 					panic("must enter a valid category type")
 				}
+				// add in mileage variance response here
 				mileage_req := &models.Mileage_Request{
 					Date:              date,
 					Category:          models.Category(category),
@@ -243,6 +245,112 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 					panic("error finding user with that id")
 				}
 				mileage_req.Create(requestor)
+				return mileage_req, nil
+			},
+		},
+		"test_create_mileage": &graphql.Field{
+			Type:        test_mileage_request,
+			Description: "Creates a new mileage request for a given user based on the logged in user context.",
+			Args: graphql.FieldConfigArgument{
+				"grant_id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+				"request": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(test_mileage_input),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				requestor_id := middleware.ForID(p.Context)
+				grant_id, grantOK := p.Args["grant_id"].(string)
+				if !grantOK {
+					panic("must enter a valid grant id")
+				}
+				mileageArgs := p.Args["request"].(map[string]interface{})
+				date, isOK := mileageArgs["date"].(time.Time)
+				if !isOK {
+					panic("must enter a valid date")
+				}
+				start, isOK := mileageArgs["starting_location"].(map[string]interface{})
+				if !isOK {
+					panic("must enter a valid starting location")
+				}
+				starting_location := models.Location{
+					Latitude:  start["latitude"].(float64),
+					Longitude: start["longitude"].(float64),
+				}
+				destination, isOK := mileageArgs["destination"].(map[string]interface{})
+				if !isOK {
+					panic("must enter a valid destination")
+				}
+				destination_location := models.Location{
+					Latitude:  destination["latitude"].(float64),
+					Longitude: destination["longitude"].(float64),
+				}
+				purpose, isOK := mileageArgs["trip_purpose"].(string)
+				if !isOK {
+					panic("must enter a valid trip purpose")
+				}
+				tolls, isOK := mileageArgs["tolls"].(float64)
+				if !isOK {
+					panic("must enter a valid tolls amount")
+				}
+				parking, isOK := mileageArgs["parking"].(float64)
+				if !isOK {
+					panic("must enter a valid parking amount")
+				}
+				category, isOK := mileageArgs["category"].(string)
+				if !isOK {
+					panic("must enter a valid category type")
+				}
+				mileage_variance, isOK := mileageArgs["request_variance"].(map[string]interface{})
+				if !isOK {
+					panic("must enter a valid mileage variance")
+				}
+				location_points, isOK := mileageArgs["location_points"].([]interface{})
+				if !isOK {
+					panic("must enter valid location points")
+				}
+				var locations []models.Location
+				marshalled, err := json.Marshal(location_points)
+				if err != nil {
+					panic(err)
+				}
+				unmarshal_err := json.Unmarshal(marshalled, &locations)
+				if unmarshal_err != nil {
+					panic(unmarshal_err)
+				}
+				// add in mileage variance response here
+				mileage_req := &models.New_Mileage_Request{
+					Date:              date,
+					Category:          models.Category(category),
+					Grant_ID:          grant_id,
+					Starting_Location: starting_location,
+					Destination:       destination_location,
+					LocationPoints:    locations,
+					Trip_Purpose:      purpose,
+					Tolls:             tolls,
+					Parking:           parking,
+					Request_Variance: models.ResponseCompare{
+						Matrix_Distance:   mileage_variance["matrix_distance"].(float64),
+						Traveled_Distance: mileage_variance["traveled_distance"].(float64),
+						Difference:        mileage_variance["difference"].(float64),
+						Variance:          models.Variance_Level(mileage_variance["variance"].(string)),
+					},
+				}
+				exists, _ := mileage_req.NewExists(requestor_id, date, starting_location, destination_location)
+				if exists {
+					return nil, errors.New("mileage request already created")
+				}
+				var user models.User
+				requestor, err := user.FindByID(requestor_id)
+				if err != nil {
+					panic("error finding user with that id")
+				}
+				mileage_req.NewCreate(requestor)
 				return mileage_req, nil
 			},
 		},

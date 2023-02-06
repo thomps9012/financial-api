@@ -2,9 +2,11 @@ package root
 
 import (
 	"context"
+	"encoding/json"
 	conn "financial-api/db"
 	"financial-api/middleware"
 	"financial-api/models"
+	"fmt"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -405,6 +407,70 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 					panic(err)
 				}
 				return results, nil
+			},
+		},
+		"mileage_request_variance": &graphql.Field{
+			Type:        mileage_request_variance,
+			Description: "A query that calculates the variance between a user's actual mileage and recorded mileage",
+			Args: graphql.FieldConfigArgument{
+				"starting_point": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(location_point_input),
+				},
+				"ending_point": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(location_point_input),
+				},
+				"location_points": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(&graphql.List{OfType: location_point_input}),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				start, isOk := p.Args["starting_point"].(map[string]interface{})
+				if !isOk {
+					panic("missing a valid starting point")
+				}
+				destination, isOk := p.Args["ending_point"].(map[string]interface{})
+				if !isOk {
+					panic("missing a valid destination point")
+				}
+				location_points, isOk := p.Args["location_points"].([]interface{})
+				if !isOk {
+					panic("missing valid location points")
+				}
+				var locations []models.Location
+				marshalled, err := json.Marshal(location_points)
+				if err != nil {
+					panic(err)
+				}
+				unmarshal_err := json.Unmarshal(marshalled, &locations)
+				if unmarshal_err != nil {
+					panic(unmarshal_err)
+				}
+				fmt.Print(locations)
+				mileage_points := models.Mileage_Points{
+					LocationPoints: locations,
+					Starting_Point: models.Location{
+						Latitude:  start["latitude"].(float64),
+						Longitude: start["longitude"].(float64),
+					},
+					Destination: models.Location{
+						Latitude:  destination["latitude"].(float64),
+						Longitude: destination["longitude"].(float64),
+					},
+				}
+				matrix_res, err := mileage_points.CallMatrixAPI()
+				if err != nil {
+					panic(err)
+				}
+				calculated_dist := mileage_points.CalculatePreSnapDistance()
+				response, err := matrix_res.CompareToMatrix(calculated_dist)
+				if err != nil {
+					panic(err)
+				}
+				return response, nil
 			},
 		},
 		// petty cash queries

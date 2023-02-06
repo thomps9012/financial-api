@@ -302,6 +302,71 @@ var mileage_request = graphql.NewObject(
 		},
 	},
 )
+var test_mileage_request = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name:        "test_mileage_request",
+		Description: "Detailed information about a specified mileage request.",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"category": &graphql.Field{
+				Type: graphql.String,
+			},
+			"user_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"grant_id": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"date": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"starting_location": &graphql.Field{
+				Type: location_point,
+			},
+			"destination": &graphql.Field{
+				Type: location_point,
+			},
+			"trip_purpose": &graphql.Field{
+				Type: graphql.String,
+			},
+			"tolls": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"parking": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"trip_mileage": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"reimbursement": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"created_at": &graphql.Field{
+				Type: graphql.DateTime,
+			},
+			"action_history": &graphql.Field{
+				Type: graphql.NewList(request_action),
+			},
+			"current_user": &graphql.Field{
+				Type: graphql.ID,
+			},
+			"current_status": &graphql.Field{
+				Type: graphql.String,
+			},
+			"is_active": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"location_points": &graphql.Field{
+				Type: graphql.NewList(location_point),
+			},
+			"request_variance": &graphql.Field{
+				Type: mileage_request_variance,
+			},
+		},
+	},
+)
 var mileage_request_overview = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name:        "mileage_request_overview",
@@ -397,6 +462,26 @@ var grant_mileage = graphql.NewObject(
 			},
 			"requests": &graphql.Field{
 				Type: graphql.NewList(mileage_request),
+			},
+		},
+	},
+)
+var mileage_request_variance = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name:        "mileage_variance",
+		Description: "Describes the calculated variance between a user's logged milage points and the calculated distance",
+		Fields: graphql.Fields{
+			"matrix_distance": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"traveled_distance": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"variance": &graphql.Field{
+				Type: graphql.String,
+			},
+			"difference": &graphql.Field{
+				Type: graphql.Float,
 			},
 		},
 	},
@@ -663,6 +748,41 @@ var grant_check_requests = graphql.NewObject(
 )
 
 // input types
+var location_point_input = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name:        "location_point_input",
+		Description: "A singular location point",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"longitude": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"latitude": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+		},
+	},
+)
+
+var variance_input = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name:        "mileage_variance_input",
+		Description: "Details about the Mileage Request's Variance",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"matrix_distance": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"traveled_distance": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"difference": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"variance": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(variance_level),
+			},
+		},
+	},
+)
 var address_input = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name:        "address_input",
@@ -771,6 +891,41 @@ var mileage_input = graphql.NewInputObject(
 			},
 			"parking": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.Float),
+			},
+		},
+	},
+)
+var test_mileage_input = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name:        "test_mileage_input",
+		Description: "The input specifications for a mileage request.",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"date": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"category": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(request_category),
+			},
+			"starting_location": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(location_point_input),
+			},
+			"destination": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(location_point_input),
+			},
+			"location_points": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(&graphql.List{OfType: location_point_input}),
+			},
+			"trip_purpose": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"tolls": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"parking": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Float),
+			},
+			"request_variance": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(variance_input),
 			},
 		},
 	},
@@ -897,6 +1052,37 @@ var grant = graphql.NewObject(
 			},
 			"name": &graphql.Field{
 				Type: graphql.String,
+			},
+		},
+	},
+)
+var location_point = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name:        "location_point",
+		Description: "A singular location point",
+		Fields: graphql.Fields{
+			"longitude": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"latitude": &graphql.Field{
+				Type: graphql.Float,
+			},
+		},
+	},
+)
+var variance_level = graphql.NewEnum(
+	graphql.EnumConfig{
+		Name:        "variance_level",
+		Description: "The differing levels of variance between the user's calculated and actual mileage request",
+		Values: graphql.EnumValueConfigMap{
+			"HIGH": &graphql.EnumValueConfig{
+				Value: "HIGH",
+			},
+			"MEDIUM": &graphql.EnumValueConfig{
+				Value: "MEDIUM",
+			},
+			"LOW": &graphql.EnumValueConfig{
+				Value: "LOW",
 			},
 		},
 	},
