@@ -21,10 +21,6 @@ var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 })
 
 func main() {
-	os.Setenv("ATLAS_URI", "mongodb+srv://spars01:H0YXCAGHoUihHcSZ@cluster0.wuezj.mongodb.net/test_finance_requests?retryWrites=true&w=majority")
-	os.Setenv("DB_NAME", "test_finance_requests")
-	os.Setenv("SMTP_EMAIL", "app_support@norainc.org")
-	os.Setenv("SMTP_PASSWORD", "OZ8@LzR?qJU1L+Z2KNwK")
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -39,8 +35,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(auth.Middleware())
 	router.Handle("/graphql", rootRequestHandler)
-	// originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app", "http://localhost:3000"})
-	originsOK := handlers.AllowedOrigins([]string{"http://localhost:3000", "http://localhost:8080/graphql", "http://localhost:8080"})
+	originsOK := handlers.AllowedOrigins([]string{"https://finance-requests.vercel.app"})
 	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
 	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(auth.LimitApiCalls(router)))
