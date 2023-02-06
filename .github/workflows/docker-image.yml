@@ -38,13 +38,13 @@ jobs:
       run:  gcloud auth configure-docker
 
     - name: Lists Current Images in the gCloud
-      run:  gcloud container images list-tags us.gcr.io/finance-api-361311/appengine/default.20220902t090710
+      run:  gcloud container images list-tags us.gcr.io/finance-api-361311/appengine/default.20220902t121147
 
     - name: Builds the Current Docker Image
       run: docker build -t finance-api .
 
     - name: Tags the Built Docker Image with the Appropiate Tag for the Google Container Registry
-      run: docker tag finance-api us.gcr.io/finance-api-361311/appengine/default.20220902t090710
+      run: docker tag finance-api us.gcr.io/finance-api-361311/appengine/default.20220902t121147
 
     - name: Pushes the Tagged Docker Image to the Google Container Registry
-      run: docker push us.gcr.io/finance-api-361311/appengine/default.20220902t090710
+      run: docker push us.gcr.io/finance-api-361311/appengine/default.20220902t121147
