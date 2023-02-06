@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -62,7 +63,8 @@ type ResponseCompare struct {
 	Variance          Variance_Level `json:"variance"`
 }
 
-const API_KEY = "AIzaSyAf7mF7egyl3Ip35hN1n9gXP854_u5-Zsk"
+var API_KEY = os.Getenv("MAPS_API_KEY")
+
 const SNAP_API_BASE = "https://roads.googleapis.com/v1/snapToRoads?path="
 const MATRIX_API_BASE = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
 
