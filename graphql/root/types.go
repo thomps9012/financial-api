@@ -961,14 +961,14 @@ var request_info_error = graphql.NewInputObject(
 		Name:        "request_info_error",
 		Description: "Basic info about a request that caused an error",
 		Fields: graphql.InputObjectConfigFieldMap{
-			"operation_name": &graphql.InputObjectFieldConfig{
+			"category": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
 			},
 			"query": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewNonNull(graphql.String),
 			},
-			"request": &graphql.InputObjectFieldConfig{
-				Type: graphql.NewNonNull(&graphql.InputObject{}),
+			"date": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.DateTime),
 			},
 		},
 	},
