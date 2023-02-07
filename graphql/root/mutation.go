@@ -1095,7 +1095,10 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				if err != nil {
 					panic(err)
 				}
-				return log_error_id, nil
+				if log_error_id != "" {
+					return true, nil
+				}
+				return false, nil
 			},
 		},
 	},

@@ -74,14 +74,15 @@ type Request_Info_With_Action_History struct {
 }
 
 type ErrorRequestInfo struct {
-	Query    string    `json:"query" bson:"query"`
-	Date     time.Time `json:"error_date" bson:"error_date"`
+	Date     time.Time `json:"date" bson:"date"`
 	Category Category  `json:"category" bson:"category"`
+	Query    string    `json:"query" bson:"query"`
 }
 type ErrorLog struct {
-	ID           string           `json:"id" bson:"id"`
+	ID           string           `json:"id" bson:"_id"`
 	UserID       string           `json:"user_id" bson:"user_id"`
-	User         User             `json:"user_info" bson:"user_info"`
+	UserName     string           `json:"user_name" bson:"user_name"`
+	UserEmail    string           `json:"user_email" bson:"user_email"`
 	ErrorMessage string           `json:"error_message" bson:"error_message"`
 	ErrorPath    string           `json:"error_path" bson:"error_path"`
 	RequestInfo  ErrorRequestInfo `json:"request_info" bson:"request_info"`
@@ -92,7 +93,8 @@ func (e *ErrorLog) Create() (string, error) {
 	collection := conn.Db.Collection("errors")
 	e.ID = uuid.NewString()
 	found_user, err := user.FindByID(e.UserID)
-	e.User = found_user
+	e.UserName = found_user.Name
+	e.UserEmail = found_user.Email
 	if err != nil {
 		panic(err)
 	}
