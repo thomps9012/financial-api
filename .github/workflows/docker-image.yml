@@ -16,7 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      # revert to main branch after feature testing
       - id: auth
         name: Configure Google Cloud Authentication
         uses: google-github-actions/auth@v0.3.1
@@ -34,27 +33,14 @@ jobs:
       - name: Configures gCloud for Docker
         run: gcloud auth configure-docker
 
-<<<<<<< HEAD
     - name: Lists Current Images in the gCloud
-      run:  gcloud container images list-tags us.gcr.io/finance-api-361311/appengine/default.20220902t121147
-=======
-      - name: Lists Current Images in the gCloud
-        run: gcloud container images list-tags us.gcr.io/finance-api-361311/appengine/default.20220902t121147
->>>>>>> 817c0719b1f80d23c9c15c174d03332a64c73745
+      run:  gcloud container images list-tags gcr.io/finance-api-361311/appengine/default.20220902t121147
 
       - name: Builds the Current Docker Image
         run: docker build -t finance-api .
 
-<<<<<<< HEAD
     - name: Tags the Built Docker Image with the Appropiate Tag for the Google Container Registry
-      run: docker tag finance-api us.gcr.io/finance-api-361311/appengine/default.20220902t121147
+      run: docker tag finance-api gcr.io/finance-api-361311/appengine/default.20220902t121147
 
     - name: Pushes the Tagged Docker Image to the Google Container Registry
-      run: docker push us.gcr.io/finance-api-361311/appengine/default.20220902t121147
-=======
-      - name: Tags the Built Docker Image with the Appropiate Tag for the Google Container Registry
-        run: docker tag finance-api us.gcr.io/finance-api-361311/appengine/default.20220902t121147
-
-      - name: Pushes the Tagged Docker Image to the Google Container Registry
-        run: docker push us.gcr.io/finance-api-361311/appengine/default.20220902t121147
->>>>>>> 817c0719b1f80d23c9c15c174d03332a64c73745
+      run: docker push gcr.io/finance-api-361311/appengine/default.20220902t121147

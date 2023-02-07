@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	conn "financial-api/db"
-	"financial-api/middleware"
 	"math"
 	"time"
 
@@ -98,13 +97,6 @@ func (p *Petty_Cash_Request) Create(requestor User) (Petty_Cash_Request, error) 
 	if insert_err != nil {
 		panic(insert_err)
 	}
-	update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Petty Cash", requestor.Name, time.Now())
-	if update_err != nil {
-		panic(update_err)
-	}
-	if !update_user {
-		return Petty_Cash_Request{}, update_err
-	}
 	return *p, nil
 }
 
@@ -126,7 +118,6 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor User) 
 		if err != nil {
 			panic(err)
 		}
-		var current_user_email = current_user.Email
 		request.Action_History = append(request.Action_History, *update_action)
 		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
 		if clear_notification_err != nil {
@@ -135,13 +126,6 @@ func (p *Petty_Cash_Request) Update(request Petty_Cash_Request, requestor User) 
 		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
 		if notify_err != nil {
 			panic(notify_err)
-		}
-		update_user, update_err := middleware.SendEmail([]string{current_user_email}, "Check Request", requestor.Name, time.Now())
-		if update_err != nil {
-			panic(update_err)
-		}
-		if !update_user {
-			panic("failed to update appropiate admin staff")
 		}
 	} else {
 		update_action := &Action{
