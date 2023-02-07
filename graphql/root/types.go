@@ -956,6 +956,23 @@ var check_request_input = graphql.NewInputObject(
 		},
 	},
 )
+var request_info_error = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name:        "request_info_error",
+		Description: "Basic info about a request that caused an error",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"operation_name": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"query": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"request": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(&graphql.InputObject{}),
+			},
+		},
+	},
+)
 
 // util types
 var address = graphql.NewObject(

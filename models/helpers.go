@@ -1,6 +1,13 @@
 package models
 
-import "errors"
+import (
+	"context"
+	"errors"
+	conn "financial-api/db"
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Status string
 
@@ -64,6 +71,41 @@ type Request_Info_With_Action_History struct {
 	Type           Request_Type `json:"type" bson:"type"`
 	ID             string       `json:"id" bson:"_id"`
 	Action_History []Action     `json:"action_history" bson:"action_history"`
+}
+type ErrorRequest struct {
+	Category Category  `json:"category" bson:"category"`
+	Date     time.Time `json:"date" bson:"date"`
+}
+type ErrorRequestInfo struct {
+	Query         string       `json:"query" bson:"query"`
+	OperationName string       `json:"operation_name" bson:"operation_name"`
+	Request       ErrorRequest `json:"request" bson:"request"`
+}
+type ErrorLog struct {
+	ID           string           `json:"id" bson:"id"`
+	UserID       string           `json:"user_id" bson:"user_id"`
+	User         User             `json:"user_info" bson:"user_info"`
+	ErrorMessage string           `json:"error_message" bson:"error_message"`
+	ErrorPath    string           `json:"error_path" bson:"error_path"`
+	RequestInfo  ErrorRequestInfo `json:"request_info" bson:"request_info"`
+	Date         time.Time        `json:"error_date" bson:"error_date"`
+}
+
+func (e *ErrorLog) Create() (string, error) {
+	var user User
+	collection := conn.Db.Collection("errors")
+	e.ID = uuid.NewString()
+	found_user, err := user.FindByID(e.UserID)
+	e.User = found_user
+	e.Date = time.Now()
+	if err != nil {
+		panic(err)
+	}
+	_, insert_err := collection.InsertOne(context.TODO(), *e)
+	if insert_err != nil {
+		panic(insert_err)
+	}
+	return e.ID, nil
 }
 
 // test coverage

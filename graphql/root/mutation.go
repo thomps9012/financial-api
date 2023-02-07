@@ -1044,5 +1044,59 @@ var RootMutations = graphql.NewObject(graphql.ObjectConfig{
 				return notificationClear, nil
 			},
 		},
+		// error logging
+		"log_error": &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "Logs a frontend user error",
+			Args: graphql.FieldConfigArgument{
+				"error_path": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"error_message": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"request_info": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(request_info_error),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you must be logged in")
+				}
+				user_id := middleware.ForID(p.Context)
+				error_path, isOK := p.Args["error_path"].(string)
+				if !isOK {
+					panic("must enter a valid error_path")
+				}
+				error_message, isOK := p.Args["error_message"].(string)
+				if !isOK {
+					panic("must enter a valid error_message")
+				}
+				request_info_input, isOK := p.Args["request_info"].(map[string]interface{})
+				if !isOK {
+					panic("must enter a valid request_string")
+				}
+				var log_error models.ErrorLog
+				log_error.ErrorPath = error_path
+				log_error.ErrorMessage = error_message
+				var request_info models.ErrorRequestInfo
+				marshalled, err := json.Marshal(request_info_input)
+				if err != nil {
+					panic(err)
+				}
+				unmarshal_err := json.Unmarshal(marshalled, &request_info)
+				if unmarshal_err != nil {
+					panic(unmarshal_err)
+				}
+				log_error.RequestInfo = request_info
+				log_error.UserID = user_id
+				log_error_id, err := log_error.Create()
+				if err != nil {
+					panic(err)
+				}
+				return log_error_id, nil
+			},
+		},
 	},
 })
