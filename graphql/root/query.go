@@ -58,6 +58,34 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				}, nil
 			},
 		},
+		"user_name": &graphql.Field{
+			Type:        user_name,
+			Description: "Gathers a user's name for populating inbox requests",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				loggedIn := middleware.LoggedIn(p.Context)
+				if !loggedIn {
+					panic("you are not logged in")
+				}
+				var user models.User
+				user_id, isOk := p.Args["id"].(string)
+				if !isOk {
+					panic("must enter a valid user id")
+				}
+				user, userErr := user.FindByID(user_id)
+				if userErr != nil {
+					panic(userErr)
+				}
+				return models.UserName{
+					ID:   user.ID,
+					Name: user.Name,
+				}, nil
+			},
+		},
 		"all_users": &graphql.Field{
 			Type:        graphql.NewList(user_detail),
 			Description: "Gather basic information for all users",

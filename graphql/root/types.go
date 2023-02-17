@@ -81,6 +81,18 @@ var user_overview = graphql.NewObject(
 		},
 	},
 )
+var user_name = graphql.NewObject(graphql.ObjectConfig{
+	Name:        "user_name",
+	Description: "User Name Information for Populating Manager Inboxes",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.ID,
+		},
+		"name": &graphql.Field{
+			Type: graphql.String,
+		},
+	},
+})
 
 // user aggregates
 var aggregate_user_mileage = graphql.NewObject(
@@ -762,7 +774,6 @@ var location_point_input = graphql.NewInputObject(
 		},
 	},
 )
-
 var variance_input = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name:        "mileage_variance_input",

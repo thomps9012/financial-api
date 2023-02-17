@@ -58,6 +58,11 @@ type User struct {
 	Permissions        []auth.Permission `json:"permissions" bson:"permissions"`
 }
 
+type UserName struct {
+	ID   string `json:"id" bson:"_id"`
+	Name string `json:"name" bson:"name"`
+}
+
 func (u *User) DeleteAll() bool {
 	collection := conn.Db.Collection("users")
 	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})

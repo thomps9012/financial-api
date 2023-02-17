@@ -477,27 +477,31 @@ func TestCheckStatus(t *testing.T) {
 		Type:           MILEAGE,
 		ID:             "001",
 	}
-	var new_status = PENDING
-	var expected_response = false
-	if expected_response != request_info.CheckStatus(new_status) {
+	var new_status = "PENDING"
+	var expected_response = true
+	actual := request_info.CheckStatus((Status(new_status)))
+	if expected_response == actual {
 		t.Errorf("Request Status Check: expected %t, got %t", expected_response, !expected_response)
 	}
 	request_info.Current_Status = PENDING
-	new_status = MANAGER_APPROVED
-	expected_response = false
-	if expected_response != request_info.CheckStatus(new_status) {
+	new_status = "MANAGER_APPROVED"
+	actual = request_info.CheckStatus((Status(new_status)))
+	expected_response = true
+	if expected_response == actual {
 		t.Errorf("Request Status Check: expected %t, got %t", expected_response, !expected_response)
 	}
 	request_info.Current_Status = REJECTED
-	new_status = REJECTED_EDIT
-	expected_response = false
-	if expected_response != request_info.CheckStatus(new_status) {
+	new_status = "REJECTED_EDIT"
+	actual = request_info.CheckStatus((Status(new_status)))
+	expected_response = true
+	if expected_response == actual {
 		t.Errorf("Request Status Check: expected %t, got %t", expected_response, !expected_response)
 	}
 	request_info.Current_Status = REJECTED_EDIT
-	new_status = REJECTED_EDIT
-	expected_response = true
-	if expected_response != request_info.CheckStatus(new_status) {
+	new_status = "REJECTED_EDIT"
+	actual = request_info.CheckStatus((Status(new_status)))
+	expected_response = false
+	if expected_response == actual {
 		t.Errorf("Request Status Check: expected %t, got %t", expected_response, !expected_response)
 	}
 }
