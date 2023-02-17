@@ -107,7 +107,7 @@ func (e *ErrorLog) Create() (string, error) {
 
 // test coverage
 func (r *Request_Info) CheckStatus(new_status Status) bool {
-	return r.Current_Status == new_status
+	return r.Current_Status != new_status
 }
 
 // loose test coverage
