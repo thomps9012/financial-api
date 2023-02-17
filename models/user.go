@@ -238,6 +238,18 @@ func (u *User) FindByID(user_id string) (User, error) {
 	return user, nil
 }
 
+func (u *User) FindName(user_id string) (string, error) {
+	collection := conn.Db.Collection("users")
+	var user User
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	opts := options.FindOne().SetProjection(bson.D{{Key: "name", Value: 1}})
+	err := collection.FindOne(context.TODO(), filter, opts).Decode(&user)
+	if err != nil {
+		panic(err)
+	}
+	return user.Name, nil
+}
+
 func (u *User) Findall() ([]User, error) {
 	collection := conn.Db.Collection("users")
 	var userArr []User

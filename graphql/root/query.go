@@ -43,12 +43,21 @@ var RootQueries = graphql.NewObject(graphql.ObjectConfig{
 				if check_err != nil {
 					panic(check_err)
 				}
+				var incomplete_actions []models.Action
+				for _, action := range user.InComplete_Actions {
+					user_name, err := user.FindName(action.User)
+					if err != nil {
+						panic(err)
+					}
+					action.User = user_name
+					incomplete_actions = append(incomplete_actions, action)
+				}
 				return &models.User_Detail{
 					ID:                      user.ID,
 					Name:                    user.Name,
 					Admin:                   user.Admin,
 					Permissions:             user.Permissions,
-					Incomplete_Actions:      user.InComplete_Actions,
+					Incomplete_Actions:      incomplete_actions,
 					Incomplete_Action_Count: len(user.InComplete_Actions),
 					Last_Login:              user.Last_Login,
 					Vehicles:                user.Vehicles,
