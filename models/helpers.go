@@ -75,7 +75,7 @@ type Request_Info_With_Action_History struct {
 
 type ErrorRequestInfo struct {
 	Date     time.Time `json:"date" bson:"date"`
-	Category Category  `json:"category" bson:"category"`
+	Category string    `json:"category" bson:"category"`
 	Query    string    `json:"query" bson:"query"`
 }
 type ErrorLog struct {
