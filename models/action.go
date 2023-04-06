@@ -1,13 +1,11 @@
 package models
 
 import (
-	"context"
-	conn "financial-api/db"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Action struct {
@@ -15,48 +13,239 @@ type Action struct {
 	Request_ID   string       `json:"request_id" bson:"request_id"`
 	Request_Type Request_Type `json:"request_type" bson:"request_type"`
 	User         string       `json:"user" bson:"user"`
-	Status       Status       `json:"status" bson:"status"`
+	Status       string       `json:"status" bson:"status"`
 	Created_At   time.Time    `json:"created_at" bson:"created_at"`
 }
 
-// test coverage
-func ReturnPrevAdminID(action_history []Action, requestor_id string) string {
-	for i := len(action_history) - 1; i > 0; i-- {
-		if action_history[i].Status == REJECTED {
-			return action_history[i].User
+type ApproveAction struct {
+	Action  Action    `json:"action"`
+	NewUser UserLogin `json:"new_user"`
+}
+
+type RejectAction struct {
+	Action               Action    `json:"action"`
+	NewUser              UserLogin `json:"new_user"`
+	LastUserBeforeReject UserLogin `json:"last_user"`
+}
+
+func NormalizeType(request_type string) string {
+	return strings.ToLower(strings.TrimSpace(request_type))
+}
+func FirstActions(request_type string, request_id string, user_id string) ([]Action, error) {
+	switch NormalizeType(request_type) {
+	case "mileage":
+		return []Action{
+			{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: MILEAGE,
+				User:         user_id,
+				Status:       "CREATED",
+				Created_At:   time.Now(),
+			},
+			{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: MILEAGE,
+				User:         user_id,
+				Status:       "PENDING",
+				Created_At:   time.Now(),
+			},
+		}, nil
+	case "check_request":
+		return []Action{
+			{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: CHECK,
+				User:         user_id,
+				Status:       "CREATED",
+				Created_At:   time.Now(),
+			},
+			{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: CHECK,
+				User:         user_id,
+				Status:       "PENDING",
+				Created_At:   time.Now(),
+			},
+		}, nil
+	case "petty_cash":
+		return []Action{
+			{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: PETTY_CASH,
+				User:         user_id,
+				Status:       "CREATED",
+				Created_At:   time.Now(),
+			},
+			{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: PETTY_CASH,
+				User:         user_id,
+				Status:       "PENDING",
+				Created_At:   time.Now(),
+			},
+		}, nil
+	}
+	return []Action{}, errors.New("invalid request type")
+}
+func ApproveStatusHandler(category Category, current_status string, exec_review bool) string {
+	if exec_review {
+		return "PENDING"
+	} else if current_status == "FINANCE_APPROVED" {
+		return "ORGANIZATION_APPROVED"
+	} else if current_status == "SUPERVISOR_APPROVED" {
+		return "FINANCE_APPROVED"
+	} else if current_status == "MANAGER_APPROVED" {
+		return "SUPERVISOR_APPROVED"
+	} else if current_status == "PENDING" {
+		switch category {
+		case ADMINISTRATIVE:
+		case IHBT:
+		case PEERS:
+		case IOP:
+		case MENS_HOUSE:
+			return "SUPERVISOR_APPROVED"
+		case INTAKE:
+		case ACT_TEAM:
+		case LORAIN:
+		case FINANCE:
+		case NEXT_STEP:
+		case PERKINS:
+		case PREVENTION:
+			return "MANAGER_APPROVED"
 		}
 	}
-	return requestor_id
+	return "MANAGER_APPROVED"
 }
-
-// test coverage
-func format_request_type(request_type Request_Type) string {
-	var lowered = strings.ToLower(string(request_type))
-	var collection_name = lowered + "_requests"
-	return collection_name
-}
-
-func (a *Action) Get(request_id string, request_type Request_Type) (Request_Info, error) {
-	collection := conn.Db.Collection(format_request_type(request_type))
-	filter := bson.D{{Key: "_id", Value: request_id}}
-	var request Request_Info
-	err := collection.FindOne(context.TODO(), filter).Decode(&request)
-	if err != nil {
-		panic(err)
+func NewUserHandler(category Category, current_status string, exec_review bool) UserLogin {
+	if exec_review || current_status == "FINANCE_APPROVED" {
+		return UserLogin{
+			ID:   "117117754499201658837",
+			Name: "Anita Bradley",
+		}
 	}
-	request.ID = request_id
-	request.Type = request_type
-	return request, nil
-}
-
-// test coverage
-func (a *Action) Create(new_status Status, request_info Request_Info) Action {
-	return Action{
-		ID:           uuid.NewString(),
-		Request_ID:   request_info.ID,
-		Request_Type: request_info.Type,
-		User:         request_info.Current_User,
-		Status:       new_status,
-		Created_At:   time.Now(),
+	if current_status == "SUPERVISOR_APPROVED" {
+		return UserLogin{
+			ID:   "109157735191825776845",
+			Name: "Finance Requests",
+		}
+	} else if current_status == "PENDING" {
+		switch category {
+		case PERKINS:
+		case LORAIN:
+			return UserLogin{
+				ID:   "109157735191825776845",
+				Name: "Jeff Ward",
+			}
+		case NEXT_STEP:
+		case PREVENTION:
+			return UserLogin{
+				ID:   "109157735191825776845",
+				Name: "Cynthia Woods",
+			}
+		default:
+			return UserLogin{
+				ID:   "109157735191825776845",
+				Name: "Finance Requests",
+			}
+		}
 	}
+	return UserLogin{
+		ID:   "109157735191825776845",
+		Name: "Finance Requests",
+	}
+}
+func ApproveRequest(request_type string, request_id string, user_id string, request_category Category, current_status string) (ApproveAction, error) {
+	switch NormalizeType(request_type) {
+	case "mileage":
+		return ApproveAction{
+			Action: Action{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: MILEAGE,
+				User:         user_id,
+				Status:       "FINANCE_APPROVED",
+				Created_At:   time.Now(),
+			},
+			NewUser: UserLogin{
+				ID:   "117117754499201658837",
+				Name: "Anita Bradley",
+			},
+		}, nil
+	case "check_request":
+	case "petty_cash":
+		new_user := NewUserHandler(request_category, current_status, false)
+		new_status := ApproveStatusHandler(request_category, current_status, false)
+		return ApproveAction{
+			Action: Action{
+				ID:           uuid.NewString(),
+				Request_ID:   request_id,
+				Request_Type: MILEAGE,
+				User:         user_id,
+				Status:       new_status,
+				Created_At:   time.Now(),
+			},
+			NewUser: new_user,
+		}, nil
+	}
+	return ApproveAction{}, errors.New("unable to process request approval")
+}
+func RejectRequest(request_type string, request_id string, request_creator string, current_user string) RejectAction {
+	if NormalizeType(request_type) == "mileage" {
+		return RejectAction{
+			Action: Action{
+				ID:           request_id,
+				Request_Type: MILEAGE,
+				User:         current_user,
+				Status:       "REJECTED",
+				Created_At:   time.Now(),
+			},
+			NewUser: UserLogin{
+				ID: request_creator,
+			},
+			LastUserBeforeReject: UserLogin{
+				ID: current_user,
+			},
+		}
+	}
+	if NormalizeType(request_type) == "check_request" {
+		return RejectAction{
+			Action: Action{
+				ID:           request_id,
+				Request_Type: CHECK,
+				User:         current_user,
+				Status:       "REJECTED",
+				Created_At:   time.Now(),
+			},
+			NewUser: UserLogin{
+				ID: request_creator,
+			},
+			LastUserBeforeReject: UserLogin{
+				ID: current_user,
+			},
+		}
+	}
+	if NormalizeType(request_type) == "petty_cash" {
+		return RejectAction{
+			Action: Action{
+				ID:           request_id,
+				Request_Type: PETTY_CASH,
+				User:         current_user,
+				Status:       "REJECTED",
+				Created_At:   time.Now(),
+			},
+			NewUser: UserLogin{
+				ID: request_creator,
+			},
+			LastUserBeforeReject: UserLogin{
+				ID: current_user,
+			},
+		}
+	}
+	return RejectAction{}
 }

@@ -2,9 +2,9 @@ package models
 
 import (
 	"context"
-	conn "financial-api/db"
-	"fmt"
-	"math"
+	"errors"
+	database "financial-api/db"
+	"financial-api/methods"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,560 +12,331 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type New_Mileage_Request struct {
-	ID                string          `json:"id" bson:"_id"`
-	Grant_ID          string          `json:"grant_id" bson:"grant_id"`
-	User_ID           string          `json:"user_id" bson:"user_id"`
-	Date              time.Time       `json:"date" bson:"date"`
-	Category          Category        `json:"category" bson:"category"`
-	Starting_Location Location        `json:"starting_location" bson:"starting_location"`
-	Destination       Location        `json:"destination" bson:"destination"`
-	LocationPoints    []Location      `json:"location_points" bson:"location_points"`
-	Trip_Purpose      string          `json:"trip_purpose" bson:"trip_purpose"`
-	Tolls             float64         `json:"tolls" bson:"tolls"`
-	Parking           float64         `json:"parking" bson:"parking"`
-	Trip_Mileage      float64         `json:"trip_mileage" bson:"trip_mileage"`
-	Reimbursement     float64         `json:"reimbursement" bson:"reimbursement"`
-	Created_At        time.Time       `json:"created_at" bson:"created_at"`
-	Action_History    []Action        `json:"action_history" bson:"action_history"`
-	Current_User      string          `json:"current_user" bson:"current_user"`
-	Current_Status    Status          `json:"current_status" bson:"current_status"`
-	Request_Variance  ResponseCompare `json:"request_variance" bson:"request_variance"`
-	Is_Active         bool            `json:"is_active" bson:"is_active"`
-}
-
 type Mileage_Request struct {
-	ID                string    `json:"id" bson:"_id"`
-	Grant_ID          string    `json:"grant_id" bson:"grant_id"`
-	User_ID           string    `json:"user_id" bson:"user_id"`
-	Date              time.Time `json:"date" bson:"date"`
-	Category          Category  `json:"category" bson:"category"`
-	Starting_Location string    `json:"starting_location" bson:"starting_location"`
-	Destination       string    `json:"destination" bson:"destination"`
-	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose"`
-	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer"`
-	End_Odometer      int       `json:"end_odometer" bson:"end_odometer"`
-	Tolls             float64   `json:"tolls" bson:"tolls"`
-	Parking           float64   `json:"parking" bson:"parking"`
-	Trip_Mileage      int       `json:"trip_mileage" bson:"trip_mileage"`
-	Reimbursement     float64   `json:"reimbursement" bson:"reimbursement"`
-	Created_At        time.Time `json:"created_at" bson:"created_at"`
-	Action_History    []Action  `json:"action_history" bson:"action_history"`
-	Current_User      string    `json:"current_user" bson:"current_user"`
-	Current_Status    Status    `json:"current_status" bson:"current_status"`
-	Is_Active         bool      `json:"is_active" bson:"is_active"`
+	ID                      string    `json:"id" bson:"_id"`
+	Grant_ID                string    `json:"grant_id" bson:"grant_id"`
+	User_ID                 string    `json:"user_id" bson:"user_id"`
+	Date                    time.Time `json:"date" bson:"date"`
+	Category                Category  `json:"category" bson:"category"`
+	Starting_Location       string    `json:"starting_location" bson:"starting_location"`
+	Destination             string    `json:"destination" bson:"destination"`
+	Trip_Purpose            string    `json:"trip_purpose" bson:"trip_purpose"`
+	Start_Odometer          int       `json:"start_odometer" bson:"start_odometer"`
+	End_Odometer            int       `json:"end_odometer" bson:"end_odometer"`
+	Tolls                   float64   `json:"tolls" bson:"tolls"`
+	Parking                 float64   `json:"parking" bson:"parking"`
+	Trip_Mileage            int       `json:"trip_mileage" bson:"trip_mileage"`
+	Reimbursement           float64   `json:"reimbursement" bson:"reimbursement"`
+	Created_At              time.Time `json:"created_at" bson:"created_at"`
+	Action_History          []Action  `json:"action_history" bson:"action_history"`
+	Current_User            string    `json:"current_user" bson:"current_user"`
+	Current_Status          string    `json:"current_status" bson:"current_status"`
+	Last_User_Before_Reject string    `json:"last_user_before_reject" bson:"last_user_before_reject"`
+	Is_Active               bool      `json:"is_active" bson:"is_active"`
 }
 
 type Mileage_Overview struct {
 	ID             string    `json:"id" bson:"_id"`
-	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
-	User           User      `json:"user" bson:"user"`
 	Date           time.Time `json:"date" bson:"date"`
-	Trip_Mileage   int       `json:"trip_mileage" bson:"trip_mileage"`
 	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
-	Created_At     time.Time `json:"created_at" bson:"created_at"`
-	Current_Status Status    `json:"current_status" bson:"current_status"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_User   string    `json:"current_user" bson:"current_user"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
 
-type Monthly_Mileage_Overview struct {
-	User_ID       string            `json:"user_id" bson:"user_id"`
-	Grant_IDS     []string          `json:"grant_id" bson:"grant_id"`
-	Name          string            `json:"name" bson:"name"`
-	Month         time.Month        `json:"month" bson:"month"`
-	Year          int               `json:"year" bson:"year"`
-	Mileage       int               `json:"mileage" bson:"mileage"`
-	Tolls         float64           `json:"tolls" bson:"tolls"`
-	Parking       float64           `json:"parking" bson:"parking"`
-	Current_User  string            `json:"current_user" bson:"current_user"`
-	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
-	Requests      []Mileage_Request `json:"requests" bson:"requests"`
+type FindMileageInput struct {
+	MileageID string `json:"mileage_id" bson:"mileage_id" validate:"required"`
 }
 
-func (m *Mileage_Request) DeleteAll() bool {
-	collection := conn.Db.Collection("mileage_requests")
-	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
-	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
-	return cleared.DeletedCount == record_count
+type MileageInput struct {
+	Grant_ID          string    `json:"grant_id" bson:"grant_id" validate:"required"`
+	Date              time.Time `json:"date" bson:"date" validate:"required"`
+	Category          Category  `json:"category" bson:"category" validate:"required"`
+	Starting_Location string    `json:"starting_location" bson:"starting_location" validate:"required"`
+	Destination       string    `json:"destination" bson:"destination" validate:"required"`
+	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose" validate:"required"`
+	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer" validate:"required"`
+	End_Odometer      int       `json:"end_odometer" bson:"end_odometer" validate:"required"`
+	Tolls             float64   `json:"tolls" bson:"tolls" validate:"required"`
+	Parking           float64   `json:"parking" bson:"parking" validate:"required"`
 }
 
-func (nm *New_Mileage_Request) NewExists(user_id string, date time.Time, start Location, end Location) (bool, error) {
-	var milage_req New_Mileage_Request
-	collection := conn.Db.Collection("test_mileage_requests")
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "starting_location", Value: start}, {Key: "destination", Value: end}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
-	if err != nil {
-		return false, nil
-	}
-	return true, nil
-}
-func (m *Mileage_Request) Exists(user_id string, date time.Time, start int, end int) (bool, error) {
-	var milage_req Mileage_Request
-	collection := conn.Db.Collection("mileage_requests")
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "start_odometer", Value: start}, {Key: "end_odometer", Value: end}}
-	fmt.Printf("%s\n", filter.Map())
-	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
-	if err != nil {
-		return false, nil
-	}
-	return true, nil
-}
-func (nm *New_Mileage_Request) NewCreate(requestor User) (New_Mileage_Request, error) {
-	collection := conn.Db.Collection("test_mileage_requests")
-	var currentMileageRate = 65.5
-	nm.ID = uuid.NewString()
-	nm.Created_At = time.Now()
-	nm.Is_Active = true
-	nm.User_ID = requestor.ID
-	nm.Current_Status = PENDING
-	if nm.Request_Variance.Variance != HIGH {
-		nm.Trip_Mileage = nm.Request_Variance.Traveled_Distance
-	} else {
-		nm.Trip_Mileage = nm.Request_Variance.Matrix_Distance
-	}
-	nm.Reimbursement = nm.Trip_Mileage*currentMileageRate/100 + nm.Tolls + nm.Parking
-	// current_user_email := UserEmailHandler(nm.Category, PENDING, false)
-	// var user User
-	// current_user_id, err := user.FindID(current_user_email)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// nm.Current_User = current_user_id
-	// set first action and apply to mileage request
-	first_action := &Action{
-		ID:           uuid.NewString(),
-		User:         nm.User_ID,
-		Request_ID:   nm.ID,
-		Request_Type: MILEAGE,
-		Status:       CREATED,
-		Created_At:   time.Now(),
-	}
-	nm.Action_History = append(nm.Action_History, *first_action)
-	// insert the document
-	// user.AddNotification(*first_action, current_user_id)
-	_, insert_err := collection.InsertOne(context.TODO(), *nm)
-	if insert_err != nil {
-		panic(insert_err)
-	}
-	return *nm, nil
-}
-func (m *Mileage_Request) Create(requestor User) (Mileage_Request, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var currentMileageRate = 65.5
-	m.ID = uuid.NewString()
-	m.Created_At = time.Now()
-	m.Is_Active = true
-	m.User_ID = requestor.ID
-	m.Current_Status = PENDING
-	m.Trip_Mileage = m.End_Odometer - m.Start_Odometer
-	m.Reimbursement = float64(m.Trip_Mileage)*currentMileageRate/100 + m.Tolls + m.Parking
-	current_user_email := UserEmailHandler(m.Category, SUPERVISOR_APPROVED, false)
-	var user User
-	current_user_id, err := user.FindID(current_user_email)
-	if err != nil {
-		panic(err)
-	}
-	m.Current_User = current_user_id
-	// set first action and apply to mileage request
-	first_action := &Action{
-		ID:           uuid.NewString(),
-		User:         m.User_ID,
-		Request_ID:   m.ID,
-		Request_Type: MILEAGE,
-		Status:       CREATED,
-		Created_At:   time.Now(),
-	}
-	m.Action_History = append(m.Action_History, *first_action)
-	// insert the document
-	user.AddNotification(*first_action, current_user_id)
-	_, insert_err := collection.InsertOne(context.TODO(), *m)
-	if insert_err != nil {
-		panic(insert_err)
-	}
-	return *m, nil
+type EditMileageInput struct {
+	ID                string    `json:"id" bson:"_id" validate:"required"`
+	User_ID           string    `json:"user_id" bson:"user_id" validate:"required"`
+	Grant_ID          string    `json:"grant_id" bson:"grant_id" validate:"required"`
+	Date              time.Time `json:"date" bson:"date" validate:"required"`
+	Category          Category  `json:"category" bson:"category" validate:"required"`
+	Starting_Location string    `json:"starting_location" bson:"starting_location" validate:"required"`
+	Destination       string    `json:"destination" bson:"destination" validate:"required"`
+	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose" validate:"required"`
+	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer" validate:"required"`
+	End_Odometer      int       `json:"end_odometer" bson:"end_odometer" validate:"required"`
+	Tolls             float64   `json:"tolls" bson:"tolls" validate:"required"`
+	Parking           float64   `json:"parking" bson:"parking" validate:"required"`
 }
 
-func (m *Mileage_Request) Update(request Mileage_Request, requestor User) (Mileage_Request, error) {
-	if request.Current_Status == REJECTED {
-		update_action := &Action{
+var current_mileage_rate = 65.5
+
+func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
+	collection, err := database.Use("mileage_requests")
+	requests := make([]Mileage_Overview, 0)
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	filter := bson.D{{"user_id", user_id}}
+	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"reimbursement", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	opts := options.Find().SetProjection(projection)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	err = cursor.All(context.TODO(), &requests)
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	for _, request := range requests {
+		current_user_id := request.Current_User
+		user_name, err := FindUserName(current_user_id)
+		if err != nil {
+			request.Current_User = "N/A"
+		} else {
+			request.Current_User = user_name
+		}
+	}
+	return requests, nil
+}
+func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
+	collection, err := database.Use("mileage_requests")
+	requests := make([]Mileage_Request, 0)
+	filter := bson.D{{"user_id", user_id}}
+	projection := bson.D{{"action_history", 0}}
+	opts := options.Find().SetProjection(projection)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return []Mileage_Request{}, err
+	}
+	err = cursor.All(context.TODO(), &requests)
+	if err != nil {
+		return []Mileage_Request{}, err
+	}
+	for _, request := range requests {
+		current_user_id := request.Current_User
+		user_name, err := FindUserName(current_user_id)
+		if err != nil {
+			request.Current_User = "N/A"
+		} else {
+			request.Current_User = user_name
+		}
+	}
+	return requests, nil
+}
+func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) {
+	new_request := new(Mileage_Request)
+	new_request.ID = uuid.NewString()
+	new_request.Grant_ID = mi.Grant_ID
+	new_request.User_ID = user_id
+	new_request.Date = mi.Date
+	new_request.Category = mi.Category
+	new_request.Starting_Location = mi.Starting_Location
+	new_request.Destination = mi.Destination
+	new_request.Trip_Purpose = mi.Trip_Purpose
+	new_request.Start_Odometer = mi.Start_Odometer
+	new_request.End_Odometer = mi.End_Odometer
+	new_request.Trip_Mileage = mi.End_Odometer - mi.Start_Odometer
+	new_request.Parking = mi.Parking
+	new_request.Tolls = mi.Tolls
+	new_request.Created_At = time.Now()
+	new_request.Last_User_Before_Reject = bson.TypeNull.String()
+	new_request.Is_Active = true
+	first_action, _ := FirstActions("mileage", new_request.ID, user_id)
+	new_request.Action_History = first_action
+	current_user := methods.NewRequestUser("mileage", "nil")
+	new_request.Current_User = current_user.ID
+	new_request.Current_Status = "PENDING"
+	trip_sum := mi.Tolls + mi.Parking + float64(new_request.Trip_Mileage)*current_mileage_rate
+	new_request.Reimbursement = trip_sum
+	mileage_coll, err := database.Use("mileage_requests")
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	_, err = mileage_coll.InsertOne(context.TODO(), new_request)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	return Mileage_Overview{
+		ID:             new_request.ID,
+		User_ID:        user_id,
+		Date:           new_request.Date,
+		Reimbursement:  new_request.Reimbursement,
+		Current_Status: new_request.Current_Status,
+		Current_User:   current_user.Name,
+		Is_Active:      true,
+	}, nil
+}
+func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
+	collection, err := database.Use("mileage_requests")
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	filter := bson.D{{"_id", em.ID}}
+	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}})
+	request := new(Mileage_Request)
+	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
+	if request.Current_Status == "REJECTED" {
+		edit_action := Action{
 			ID:           uuid.NewString(),
-			User:         requestor.ID,
-			Request_ID:   request.ID,
+			Request_ID:   em.ID,
 			Request_Type: MILEAGE,
-			Status:       REJECTED_EDIT,
+			User:         em.User_ID,
+			Status:       "REJECTED_EDIT",
 			Created_At:   time.Now(),
 		}
-		prev_user_id := ReturnPrevAdminID(request.Action_History, requestor.ID)
-		request.Current_User = prev_user_id
-		var user User
-		current_user, err := user.FindByID(prev_user_id)
+		err := em.SaveEdits(edit_action, "REJECTED_EDIT", request.Last_User_Before_Reject)
 		if err != nil {
-			panic(err)
+			return Mileage_Overview{}, err
 		}
-		request.Action_History = append(request.Action_History, *update_action)
-		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
-		if clear_notification_err != nil {
-			panic(clear_notification_err)
+	}
+	if request.Current_Status == "PENDING" {
+		edit_action := Action{
+			ID:           uuid.NewString(),
+			Request_ID:   em.ID,
+			Request_Type: MILEAGE,
+			User:         em.User_ID,
+			Status:       "PENDING_EDIT",
+			Created_At:   time.Now(),
 		}
-		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
-		if notify_err != nil {
-			panic(notify_err)
-		}
-	} else {
-		update_action := &Action{
-			ID:         uuid.NewString(),
-			User:       requestor.ID,
-			Request_ID: request.ID,
-			Status:     EDIT,
-			Created_At: time.Now(),
-		}
-		request.Action_History = append(request.Action_History, *update_action)
-	}
-	// these are all other updates made
-	var mileage_req Mileage_Request
-	request.Current_Status = PENDING
-	collection := conn.Db.Collection("mileage_requests")
-	filter := bson.D{{Key: "_id", Value: request.ID}}
-	after := options.After
-	opts := options.FindOneAndReplaceOptions{
-		ReturnDocument: &after,
-	}
-	err := collection.FindOneAndReplace(context.TODO(), filter, request, &opts).Decode(&mileage_req)
-	if err != nil {
-		panic(err)
-	}
-	return mileage_req, nil
-}
-
-func (m *Mileage_Request) UpdateActionHistory(new_action Action, user_id string) (Request_Info_With_Action_History, error) {
-	var request_info Request_Info_With_Action_History
-	collection := conn.Db.Collection("mileage_requests")
-	filter := bson.D{{Key: "_id", Value: new_action.Request_ID}}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": new_action}}, {Key: "$set", Value: bson.M{"current_user": user_id}}, {Key: "$set", Value: bson.M{"current_status": new_action.Status}}}
-	if err := collection.FindOneAndUpdate(context.TODO(), filter, update, options.FindOneAndUpdate().SetReturnDocument(1)).Decode(&request_info); err != nil {
-		panic(err)
-	}
-	request_info.Type = MILEAGE
-	return request_info, nil
-}
-
-func (m *Mileage_Request) Delete(request Mileage_Request, user_id string) (bool, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var milage_req Mileage_Request
-	filter := bson.D{{Key: "request_id", Value: request.ID}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
-	if err != nil {
-		panic(err)
-	}
-	if milage_req.User_ID != user_id {
-		panic("you are not the user who created this request")
-	}
-	current_status := m.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
-		panic("this request is already being processed")
-	}
-	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if result.DeletedCount == 0 {
-		return false, err
-	}
-	return true, nil
-}
-
-func (m *Mileage_Request) FindByID(mileage_id string) (Mileage_Request, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var milage_req Mileage_Request
-	filter := bson.D{{Key: "_id", Value: mileage_id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&milage_req)
-	if err != nil {
-		panic(err)
-	}
-	return milage_req, nil
-}
-
-func (m *Mileage_Overview) FindAll() ([]Mileage_Overview, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var overviews []Mileage_Overview
-	cursor, err := collection.Find(context.TODO(), bson.D{})
-	if err != nil {
-		panic(err)
-	}
-	for cursor.Next(context.TODO()) {
-		var mileage_req Mileage_Request
-		decode_err := cursor.Decode(&mileage_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		var user User
-		user_info, user_err := user.FindByID(mileage_req.User_ID)
-		if user_err != nil {
-			panic(user_err)
-		}
-		mileage_overview := &Mileage_Overview{
-			ID:             mileage_req.ID,
-			Grant_ID:       mileage_req.Grant_ID,
-			User_ID:        mileage_req.User_ID,
-			User:           user_info,
-			Date:           mileage_req.Date,
-			Trip_Mileage:   mileage_req.Trip_Mileage,
-			Reimbursement:  mileage_req.Reimbursement,
-			Created_At:     mileage_req.Created_At,
-			Current_Status: mileage_req.Current_Status,
-			Is_Active:      mileage_req.Is_Active,
-		}
-		overviews = append(overviews, *mileage_overview)
-	}
-	return overviews, nil
-}
-
-type Grant_Mileage_Overview struct {
-	Grant         Grant             `json:"grant" bson:"grant"`
-	Mileage       int               `json:"mileage" bson:"mileage"`
-	Tolls         float64           `json:"tolls" bson:"tolls"`
-	Parking       float64           `json:"parking" bson:"parking"`
-	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
-	Requests      []Mileage_Request `json:"requests" bson:"requests"`
-}
-
-func (g *Grant_Mileage_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Mileage_Overview, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var filter bson.D
-	layout := "2006-01-02T15:04:05.000Z"
-	if start_date != "" && end_date != "" {
-		start, err := time.Parse(layout, start_date)
+		err := em.SaveEdits(edit_action, "PENDING", request.Current_User)
 		if err != nil {
-			panic(err)
+			return Mileage_Overview{}, err
 		}
-		end, enderr := time.Parse(layout, end_date)
-		if enderr != nil {
-			panic(err)
-		}
-		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
+	}
+	return Mileage_Overview{}, errors.New("this request is currently being processed by the finance team")
+}
+func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user string) error {
+	collection, err := database.Use("mileage_requests")
+	if err != nil {
+		return err
+	}
+	update := bson.D{{"$set", bson.D{{"grant_id", em.Grant_ID}, {"date", em.Date}, {"category", em.Category}, {"starting_location", em.Starting_Location}, {"destination", em.Destination}, {"trip_purpose", em.Trip_Purpose}, {"start_odometer", em.Start_Odometer}, {"end_odometer", em.End_Odometer}, {"tolls", em.Tolls}, {"parking", em.Parking}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+	filter := bson.D{{"_id", em.ID}}
+	mileage_req := new(Mileage_Request)
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&mileage_req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
+	collection, err := database.Use("mileage_requests")
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	filter := bson.D{{"_id", mileage_id}}
+	request_info := new(Mileage_Overview)
+	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	current_user_id := request_info.Current_User
+	user_name, err := FindUserName(current_user_id)
+	if err != nil {
+		request_info.Current_User = "N/A"
 	} else {
-		filter = bson.D{{Key: "grant_id", Value: grant_id}}
+		request_info.Current_User = user_name
 	}
-	cursor, err := collection.Find(context.TODO(), filter)
+	return *request_info, nil
+}
+func MileageDetail(mileage_id string) (Mileage_Request, error) {
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
-		panic(err)
+		return Mileage_Request{}, err
 	}
-	var grant Grant
-	grant_info, grant_err := grant.Find(grant_id)
-	if grant_err != nil {
-		panic(grant_err)
-	}
-	var requests []Mileage_Request
-	total_reimbursement := 0.00
-	total_tolls := 0.00
-	total_parking := 0.00
-	total_mileage := 0
-
-	for cursor.Next(context.TODO()) {
-		var mileage_req Mileage_Request
-		decode_err := cursor.Decode(&mileage_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		total_reimbursement += mileage_req.Reimbursement
-		total_tolls += mileage_req.Tolls
-		total_parking += mileage_req.Parking
-		total_mileage += mileage_req.Trip_Mileage
-		requests = append(requests, mileage_req)
-	}
-	return Grant_Mileage_Overview{
-		Grant:         grant_info,
-		Mileage:       total_mileage,
-		Tolls:         total_tolls,
-		Parking:       total_parking,
-		Reimbursement: total_reimbursement,
-		Requests:      requests,
-	}, nil
-}
-
-type User_Monthly_Mileage struct {
-	ID            string            `json:"id" bson:"_id"`
-	Name          string            `json:"name" bson:"name"`
-	Vehicles      []Vehicle         `json:"vehicles" bson:"vehicles"`
-	Month         time.Month        `json:"month" bson:"month"`
-	Year          int               `json:"year" bson:"year"`
-	Mileage       int               `json:"mileage" bson:"mileage"`
-	Tolls         float64           `json:"tolls" bson:"tolls"`
-	Parking       float64           `json:"parking" bson:"parking"`
-	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
-	Grant_IDS     []string          `json:"grant_ids" bson:"grant_ids"`
-	Requests      []Mileage_Request `json:"requests" bson:"requests"`
-}
-
-type User_Mileage struct {
-	Vehicles       []Vehicle       `json:"vehicles" bson:"vehicles"`
-	Mileage        int             `json:"mileage" bson:"mileage"`
-	Tolls          float64         `json:"tolls" bson:"tolls"`
-	Parking        float64         `json:"parking" bson:"parking"`
-	Reimbursement  float64         `json:"reimbursement" bson:"reimbursement"`
-	Total_Requests int             `json:"total_requests" bson:"total_requests"`
-	Last_Request   Mileage_Request `json:"last_request" bson:"last_request"`
-}
-
-type User_Agg_Mileage struct {
-	Parking       float64           `json:"parking" bson:"parking"`
-	Tolls         float64           `json:"tolls" bson:"tolls"`
-	Mileage       int               `json:"mileage" bson:"mileage"`
-	User          User              `json:"user" bson:"user"`
-	Reimbursement float64           `json:"reimbursement" bson:"reimbursement"`
-	Requests      []Mileage_Request `json:"requests" bson:"requests"`
-}
-
-func (u *User) MonthlyMileage(user_id string, month int, year int) (User_Monthly_Mileage, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var user User
-	result, err := user.FindByID(user_id)
+	filter := bson.D{{"_id", mileage_id}}
+	request_detail := new(Mileage_Request)
+	err = collection.FindOne(context.TODO(), filter).Decode(&request_detail)
 	if err != nil {
-		panic(err)
+		return Mileage_Request{}, err
 	}
-	end_month := month + 1
-	start_date := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
-	end_date := time.Date(year, time.Month(end_month), 0, 0, 0, 0, 0, time.UTC)
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start_date}}, {Key: "date", Value: bson.M{"$lte": end_date}}}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		panic(err)
-	}
-	var mileage int
-	tolls := 0.0
-	parking := 0.0
-	reimbursement := 0.0
-	var requests []Mileage_Request
-	var grant_ids []string
-	for cursor.Next(context.TODO()) {
-		var mileage_req Mileage_Request
-		decode_err := cursor.Decode(&mileage_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		grant_ids = append(grant_ids, mileage_req.Grant_ID)
-		requests = append(requests, mileage_req)
-		mileage += mileage_req.Trip_Mileage
-		tolls += mileage_req.Tolls
-		parking += mileage_req.Parking
-		reimbursement += mileage_req.Reimbursement
-	}
-	return User_Monthly_Mileage{
-		ID:            user_id,
-		Grant_IDS:     grant_ids,
-		Name:          result.Name,
-		Vehicles:      result.Vehicles,
-		Month:         time.Month(month),
-		Year:          year,
-		Mileage:       mileage,
-		Parking:       parking,
-		Tolls:         tolls,
-		Reimbursement: reimbursement,
-		Requests:      requests,
-	}, nil
+	return *request_detail, nil
 }
-
-func (u *User) AggregateMileage(user_id string, start_date string, end_date string) (User_Agg_Mileage, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var user User
-	result, err := user.FindByID(user_id)
+func (m *Mileage_Request) Approve() (Mileage_Overview, error) {
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
-		panic(err)
+		return Mileage_Overview{}, err
 	}
-	var filter bson.D
-	layout := "2006-01-02T15:04:05.000Z"
-	if start_date != "" && end_date != "" {
-		start, err := time.Parse(layout, start_date)
+	filter := bson.D{{"_id", m.ID}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&m)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	new_action, err := ApproveRequest("mileage", m.ID, m.Current_User, m.Category, m.Current_Status)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	m.Action_History = append(m.Action_History, new_action.Action)
+	update := bson.D{{"$set", bson.D{{"current_user", new_action.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", new_action.Action.Status}}}}
+	response := new(Mileage_Overview)
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&response)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	response.Current_User = new_action.NewUser.Name
+	return *response, nil
+}
+func (m *Mileage_Request) Reject() (Mileage_Overview, error) {
+	collection, err := database.Use("mileage_requests")
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	filter := bson.D{{"_id", m.ID}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&m)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	reject_info := RejectRequest("mileage", m.ID, m.User_ID, m.Current_User)
+	m.Action_History = append(m.Action_History, reject_info.Action)
+	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
+	response := new(Mileage_Overview)
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&response)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	current_user_name, err := FindUserName(reject_info.NewUser.ID)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
+	response.Current_User = current_user_name
+	return *response, nil
+}
+func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
+	collection, err := database.Use("mileage")
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	response := make([]Mileage_Overview, 0)
+	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
+	filter := bson.D{{"date", bson.D{{"$lte", end_date}, {"$gte", start_date}}}}
+	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"reimbursement", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	opts := options.Find().SetProjection(projection)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	err = cursor.All(context.TODO(), &response)
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	for _, request := range response {
+		current_user_id := request.Current_User
+		user_name, err := FindUserName(current_user_id)
 		if err != nil {
-			panic(err)
+			request.Current_User = "N/A"
+		} else {
+			request.Current_User = user_name
 		}
-		end, enderr := time.Parse(layout, end_date)
-		if enderr != nil {
-			panic(err)
-		}
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
-	} else {
-		filter = bson.D{{Key: "user_id", Value: user_id}}
 	}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		panic(err)
-	}
-	var requests []Mileage_Request
-	total_reimbursement := 0.00
-	total_tolls := 0.00
-	total_parking := 0.00
-	total_mileage := 0
-
-	for cursor.Next(context.TODO()) {
-		var mileage_req Mileage_Request
-		decode_err := cursor.Decode(&mileage_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		total_reimbursement += mileage_req.Reimbursement
-		total_tolls += mileage_req.Tolls
-		total_parking += mileage_req.Parking
-		total_mileage += mileage_req.Trip_Mileage
-		requests = append(requests, mileage_req)
-	}
-	return User_Agg_Mileage{
-		User:          result,
-		Mileage:       total_mileage,
-		Tolls:         total_tolls,
-		Parking:       total_parking,
-		Reimbursement: total_reimbursement,
-		Requests:      requests,
-	}, nil
-}
-
-func (u *User) FindMileage(user_id string) (User_Mileage, error) {
-	collection := conn.Db.Collection("mileage_requests")
-	var user User
-	result, err := user.FindByID(user_id)
-	if err != nil {
-		panic(err)
-	}
-	filter := bson.D{{Key: "user_id", Value: user_id}}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		panic(err)
-	}
-	var mileage int
-	tolls := 0.0
-	parking := 0.0
-	reimbursement := 0.0
-	var requests []Mileage_Request
-
-	for cursor.Next(context.TODO()) {
-		var mileage_req Mileage_Request
-		decode_err := cursor.Decode(&mileage_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		requests = append(requests, mileage_req)
-		mileage += mileage_req.Trip_Mileage
-		tolls += mileage_req.Tolls
-		parking += mileage_req.Parking
-		reimbursement += math.Round(mileage_req.Reimbursement*100) / 100
-		reimbursement = math.Round(reimbursement*100) / 100
-	}
-	var last_request Mileage_Request
-	if len(requests) > 1 {
-		last_request = requests[len(requests)-1]
-	} else if len(requests) == 1 {
-		last_request = requests[0]
-	} else {
-		last_request = Mileage_Request{}
-	}
-	return User_Mileage{
-		Vehicles:       result.Vehicles,
-		Mileage:        mileage,
-		Parking:        parking,
-		Tolls:          tolls,
-		Reimbursement:  reimbursement,
-		Total_Requests: len(requests),
-		Last_Request:   last_request,
-	}, nil
+	return response, nil
 }

@@ -1,15 +1,15 @@
 package middleware
 
 import (
-	"context"
-	"net/http"
+	"financial-api/config"
+	"financial-api/methods"
+	"strconv"
+
+	res "financial-api/responses"
+
+	"github.com/gofiber/fiber/v2"
+	jwtware "github.com/gofiber/jwt/v2"
 )
-
-var userCtxKey = &contextKey{"user"}
-
-type contextKey struct {
-	name string
-}
 
 type Permission string
 
@@ -21,67 +21,27 @@ const (
 	FINANCE_TEAM Permission = "FINANCE_TEAM"
 )
 
-type contextInfo struct {
-	id          string
-	name        string
-	admin       bool
-	permissions []Permission
+func Protected() func(*fiber.Ctx) error {
+	return jwtware.New(jwtware.Config{
+		SigningKey:   methods.Normalize(config.ENV("JWT_SECRET")),
+		ErrorHandler: jwtError,
+		ContextKey:   "finance_requests",
+	})
 }
 
-func Middleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			header := r.Header.Get("Authorization")
-			if header == "" {
-				next.ServeHTTP(w, r)
-				return
-			}
-			tokenString := header
-			token, err := ParseToken(tokenString)
-			if err != nil {
-				http.Error(w, "Invalid token", http.StatusForbidden)
-				return
-			}
-			id := token["id"].(string)
-			name := token["name"].(string)
-			admin := token["admin"].(bool)
-			permissions_unformated := token["permissions"].([]interface{})
-			var permissions []Permission
-			for _, permission := range permissions_unformated {
-				permissions = append(permissions, Permission(permission.(string)))
-			}
-			contextInfo := &contextInfo{id, name, admin, permissions}
-			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
-		})
+func jwtError(c *fiber.Ctx, err error) error {
+	if err.Error() == "Missing or malformed JWT" {
+		return c.Status(fiber.StatusUnauthorized).JSON(res.BadJWT())
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(res.KeyNotFound())
 	}
 }
 
-func LoggedIn(ctx context.Context) bool {
-	if ctx.Value(userCtxKey) == nil {
-		return false
+func AdminRoute(c *fiber.Ctx) error {
+	admin_cookie := c.Cookies("admin")
+	admin_status, err := strconv.ParseBool(admin_cookie)
+	if err != nil || !admin_status {
+		return c.Status(fiber.StatusForbidden).JSON(res.NotAdmin())
 	}
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.id != ""
-}
-
-func ForID(ctx context.Context) string {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.id
-}
-
-func ForName(ctx context.Context) string {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.name
-}
-
-func ForAdmin(ctx context.Context) bool {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.admin
-}
-
-func ForPermissions(ctx context.Context) []Permission {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.permissions
+	return c.Next()
 }

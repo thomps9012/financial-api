@@ -1,42 +1,39 @@
 package main
 
 import (
-	conn "financial-api/db"
-	r "financial-api/graphql/root"
-	auth "financial-api/middleware"
-	"net/http"
-	"os"
+	"financial-api/config"
+	"financial-api/routes"
+	"log"
 
-	"github.com/go-chi/chi"
-	"github.com/gorilla/handlers"
-	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/handler"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+	"github.com/joho/godotenv"
 )
 
-const defaultPort = "8080"
-
-var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    r.RootQueries,
-	Mutation: r.RootMutations,
-})
-
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
+	app := Setup()
+	log.Fatal(app.Listen(":" + config.ENV("PORT")))
+}
+
+func Setup() *fiber.App {
+	app := fiber.New()
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal(err)
 	}
-	conn.InitDB()
-	defer conn.CloseDB()
-	// delete below on final production push
-	rootRequestHandler := handler.New(&handler.Config{
-		Schema: &rootSchema,
-		Pretty: true,
-	})
-	router := chi.NewRouter()
-	router.Use(auth.Middleware())
-	router.Handle("/graphql", rootRequestHandler)
-	originsOK := handlers.AllowedOrigins([]string{"https://thomps9012.github.io", "https://finance-requests.vercel.app"})
-	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
-	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(auth.LimitApiCalls(router)))
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Requested-With",
+	}))
+	// app.Use(limiter.New())
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestSpeed,
+	}))
+	app.Use(encryptcookie.New(encryptcookie.Config{
+		Key: config.ENV("COOKIE_SECRET"),
+	}))
+	routes.Use(app)
+	return app
 }

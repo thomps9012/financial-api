@@ -2,45 +2,41 @@ package database
 
 import (
 	"context"
+	"financial-api/config"
 	"fmt"
 	"log"
-	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var Db *mongo.Database
+var DB *mongo.Database
+var Collection *mongo.Collection
 
-func InitDB() {
-	// change on production
-	ATLAS_URI := os.Getenv("ATLAS_URI")
+func Use(collection_name string) (*mongo.Collection, error) {
+	ATLAS_URI := config.ENV("ATLAS_URI")
 	clientOptions := options.Client().ApplyURI(ATLAS_URI)
-
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		log.Fatal("this is the client err", err)
+		return nil, err
 	}
-
 	err = client.Ping(context.TODO(), nil)
 
 	if err != nil {
-		log.Fatal("this is the ping err", err)
+		return nil, err
 	}
 
 	fmt.Println("Connected to MongoDB!")
-
-	// change on production
-	dbName := os.Getenv("DB_NAME")
-	Db = client.Database(dbName)
+	dbName := config.ENV("DB_NAME")
+	DB = client.Database(dbName)
+	Collection = DB.Collection(collection_name)
+	return Collection, nil
 }
 
 func CloseDB() {
-	err := Db.Client().Disconnect(context.TODO())
-
+	err := DB.Client().Disconnect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	fmt.Println("Connection to MongoDB closed!")
 }

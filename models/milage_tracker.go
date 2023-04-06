@@ -2,10 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"financial-api/config"
 	"io/ioutil"
 	"math"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -62,8 +62,14 @@ type ResponseCompare struct {
 	Difference        float64        `json:"difference"`
 	Variance          Variance_Level `json:"variance"`
 }
+type MileageCompare struct {
+	Matrix_Distance   float64        `json:"matrix_distance"`
+	Traveled_Distance float64        `json:"traveled_distance"`
+	Difference        float64        `json:"difference"`
+	Variance          Variance_Level `json:"variance"`
+}
 
-var API_KEY = os.Getenv("MAPS_API_KEY")
+var API_KEY = config.ENV("MAPS_API_KEY")
 
 const SNAP_API_BASE = "https://roads.googleapis.com/v1/snapToRoads?path="
 const MATRIX_API_BASE = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="

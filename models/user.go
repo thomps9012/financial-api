@@ -2,9 +2,7 @@ package models
 
 import (
 	"context"
-	"errors"
-	conn "financial-api/db"
-	auth "financial-api/middleware"
+	database "financial-api/db"
 	"strings"
 	"time"
 
@@ -13,31 +11,44 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type User_Overview struct {
-	ID                      string            `json:"id" bson:"_id"`
-	Name                    string            `json:"name" bson:"name"`
-	Last_Login              time.Time         `json:"last_login" bson:"last_login"`
-	Is_Active               bool              `json:"is_active" bson:"is_active"`
-	Permissions             []auth.Permission `json:"permissions" bson:"permissions"`
-	Admin                   bool              `json:"admin" bson:"admin"`
-	Incomplete_Action_Count int               `json:"incomplete_action_count" bson:"incomplete_action_count"`
-	Mileage_Requests        User_Mileage      `json:"mileage_requests" bson:"mileage_requests"`
-	Check_Requests          UserAggChecks     `json:"check_requests" bson:"check_requests"`
-	Petty_Cash_Requests     UserAggPettyCash  `json:"petty_cash_requests" bson:"petty_cash_requests"`
+type UserLogin struct {
+	ID    string `json:"id" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+	Name  string `json:"name" validate:"required"`
 }
 
-type User_Detail struct {
-	ID                      string            `json:"id" bson:"_id"`
-	Name                    string            `json:"name" bson:"name"`
-	Permissions             []auth.Permission `json:"permissions" bson:"permissions"`
-	Admin                   bool              `json:"admin" bson:"admin"`
-	Vehicles                []Vehicle         `json:"vehicles" bson:"vehicles"`
-	Last_Login              time.Time         `json:"last_login" bson:"last_login"`
-	Incomplete_Actions      []Action          `json:"incomplete_actions" bson:"incomplete_actions"`
-	Incomplete_Action_Count int               `json:"incomplete_action_count" bson:"incomplete_action_count"`
-	Mileage_Requests        User_Mileage      `json:"mileage_requests" bson:"mileage_requests"`
-	Check_Requests          UserAggChecks     `json:"check_requests" bson:"check_requests"`
-	Petty_Cash_Requests     UserAggPettyCash  `json:"petty_cash_requests" bson:"petty_cash_requests"`
+type LoginRes struct {
+	UserID      string   `json:"user_id"`
+	Token       string   `json:'token"`
+	Admin       bool     `json:"admin" bson:"admin"`
+	Permissions []string `json:"permissions" bson:"permissions"`
+}
+
+type User struct {
+	ID                 string    `json:"id" bson:"_id"`
+	Email              string    `json:"email" bson:"email"`
+	Name               string    `json:"name" bson:"name"`
+	Last_Login         time.Time `json:"last_login" bson:"last_login"`
+	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
+	InComplete_Actions []Action  `json:"incomplete_actions" bson:"incomplete_actions"`
+	Is_Active          bool      `json:"is_active" bson:"is_active"`
+	Admin              bool      `json:"admin" bson:"admin"`
+	Permissions        []string  `json:"permissions" bson:"permissions"`
+}
+
+type PublicInfo struct {
+	ID                  string                   `json:"id" bson:"_id"`
+	Email               string                   `json:"email" bson:"email"`
+	Name                string                   `json:"name" bson:"name"`
+	Last_Login          time.Time                `json:"last_login" bson:"last_login"`
+	Vehicles            []Vehicle                `json:"vehicles" bson:"vehicles"`
+	InComplete_Actions  []Action                 `json:"incomplete_actions" bson:"incomplete_actions"`
+	Is_Active           bool                     `json:"is_active" bson:"is_active"`
+	Admin               bool                     `json:"admin" bson:"admin"`
+	Permissions         []string                 `json:"permissions" bson:"permissions"`
+	Mileage_Requests    []Mileage_Overview       `json:"mileage_requests" bson:"mileage_requests"`
+	Petty_Cash_Requests []Petty_Cash_Overview    `json:"petty_cash_requests" bson:"petty_cash_requests"`
+	Check_Requests      []Check_Request_Overview `json:"check_requests" bson:"check_requests"`
 }
 
 type Vehicle struct {
@@ -46,55 +57,9 @@ type Vehicle struct {
 	Description string `json:"description" bson:"description"`
 }
 
-type User struct {
-	ID                 string            `json:"id" bson:"_id"`
-	Email              string            `json:"email" bson:"email"`
-	Name               string            `json:"name" bson:"name"`
-	Last_Login         time.Time         `json:"last_login" bson:"last_login"`
-	Vehicles           []Vehicle         `json:"vehicles" bson:"vehicles"`
-	InComplete_Actions []Action          `json:"incomplete_actions" bson:"incomplete_actions"`
-	Is_Active          bool              `json:"is_active" bson:"is_active"`
-	Admin              bool              `json:"admin" bson:"admin"`
-	Permissions        []auth.Permission `json:"permissions" bson:"permissions"`
-}
-
-type UserName struct {
-	ID   string `json:"id" bson:"_id"`
-	Name string `json:"name" bson:"name"`
-}
-
-func (u *User) DeleteAll() bool {
-	collection := conn.Db.Collection("users")
-	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
-	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
-	return cleared.DeletedCount == record_count
-}
-
-func (u *User) Login(id string) (string, error) {
-	var user User
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
-	if err != nil {
-		panic("there was an error logging you into your account")
-	}
-	upsert := true
-	after := options.After
-	opt := options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-		Upsert:         &upsert,
-	}
-	var updatedUser User
-	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
-	updateErr := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&updatedUser)
-	if updateErr != nil {
-		panic(updateErr)
-	}
-	token, tokenErr := auth.GenerateToken(updatedUser.ID, updatedUser.Name, updatedUser.Admin, updatedUser.Permissions)
-	if tokenErr != nil {
-		panic(tokenErr)
-	}
-	return token, nil
+type VehicleInput struct {
+	Name        string `json:"name" bson:"name" validate:"required"`
+	Description string `json:"description" bson:"description" validate:"required"`
 }
 
 var admin_arr = [10]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes", "jward", "cwoods", "abradley", "finance_requests"}
@@ -103,6 +68,18 @@ var supervisor_arr = [2]string{"jward", "cwoods"}
 var exec_arr = [1]string{"abradley"}
 var fin_arr = [1]string{"finance_requests"}
 
+func (ul *UserLogin) Exists() (bool, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return false, err
+	}
+	filter := bson.D{{Key: "_id", Value: ul.ID}}
+	count, err := users.CountDocuments(nil, filter)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
 func isAdmin(user_email string) bool {
 	user_name := strings.Split(user_email, "@")[0]
 	for _, name := range admin_arr {
@@ -112,197 +89,198 @@ func isAdmin(user_email string) bool {
 	}
 	return false
 }
-
-func setPermissions(user_email string) []auth.Permission {
+func setPermissions(user_email string) []string {
 	user_name := strings.Split(user_email, "@")[0]
 	for _, name := range exec_arr {
 		if name == user_name {
-			return []auth.Permission{auth.EXECUTIVE}
+			return []string{"EXECUTIVE"}
 		}
 	}
 	for _, name := range fin_arr {
 		if name == user_name {
-			return []auth.Permission{auth.FINANCE_TEAM}
+			return []string{"FINANCE_TEAM"}
 		}
 	}
 	for _, name := range supervisor_arr {
 		if name == user_name {
-			return []auth.Permission{auth.SUPERVISOR, auth.MANAGER}
+			return []string{"SUPERVISOR", "MANAGER"}
 		}
 	}
 	for _, name := range mgr_arr {
 		if name == user_name {
-			return []auth.Permission{auth.MANAGER}
+			return []string{"MANAGER"}
 		}
 	}
-	return []auth.Permission{auth.EMPLOYEE}
+	return []string{"EMPLOYEE"}
 }
-
-func (u *User) Create() (string, error) {
-	collection := conn.Db.Collection("users")
+func (u *User) Create(user UserLogin) (LoginRes, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return LoginRes{}, err
+	}
+	u.ID = user.ID
+	u.Email = user.Email
+	u.Name = user.Name
 	u.Is_Active = true
 	u.InComplete_Actions = make([]Action, 0)
 	u.Last_Login = time.Now()
 	u.Vehicles = make([]Vehicle, 0)
 	u.Admin = isAdmin(u.Email)
 	u.Permissions = setPermissions(u.Email)
-	_, err := collection.InsertOne(context.TODO(), *u)
+	_, err = users.InsertOne(context.TODO(), *u)
 	if err != nil {
-		panic(err)
+		return LoginRes{}, err
 	}
-	token, tokenErr := auth.GenerateToken(u.ID, u.Name, u.Admin, u.Permissions)
-	if tokenErr != nil {
-		panic(tokenErr)
-	}
-	return token, nil
-}
-
-func (u *User) Exists(id string) (bool, error) {
-	var user User
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	token, err := GenerateToken(u.ID, u.Name)
 	if err != nil {
-		return false, err
+		return LoginRes{}, err
 	}
-	return true, nil
+	return LoginRes{
+		UserID:      u.ID,
+		Token:       token,
+		Admin:       u.Admin,
+		Permissions: u.Permissions,
+	}, nil
 }
-
-func (u *User) FindID(email string) (string, error) {
-	var user User
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "email", Value: email}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+func (u *User) Login(user UserLogin) (LoginRes, error) {
+	users, err := database.Use("users")
 	if err != nil {
-		return "", err
+		return LoginRes{}, err
 	}
-	return user.ID, nil
-}
-
-func (u *User) AddVehicle(user_id string, name string, description string) (string, error) {
-	collection := conn.Db.Collection("users")
-	vehicle := &Vehicle{
-		ID:          uuid.NewString(),
-		Name:        name,
-		Description: description,
-	}
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$push", Value: bson.M{"vehicles": vehicle}}})
-	if err != nil {
-		panic(err)
-	}
-	println(result.ModifiedCount)
-	if result.ModifiedCount == 0 {
-		return "", err
-	}
-	return vehicle.ID, nil
-}
-
-func (u *User) RemoveVehicle(user_id string, vehicle_id string) (bool, error) {
-	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$pull", Value: bson.M{"vehicles": bson.M{"_id": vehicle_id}}}})
-	if err != nil {
-		panic(err)
-	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
-}
-
-func (u *User) Deactivate(user_id string) (User, error) {
-	var user User
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	update := bson.D{{Key: "$set", Value: bson.M{"is_active": false}}}
+	filter := bson.D{{Key: "_id", Value: user.ID}}
 	upsert := true
 	after := options.After
 	opt := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
 		Upsert:         &upsert,
 	}
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&user)
+	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
+	err = users.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&u)
 	if err != nil {
-		panic(err)
+		return LoginRes{}, err
 	}
-	return user, nil
+	token, err := GenerateToken(u.ID, u.Name)
+	if err != nil {
+		return LoginRes{}, err
+	}
+	return LoginRes{
+		UserID:      u.ID,
+		Token:       token,
+		Admin:       u.Admin,
+		Permissions: u.Permissions,
+	}, nil
 }
-
-func (u *User) FindByID(user_id string) (User, error) {
-	collection := conn.Db.Collection("users")
-	var user User
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+func GetPublicInfo(user_id string) (PublicInfo, error) {
+	users, err := database.Use("users")
 	if err != nil {
-		panic(err)
+		return PublicInfo{}, err
 	}
-	return user, nil
+	filter := bson.D{{"_id", user_id}}
+	user_info := new(PublicInfo)
+	err = users.FindOne(context.TODO(), filter).Decode(&user_info)
+	if err != nil {
+		return PublicInfo{}, err
+	}
+	return *user_info, nil
 }
-
-func (u *User) FindName(user_id string) (string, error) {
-	collection := conn.Db.Collection("users")
+func FindUserName(user_id string) (string, error) {
 	var user User
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	opts := options.FindOne().SetProjection(bson.D{{Key: "name", Value: 1}})
-	err := collection.FindOne(context.TODO(), filter, opts).Decode(&user)
+	users, err := database.Use("users")
 	if err != nil {
-		panic(err)
+		return "", err
 	}
+	filter := bson.D{{"_id", user_id}}
+	projection := bson.D{{"name", 1}}
+	// projection := bson.D{{"name", 1}, {"admin", 0}, {"permissions", 0}, {"last_login", 0}, {"incomplete_actions", 0}}
+	opts := options.FindOne().SetProjection(projection)
+	err = users.FindOne(context.TODO(), filter, opts).Decode(&user)
 	return user.Name, nil
 }
-
-func (u *User) Findall() ([]User, error) {
-	collection := conn.Db.Collection("users")
-	var userArr []User
-	cursor, err := collection.Find(context.TODO(), bson.D{})
+func (u *User) AddVehicle(name string, description string) (Vehicle, error) {
+	users, err := database.Use("users")
 	if err != nil {
-		panic(err)
+		return Vehicle{}, err
 	}
-	for cursor.Next(context.TODO()) {
-		var user User
-		cursor.Decode(&user)
-		userArr = append(userArr, user)
-	}
-	return userArr, nil
-}
-
-func (u *User) AddNotification(incomplete_action Action, user_id string) (bool, error) {
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$push", Value: bson.M{"incomplete_actions": incomplete_action}}})
-	if updateManager == nil {
-		return false, errors.New("error notifying manager second lvl")
-	}
-	return true, nil
-}
-
-func (u *User) ClearNotifications(user_id string) (bool, error) {
-	collection := conn.Db.Collection("users")
-	result, err := collection.UpdateByID(context.TODO(), user_id, bson.D{{Key: "$set", Value: bson.M{"incomplete_actions": []Action{}}}})
+	new_vehicle := new(Vehicle)
+	new_vehicle.ID = uuid.NewString()
+	new_vehicle.Name = name
+	new_vehicle.Description = description
+	filter := bson.D{{"_id", u.ID}}
+	projection := bson.D{{"vehicles", 1}}
+	update := bson.D{{"$push", bson.D{{"vehicles", new_vehicle}}}}
+	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.After)
+	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
 	if err != nil {
-		panic(err)
+		return Vehicle{}, err
 	}
-	if result.ModifiedCount == 0 {
-		return false, err
-	}
-	return true, nil
+	return *new_vehicle, nil
 }
-
-func (u *User) ClearNotification(item_id string, user_id string) (bool, error) {
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": bson.D{{Key: "request_id", Value: item_id}}}}})
-	if updateManager == nil {
-		return false, errors.New("error clearing notification second lvl")
+func (u *User) EditVehicle(new_vehicle Vehicle) (Vehicle, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return Vehicle{}, err
 	}
-	return true, nil
+	filter := bson.D{{"_id", u.ID}}
+	projection := bson.D{{"vehicles", 1}}
+	update := bson.D{{"$pull", bson.D{{"vehicles", bson.D{{"_id", new_vehicle.ID}}}}}, {"$push", bson.D{{"vehicles", new_vehicle}}}}
+	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.After)
+	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
+	if err != nil {
+		return Vehicle{}, err
+	}
+	return new_vehicle, nil
 }
-
-func (u *User) ClearNotificationByID(notification_id string, user_id string) (bool, error) {
-	collection := conn.Db.Collection("users")
-	filter := bson.D{{Key: "_id", Value: user_id}}
-	updateManager := collection.FindOneAndUpdate(context.TODO(), filter, bson.D{{Key: "$pull", Value: bson.M{"incomplete_actions": bson.D{{Key: "_id", Value: notification_id}}}}})
-	if updateManager == nil {
-		return false, errors.New("error clearing notification second lvl")
+func (u *User) RemoveVehicle(vehicle_id string) (Vehicle, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return Vehicle{}, err
 	}
-	return true, nil
+	filter := bson.D{{"_id", u.ID}}
+	projection := bson.D{{"vehicles", 1}}
+	update := bson.D{{"$pull", bson.D{{"vehicles", bson.D{{"_id", vehicle_id}}}}}}
+	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.Before)
+	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
+	if err != nil {
+		return Vehicle{}, err
+	}
+	old_vehicle := new(Vehicle)
+	for _, vehicle := range u.Vehicles {
+		if vehicle.ID == vehicle_id {
+			old_vehicle.ID = vehicle_id
+			old_vehicle.Name = vehicle.Name
+			old_vehicle.Description = vehicle.Description
+		}
+	}
+	return *old_vehicle, nil
+}
+func FindAllUsers() ([]PublicInfo, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return []PublicInfo{}, err
+	}
+	cursor, err := users.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		return []PublicInfo{}, err
+	}
+	user_info := make([]PublicInfo, 0)
+	err = cursor.All(context.TODO(), &user_info)
+	if err != nil {
+		return []PublicInfo{}, err
+	}
+	return user_info, nil
+}
+func (u *User) Deactivate() (PublicInfo, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return PublicInfo{}, err
+	}
+	user_info := new(PublicInfo)
+	filter := bson.D{{"_id", u.ID}}
+	update := bson.D{{"$set", bson.D{{"is_active", false}}}}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&user_info)
+	if err != nil {
+		return PublicInfo{}, err
+	}
+	return *user_info, nil
 }

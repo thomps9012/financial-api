@@ -2,96 +2,93 @@ package models
 
 import (
 	"context"
-	conn "financial-api/db"
-	"fmt"
+	database "financial-api/db"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Grant struct {
-	ID   string `json:"id" bson:"_id"`
+	ID   string `json:"id" bson:"_id" validate:"required"`
 	Name string `json:"name" bson:"name"`
 }
 
-func (g *Grant) Find(grant_id string) (Grant, error) {
-	collection := conn.Db.Collection("grants")
-	var grant Grant
-	filter := bson.D{{Key: "_id", Value: grant_id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&grant)
+func GetAllGrants() ([]Grant, error) {
+	grants_coll, err := database.Use("grants")
 	if err != nil {
-		panic(err)
+		return []Grant{}, err
 	}
-	return grant, nil
+	cursor, err := grants_coll.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		return []Grant{}, err
+	}
+	grants := make([]Grant, 0)
+	err = cursor.All(context.TODO(), &grants)
+	if err != nil {
+		return []Grant{}, err
+	}
+	return grants, nil
 }
-func (g *Grant) FindAll() ([]Grant, error) {
-	collection := conn.Db.Collection("grants")
-	var grantArr []Grant
-	cursor, err := collection.Find(context.TODO(), bson.D{})
+func (g *Grant) GetOneGrant() (Grant, error) {
+	grants_coll, err := database.Use("grants")
 	if err != nil {
-		panic(err)
+		return Grant{}, err
 	}
-	for cursor.Next(context.TODO()) {
-		var grant Grant
-		cursor.Decode(&grant)
-		grantArr = append(grantArr, grant)
+	grant := new(Grant)
+	filter := bson.D{{"_id", g.ID}}
+	err = grants_coll.FindOne(context.TODO(), filter).Decode(&grant)
+	if err != nil {
+		return Grant{}, err
 	}
-	return grantArr, nil
+	return *grant, nil
 }
-func (g *Grant) BulkInsert() (bool, error) {
-	grants := []interface{}{
-		Grant{
-			ID:   "H79TI082369",
-			Name: "BCORR"},
-		Grant{
-			ID:   "H79SP082264",
-			Name: "HIV Navigator"},
-		Grant{
-			ID:   "H79SP082475",
-			Name: "SPF (HOPE 1)"},
-		Grant{
-			ID:   "SOR_PEER",
-			Name: "SOR Peer"},
-		Grant{
-			ID:   "SOR_HOUSING",
-			Name: "SOR Recovery Housing"},
-		Grant{
-			ID:   "SOR_TWR",
-			Name: "SOR 2.0 - Together We Rise"},
-		Grant{
-			ID:   "TANF",
-			Name: "TANF"},
-		Grant{
-			ID:   "2020-JY-FX-0014",
-			Name: "JSBT (OJJDP) - Jumpstart For A Better Tomorrow"},
-		Grant{
-			ID:   "SOR_LORAIN",
-			Name: "SOR Lorain 2.0"},
-		Grant{
-			ID:   "H79SP081048",
-			Name: "STOP Grant"},
-		Grant{
-			ID:   "H79TI083370",
-			Name: "BSW (Bridge to Success Workforce)"},
-		Grant{
-			ID:   "H79SM085150",
-			Name: "CCBHC"},
-		Grant{
-			ID:   "H79TI083662",
-			Name: "IOP New Syrenity Intensive outpatient Program"},
-		Grant{
-			ID:   "H79TI085495",
-			Name: "RAP AID (Recover from Addition to Prevent Aids)"},
-		Grant{
-			ID:   "H79TI085410",
-			Name: "N MAT (NORA Medication-Assisted Treatment Program)"},
-	}
-	collection := conn.Db.Collection("grants")
-	result, err := collection.InsertMany(context.TODO(), grants)
+func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
+	mileage_coll, err := database.Use("mileage")
 	if err != nil {
-		panic(err)
+		return []Mileage_Overview{}, err
 	}
-	for _, id := range result.InsertedIDs {
-		fmt.Printf("\t%s\n", id)
+	data := make([]Mileage_Overview, 0)
+	filter := bson.D{{"grant_id", g.ID}}
+	cursor, err := mileage_coll.Find(context.TODO(), filter)
+	if err != nil {
+		return []Mileage_Overview{}, err
 	}
-	return true, nil
+	err = cursor.All(context.TODO(), &data)
+	if err != nil {
+		return []Mileage_Overview{}, err
+	}
+	return data, nil
+}
+func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
+	petty_cash_coll, err := database.Use("petty_cash")
+	if err != nil {
+		return []Petty_Cash_Overview{}, err
+	}
+	data := make([]Petty_Cash_Overview, 0)
+	filter := bson.D{{"grant_id", g.ID}}
+	cursor, err := petty_cash_coll.Find(context.TODO(), filter)
+	if err != nil {
+		return []Petty_Cash_Overview{}, err
+	}
+	err = cursor.All(context.TODO(), &data)
+	if err != nil {
+		return []Petty_Cash_Overview{}, err
+	}
+	return data, nil
+}
+func (g *Grant) GetGrantCheckRequest() ([]Check_Request_Overview, error) {
+	check_req_coll, err := database.Use("check_request")
+	if err != nil {
+		return []Check_Request_Overview{}, err
+	}
+	data := make([]Check_Request_Overview, 0)
+	filter := bson.D{{"grant_id", g.ID}}
+	cursor, err := check_req_coll.Find(context.TODO(), filter)
+	if err != nil {
+		return []Check_Request_Overview{}, err
+	}
+	err = cursor.All(context.TODO(), &data)
+	if err != nil {
+		return []Check_Request_Overview{}, err
+	}
+	return data, nil
 }
