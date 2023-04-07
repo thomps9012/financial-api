@@ -42,8 +42,10 @@ func Use(app *fiber.App) {
 	mileage.Get("/variance", handlers.MileageVariance)
 	mileage.Get("/monthly", middleware.AdminRoute, handlers.MonthlyMileage)
 	mileage.Get("/detail", handlers.MileageDetail)
-	mileage.Put("/", handlers.EditMileage)
 	mileage.Delete("/", handlers.DeleteMileage)
+	// break point
+	// add in handler since all mileage is 'await finance'
+	mileage.Put("/", handlers.EditMileage)
 	mileage.Post("/approve", middleware.AdminRoute, handlers.ApproveMileage)
 	mileage.Post("/reject", middleware.AdminRoute, handlers.RejectMileage)
 
