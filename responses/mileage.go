@@ -21,7 +21,7 @@ func MonthlyMileage(month int, year int, mileage_info []models.Mileage_Overview)
 	return fiber.Map{
 		"status":  "OK",
 		"code":    200,
-		"message": "Monthly Mileage Report for " + time.Month(month).String() + ", " + strconv.FormatInt(int64(year), 64),
+		"message": "Monthly Mileage Report for " + time.Month(month).String() + ", " + strconv.Itoa(year),
 		"data":    mileage_info,
 	}
 }

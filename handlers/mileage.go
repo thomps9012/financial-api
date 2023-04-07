@@ -60,7 +60,7 @@ func MonthlyMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.MonthlyMileage(int(monthly_request.Month), monthly_request.Year, response))
+	return c.Status(fiber.StatusOK).JSON(responses.MonthlyMileage(int(monthly_request.Month), monthly_request.Year, response))
 }
 func MileageDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -87,7 +87,7 @@ func MileageDetail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.MileageDetail(data))
+	return c.Status(fiber.StatusOK).JSON(responses.MileageDetail(data))
 }
 func EditMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

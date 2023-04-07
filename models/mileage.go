@@ -56,10 +56,10 @@ type MileageInput struct {
 	Starting_Location string    `json:"starting_location" bson:"starting_location" validate:"required"`
 	Destination       string    `json:"destination" bson:"destination" validate:"required"`
 	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose" validate:"required"`
-	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer" validate:"required"`
+	Start_Odometer    *int      `json:"start_odometer" bson:"start_odometer" validate:"required"`
 	End_Odometer      int       `json:"end_odometer" bson:"end_odometer" validate:"required"`
-	Tolls             float64   `json:"tolls" bson:"tolls" validate:"required"`
-	Parking           float64   `json:"parking" bson:"parking" validate:"required"`
+	Tolls             *float64  `json:"tolls" bson:"tolls" validate:"required"`
+	Parking           *float64  `json:"parking" bson:"parking" validate:"required"`
 }
 
 type EditMileageInput struct {
@@ -71,16 +71,16 @@ type EditMileageInput struct {
 	Starting_Location string    `json:"starting_location" bson:"starting_location" validate:"required"`
 	Destination       string    `json:"destination" bson:"destination" validate:"required"`
 	Trip_Purpose      string    `json:"trip_purpose" bson:"trip_purpose" validate:"required"`
-	Start_Odometer    int       `json:"start_odometer" bson:"start_odometer" validate:"required"`
+	Start_Odometer    *int      `json:"start_odometer" bson:"start_odometer" validate:"required"`
 	End_Odometer      int       `json:"end_odometer" bson:"end_odometer" validate:"required"`
-	Tolls             float64   `json:"tolls" bson:"tolls" validate:"required"`
-	Parking           float64   `json:"parking" bson:"parking" validate:"required"`
+	Tolls             *float64  `json:"tolls" bson:"tolls" validate:"required"`
+	Parking           *float64  `json:"parking" bson:"parking" validate:"required"`
 }
 
 var current_mileage_rate = 65.5
 
 func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	requests := make([]Mileage_Overview, 0)
 	if err != nil {
 		return []Mileage_Overview{}, err
@@ -108,7 +108,7 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	return requests, nil
 }
 func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	requests := make([]Mileage_Request, 0)
 	filter := bson.D{{"user_id", user_id}}
 	projection := bson.D{{"action_history", 0}}
@@ -142,11 +142,11 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	new_request.Starting_Location = mi.Starting_Location
 	new_request.Destination = mi.Destination
 	new_request.Trip_Purpose = mi.Trip_Purpose
-	new_request.Start_Odometer = mi.Start_Odometer
+	new_request.Start_Odometer = *mi.Start_Odometer
 	new_request.End_Odometer = mi.End_Odometer
-	new_request.Trip_Mileage = mi.End_Odometer - mi.Start_Odometer
-	new_request.Parking = mi.Parking
-	new_request.Tolls = mi.Tolls
+	new_request.Trip_Mileage = mi.End_Odometer - *mi.Start_Odometer
+	new_request.Parking = *mi.Parking
+	new_request.Tolls = *mi.Tolls
 	new_request.Created_At = time.Now()
 	new_request.Last_User_Before_Reject = bson.TypeNull.String()
 	new_request.Is_Active = true
@@ -155,9 +155,9 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	current_user := methods.NewRequestUser("mileage", "nil")
 	new_request.Current_User = current_user.ID
 	new_request.Current_Status = "PENDING"
-	trip_sum := mi.Tolls + mi.Parking + float64(new_request.Trip_Mileage)*current_mileage_rate
+	trip_sum := *mi.Tolls + *mi.Parking + float64(new_request.Trip_Mileage)*current_mileage_rate
 	new_request.Reimbursement = trip_sum
-	mileage_coll, err := database.Use("mileage_requests")
+	mileage_coll, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -176,7 +176,7 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	}, nil
 }
 func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -184,6 +184,9 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}})
 	request := new(Mileage_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
 	if request.Current_Status == "REJECTED" {
 		edit_action := Action{
 			ID:           uuid.NewString(),
@@ -215,7 +218,7 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	return Mileage_Overview{}, errors.New("this request is currently being processed by the finance team")
 }
 func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user string) error {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	if err != nil {
 		return err
 	}
@@ -229,7 +232,7 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	return nil
 }
 func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -249,7 +252,7 @@ func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
 	return *request_info, nil
 }
 func MileageDetail(mileage_id string) (Mileage_Request, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Request{}, err
 	}
@@ -262,7 +265,7 @@ func MileageDetail(mileage_id string) (Mileage_Request, error) {
 	return *request_detail, nil
 }
 func (m *Mileage_Request) Approve() (Mileage_Overview, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -286,7 +289,7 @@ func (m *Mileage_Request) Approve() (Mileage_Overview, error) {
 	return *response, nil
 }
 func (m *Mileage_Request) Reject() (Mileage_Overview, error) {
-	collection, err := database.Use("mileage_requests")
+	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -316,8 +319,8 @@ func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
 		return []Mileage_Overview{}, err
 	}
 	response := make([]Mileage_Overview, 0)
-	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
-	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
+	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.UTC)
 	filter := bson.D{{"date", bson.D{{"$lte", end_date}, {"$gte", start_date}}}}
 	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"reimbursement", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
 	opts := options.Find().SetProjection(projection)

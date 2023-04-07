@@ -57,7 +57,7 @@ func MonthlyPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year, response))
+	return c.Status(fiber.StatusOK).JSON(responses.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year, response))
 }
 func PettyCashDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -84,7 +84,7 @@ func PettyCashDetail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.PettyCashDetail(data))
+	return c.Status(fiber.StatusOK).JSON(responses.PettyCashDetail(data))
 }
 func EditPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

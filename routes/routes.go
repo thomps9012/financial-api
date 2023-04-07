@@ -40,7 +40,7 @@ func Use(app *fiber.App) {
 	mileage := api.Group("/mileage", middleware.Protected())
 	mileage.Post("/", handlers.CreateMileage)
 	mileage.Get("/variance", handlers.MileageVariance)
-	mileage.Get("/:month/:year", middleware.AdminRoute, handlers.MonthlyMileage)
+	mileage.Get("/monthly", middleware.AdminRoute, handlers.MonthlyMileage)
 	mileage.Get("/detail", handlers.MileageDetail)
 	mileage.Put("/", handlers.EditMileage)
 	mileage.Delete("/", handlers.DeleteMileage)
@@ -58,7 +58,7 @@ func Use(app *fiber.App) {
 
 	petty_cash := api.Group("/petty_cash", middleware.Protected())
 	petty_cash.Post("/", handlers.CreatePettyCash)
-	petty_cash.Get("/:month/:year", middleware.AdminRoute, handlers.MonthlyPettyCash)
+	petty_cash.Get("/monthly", middleware.AdminRoute, handlers.MonthlyPettyCash)
 	petty_cash.Get("/detail", handlers.PettyCashDetail)
 	petty_cash.Put("/", handlers.EditPettyCash)
 	petty_cash.Delete("/", handlers.DeletePettyCash)

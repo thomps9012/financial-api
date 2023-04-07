@@ -18,7 +18,7 @@ func GetAllGrants(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.AllGrants(data))
+	return c.Status(fiber.StatusOK).JSON(responses.AllGrants(data))
 }
 func GetOneGrant(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -41,7 +41,7 @@ func GetOneGrant(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.OneGrant(data))
+	return c.Status(fiber.StatusOK).JSON(responses.OneGrant(data))
 }
 func GrantCheckRequests(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -68,7 +68,7 @@ func GrantCheckRequests(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.GrantCheckRequests(grant_data, data))
+	return c.Status(fiber.StatusOK).JSON(responses.GrantCheckRequests(grant_data, data))
 }
 func GrantMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -95,7 +95,7 @@ func GrantMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.GrantMileage(grant_data, data))
+	return c.Status(fiber.StatusOK).JSON(responses.GrantMileage(grant_data, data))
 }
 func GrantPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -122,5 +122,5 @@ func GrantPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.GrantPettyCash(grant_data, data))
+	return c.Status(fiber.StatusOK).JSON(responses.GrantPettyCash(grant_data, data))
 }
