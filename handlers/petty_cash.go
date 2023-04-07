@@ -22,6 +22,10 @@ func CreatePettyCash(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(request)
 	}
+	errors := methods.ValidateStruct(*request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
@@ -45,6 +49,10 @@ func MonthlyPettyCash(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(monthly_request)
 	}
+	errors := methods.ValidateStruct(*monthly_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	response, err := models.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -63,6 +71,10 @@ func PettyCashDetail(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(find_request_input)
+	}
+	errors := methods.ValidateStruct(*find_request_input)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
@@ -87,6 +99,10 @@ func EditPettyCash(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(request)
 	}
+	errors := methods.ValidateStruct(*request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" || user_id != request.User_ID {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
@@ -110,6 +126,10 @@ func DeletePettyCash(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(find_request_input)
 	}
+	errors := methods.ValidateStruct(*find_request_input)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
@@ -132,6 +152,10 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(approve_info)
+	}
+	errors := methods.ValidateStruct(*approve_info)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
@@ -157,6 +181,10 @@ func RejectPettyCash(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(reject_info)
+	}
+	errors := methods.ValidateStruct(*reject_info)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {

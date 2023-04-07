@@ -22,6 +22,10 @@ func CreateMileage(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(mileage_request)
 	}
+	errors := methods.ValidateStruct(*mileage_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
@@ -48,6 +52,10 @@ func MonthlyMileage(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(monthly_request)
 	}
+	errors := methods.ValidateStruct(*monthly_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	response, err := models.MonthlyMileage(int(monthly_request.Month), monthly_request.Year)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -66,6 +74,10 @@ func MileageDetail(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(find_mileage_input)
+	}
+	errors := methods.ValidateStruct(*find_mileage_input)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
@@ -90,6 +102,10 @@ func EditMileage(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(mileage_request)
 	}
+	errors := methods.ValidateStruct(*mileage_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" || user_id != mileage_request.User_ID {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
@@ -113,6 +129,10 @@ func DeleteMileage(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(find_mileage_input)
 	}
+	errors := methods.ValidateStruct(*find_mileage_input)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
@@ -135,6 +155,10 @@ func ApproveMileage(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(approve_info)
+	}
+	errors := methods.ValidateStruct(*approve_info)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
@@ -160,6 +184,10 @@ func RejectMileage(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(reject_info)
+	}
+	errors := methods.ValidateStruct(*reject_info)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {

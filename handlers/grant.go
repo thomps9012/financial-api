@@ -33,6 +33,10 @@ func GetOneGrant(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(request)
 	}
+	errors := methods.ValidateStruct(*request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	data, err := request.GetOneGrant()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -51,6 +55,10 @@ func GrantCheckRequests(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(request)
+	}
+	errors := methods.ValidateStruct(*request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	grant_data, err := request.GetOneGrant()
 	if err != nil {
@@ -75,6 +83,10 @@ func GrantMileage(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(request)
 	}
+	errors := methods.ValidateStruct(*request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	grant_data, err := request.GetOneGrant()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -97,6 +109,10 @@ func GrantPettyCash(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(request)
+	}
+	errors := methods.ValidateStruct(*request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	grant_data, err := request.GetOneGrant()
 	if err != nil {
