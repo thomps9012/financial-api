@@ -40,6 +40,10 @@ func Login(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(user_login)
 	}
+	errors := methods.ValidateStruct(*user_login)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	exists, err := user_login.Exists()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))

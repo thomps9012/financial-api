@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -175,13 +176,18 @@ func GetPublicInfo(user_id string) (PublicInfo, error) {
 	if err != nil {
 		return PublicInfo{}, err
 	}
-	filter := bson.D{{"_id", user_id}}
-	user_info := new(PublicInfo)
-	err = users.FindOne(context.TODO(), filter).Decode(&user_info)
+	user_info := make([]PublicInfo, 0)
+	filter := bson.D{{"$match", bson.D{{"_id", user_id}}}}
+	mileage_stage := bson.D{{"$lookup", bson.D{{"from", "mileage"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "mileage_requests"}}}}
+	check_stage := bson.D{{"$lookup", bson.D{{"from", "check_requests"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "check_requests"}}}}
+	petty_cash_stage := bson.D{{"$lookup", bson.D{{"from", "petty_cash"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "petty_cash_requests"}}}}
+	pipeline := mongo.Pipeline{filter, mileage_stage, check_stage, petty_cash_stage}
+	cursor, err := users.Aggregate(context.TODO(), pipeline)
+	err = cursor.All(context.TODO(), &user_info)
 	if err != nil {
 		return PublicInfo{}, err
 	}
-	return *user_info, nil
+	return user_info[0], nil
 }
 func FindUserName(user_id string) (string, error) {
 	var user User
@@ -258,7 +264,11 @@ func FindAllUsers() ([]PublicInfo, error) {
 	if err != nil {
 		return []PublicInfo{}, err
 	}
-	cursor, err := users.Find(context.TODO(), bson.D{{}})
+	mileage_stage := bson.D{{"$lookup", bson.D{{"from", "mileage"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "mileage_requests"}}}}
+	check_stage := bson.D{{"$lookup", bson.D{{"from", "check_requests"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "check_requests"}}}}
+	petty_cash_stage := bson.D{{"$lookup", bson.D{{"from", "petty_cash"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "petty_cash_requests"}}}}
+	pipeline := mongo.Pipeline{mileage_stage, check_stage, petty_cash_stage}
+	cursor, err := users.Aggregate(context.TODO(), pipeline)
 	if err != nil {
 		return []PublicInfo{}, err
 	}

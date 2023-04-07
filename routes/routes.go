@@ -31,11 +31,11 @@ func Use(app *fiber.App) {
 
 	user := api.Group("/user", middleware.Protected(), middleware.AdminRoute)
 	user.Get("/", handlers.GetAllUsers)
-	single_user := user.Group("/:id")
-	single_user.Delete("/deactivate", handlers.DeactivateUser)
-	single_user.Get("/mileage", handlers.UserMileage)
-	single_user.Get("/check", handlers.UserCheckRequests)
-	single_user.Get("/petty_cash", handlers.UserPettyCash)
+	user.Get("/detail", handlers.GetOneUser)
+	user.Delete("/deactivate", handlers.DeactivateUser)
+	user.Get("/mileage", handlers.UserMileage)
+	user.Get("/check", handlers.UserCheckRequests)
+	user.Get("/petty_cash", handlers.UserPettyCash)
 
 	mileage := api.Group("/mileage", middleware.Protected())
 	mileage.Post("/", handlers.CreateMileage)

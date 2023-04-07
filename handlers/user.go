@@ -34,6 +34,10 @@ func GetOneUser(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(user_id_body)
 	}
+	errors := methods.ValidateStruct(*user_id_body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_info, err := models.GetPublicInfo(user_id_body.UserID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -52,6 +56,10 @@ func DeactivateUser(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(user_id_body)
+	}
+	errors := methods.ValidateStruct(*user_id_body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user := new(models.User)
 	user.ID = user_id_body.UserID
@@ -74,6 +82,10 @@ func UserMileage(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(user_id_body)
 	}
+	errors := methods.ValidateStruct(*user_id_body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_info, err := models.GetUserMileage(user_id_body.UserID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -93,6 +105,10 @@ func UserPettyCash(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(user_id_body)
 	}
+	errors := methods.ValidateStruct(*user_id_body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_info, err := models.GetUserPettyCash(user_id_body.UserID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -111,6 +127,10 @@ func UserCheckRequests(c *fiber.Ctx) error {
 		}
 	} else {
 		c.BodyParser(user_id_body)
+	}
+	errors := methods.ValidateStruct(*user_id_body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	user_info, err := models.GetUserCheckRequests(user_id_body.UserID)
 	if err != nil {

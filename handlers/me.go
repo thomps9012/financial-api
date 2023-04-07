@@ -33,7 +33,7 @@ func GetMe(c *fiber.Ctx) error {
 	my_info.Mileage_Requests = my_mileage
 	my_info.Check_Requests = my_checks
 	my_info.Petty_Cash_Requests = my_petty_cash
-	return c.Status(fiber.StatusFound).JSON(responses.MyInfo(my_info))
+	return c.Status(fiber.StatusOK).JSON(responses.MyInfo(my_info))
 }
 func GetMyMileage(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -44,7 +44,7 @@ func GetMyMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.MyMileage(my_mileage))
+	return c.Status(fiber.StatusOK).JSON(responses.MyMileage(my_mileage))
 }
 func GetMyCheckRequests(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -55,7 +55,7 @@ func GetMyCheckRequests(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.MyCheckRequests(my_checks))
+	return c.Status(fiber.StatusOK).JSON(responses.MyCheckRequests(my_checks))
 }
 func GetMyPettyCash(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -63,7 +63,7 @@ func GetMyPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusFound).JSON(responses.MyPettyCash(my_petty_cash))
+	return c.Status(fiber.StatusOK).JSON(responses.MyPettyCash(my_petty_cash))
 }
 func AddVehicle(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -109,6 +109,10 @@ func EditVehicle(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(vehicle_input)
 	}
+	errors := methods.ValidateStruct(*vehicle_input)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
@@ -119,7 +123,7 @@ func EditVehicle(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.EditVehicle(vehicle))
+	return c.Status(fiber.StatusOK).JSON(responses.EditVehicle(vehicle))
 }
 func RemoveVehicle(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -134,6 +138,10 @@ func RemoveVehicle(c *fiber.Ctx) error {
 	} else {
 		c.BodyParser(vehicle_input)
 	}
+	errors := methods.ValidateStruct(*vehicle_input)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
 	user_id := c.Cookies("user_id")
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
@@ -144,5 +152,5 @@ func RemoveVehicle(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.RemoveVehicle(vehicle))
+	return c.Status(fiber.StatusOK).JSON(responses.RemoveVehicle(vehicle))
 }

@@ -41,7 +41,7 @@ var mileageRequests = []interface{}{
 	models.Mileage_Request{
 		ID:                      "c2e85479-827c-4030-80fa-fe0b657b26fa",
 		Grant_ID:                "H79SP082264",
-		User_ID:                 "user1",
+		User_ID:                 "c160b410-e6a8-4cbb-92c2-068112187612",
 		Date:                    time.Now(),
 		Category:                models.IOP,
 		Starting_Location:       "Cleveland",
@@ -63,7 +63,7 @@ var mileageRequests = []interface{}{
 	models.Mileage_Request{
 		ID:                      "3015d932-1b43-467f-8cbc-8d687ed8ef81",
 		Grant_ID:                "H79TI082369",
-		User_ID:                 "user2",
+		User_ID:                 "c160b410-e6a8-4cbb-92c2-068112187612",
 		Date:                    time.Now().Add(-48 * time.Hour),
 		Category:                models.PERKINS,
 		Starting_Location:       "Cleveland",
