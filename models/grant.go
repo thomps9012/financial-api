@@ -34,7 +34,7 @@ func (g *Grant) GetOneGrant() (Grant, error) {
 		return Grant{}, err
 	}
 	grant := new(Grant)
-	filter := bson.D{{"_id", g.ID}}
+	filter := bson.D{{Key: "_id", Value: g.ID}}
 	err = grants_coll.FindOne(context.TODO(), filter).Decode(&grant)
 	if err != nil {
 		return Grant{}, err
@@ -47,7 +47,7 @@ func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
 		return []Mileage_Overview{}, err
 	}
 	data := make([]Mileage_Overview, 0)
-	filter := bson.D{{"grant_id", g.ID}}
+	filter := bson.D{{Key: "grant_id", Value: g.ID}}
 	cursor, err := mileage_coll.Find(context.TODO(), filter)
 	if err != nil {
 		return []Mileage_Overview{}, err
@@ -64,7 +64,7 @@ func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
 		return []Petty_Cash_Overview{}, err
 	}
 	data := make([]Petty_Cash_Overview, 0)
-	filter := bson.D{{"grant_id", g.ID}}
+	filter := bson.D{{Key: "grant_id", Value: g.ID}}
 	cursor, err := petty_cash_coll.Find(context.TODO(), filter)
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
@@ -81,7 +81,7 @@ func (g *Grant) GetGrantCheckRequest() ([]Check_Request_Overview, error) {
 		return []Check_Request_Overview{}, err
 	}
 	data := make([]Check_Request_Overview, 0)
-	filter := bson.D{{"grant_id", g.ID}}
+	filter := bson.D{{Key: "grant_id", Value: g.ID}}
 	cursor, err := check_req_coll.Find(context.TODO(), filter)
 	if err != nil {
 		return []Check_Request_Overview{}, err

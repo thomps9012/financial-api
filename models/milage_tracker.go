@@ -171,18 +171,18 @@ func calculateDistanceBetweenPoints(point_one Location, point_two Location) floa
 	return haver_2 * radius
 }
 
-func (s *Snapped_Points_Response) calculateSnapAPIDistance() float64 {
-	panic("unimplemented function")
-	var running_total float64
-	for i, point := range s.Snapped_Points {
-		if i != len(s.Snapped_Points)-1 {
-			next_point := s.Snapped_Points[i+1].Location
-			distance := calculateDistanceBetweenPoints(point.Location, next_point)
-			running_total += distance
-		}
-	}
-	return running_total
-}
+// func (s *Snapped_Points_Response) calculateSnapAPIDistance() float64 {
+// 	panic("unimplemented function")
+// 	// var running_total float64
+// 	// for i, point := range s.Snapped_Points {
+// 	// 	if i != len(s.Snapped_Points)-1 {
+// 	// 		next_point := s.Snapped_Points[i+1].Location
+// 	// 		distance := calculateDistanceBetweenPoints(point.Location, next_point)
+// 	// 		running_total += distance
+// 	// 	}
+// 	// }
+// 	// return running_total
+// }
 
 func (m *Mileage_Points) CalculatePreSnapDistance() float64 {
 	var running_total float64

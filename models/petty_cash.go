@@ -67,8 +67,8 @@ func GetUserPettyCash(user_id string) ([]Petty_Cash_Overview, error) {
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{"user_id", user_id}}
-	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"amount", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "amount", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
@@ -95,8 +95,8 @@ func GetUserPettyCashDetail(user_id string) ([]Petty_Cash_Request, error) {
 	if err != nil {
 		return []Petty_Cash_Request{}, err
 	}
-	filter := bson.D{{"user_id", user_id}}
-	projection := bson.D{{"action_history", 0}}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "action_history", Value: 0}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
@@ -158,10 +158,13 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{"_id", ep.ID}}
-	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}, {"last_user_before_reject", 1}})
+	filter := bson.D{{Key: "_id", Value: ep.ID}}
+	opts := options.FindOne().SetProjection(bson.D{{Key: "action_history", Value: 1}, {Key: "current_status", Value: 1}, {Key: "current_user", Value: 1}, {Key: "last_user_before_reject", Value: 1}})
 	request := new(Petty_Cash_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
+	if err != nil {
+		return Petty_Cash_Overview{}, err
+	}
 	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
 		edit_action := Action{
 			ID:         uuid.NewString(),
@@ -221,11 +224,11 @@ func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user st
 	}
 	var update bson.D
 	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
-		update = bson.D{{"$set", bson.D{{"grant_id", ep.Grant_ID}, {"date", ep.Date}, {"category", ep.Category}, {"amount", ep.Amount}, {"description", ep.Description}, {"receipts", ep.Receipts}, {"current_status", new_status}, {"current_user", new_user}, {"last_user_before_reject", "null"}}}, {"$push", bson.D{{"action_history", action}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "grant_id", Value: ep.Grant_ID}, {Key: "date", Value: ep.Date}, {Key: "category", Value: ep.Category}, {Key: "amount", Value: ep.Amount}, {Key: "description", Value: ep.Description}, {Key: "receipts", Value: ep.Receipts}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}, {Key: "last_user_before_reject", Value: "null"}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
 	} else {
-		update = bson.D{{"$set", bson.D{{"grant_id", ep.Grant_ID}, {"date", ep.Date}, {"category", ep.Category}, {"amount", ep.Amount}, {"description", ep.Description}, {"receipts", ep.Receipts}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "grant_id", Value: ep.Grant_ID}, {Key: "date", Value: ep.Date}, {Key: "category", Value: ep.Category}, {Key: "amount", Value: ep.Amount}, {Key: "description", Value: ep.Description}, {Key: "receipts", Value: ep.Receipts}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
 	}
-	filter := bson.D{{"_id", ep.ID}}
+	filter := bson.D{{Key: "_id", Value: ep.ID}}
 	request := new(Petty_Cash_Request)
 	upsert := true
 	after := options.After
@@ -244,11 +247,19 @@ func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{"_id", request_id}}
+	filter := bson.D{{Key: "_id", Value: request_id}}
 	request_info := new(Petty_Cash_Overview)
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{
+			ID:             request_id,
+			User_ID:        "",
+			Amount:         0,
+			Date:           time.Time{},
+			Current_User:   "",
+			Current_Status: "",
+			Is_Active:      false,
+		}, err
 	}
 	current_user_id := request_info.Current_User
 	user_name, err := FindUserName(current_user_id)
@@ -264,7 +275,7 @@ func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
 	if err != nil {
 		return Petty_Cash_Request{}, err
 	}
-	filter := bson.D{{"_id", petty_cash_id}}
+	filter := bson.D{{Key: "_id", Value: petty_cash_id}}
 	request_detail := new(Petty_Cash_Request)
 	err = collection.FindOne(context.TODO(), filter).Decode(&request_detail)
 	if err != nil {
@@ -277,7 +288,7 @@ func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{"_id", c.ID}}
+	filter := bson.D{{Key: "_id", Value: c.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&c)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
@@ -290,7 +301,7 @@ func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 		return Petty_Cash_Overview{}, err
 	}
 	c.Action_History = append(c.Action_History, new_action.Action)
-	update := bson.D{{"$set", bson.D{{"current_user", new_action.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", new_action.Action.Status}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	response := new(Petty_Cash_Overview)
 	upsert := true
 	after := options.After
@@ -310,7 +321,7 @@ func (c *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{"_id", c.ID}}
+	filter := bson.D{{Key: "_id", Value: c.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&c)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
@@ -320,7 +331,7 @@ func (c *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error)
 	}
 	reject_info := RejectRequest(c.User_ID, c.Current_User)
 	c.Action_History = append(c.Action_History, reject_info.Action)
-	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Petty_Cash_Overview)
 	upsert := true
 	after := options.After
@@ -347,8 +358,8 @@ func MonthlyPettyCash(month int, year int) ([]Petty_Cash_Overview, error) {
 	response := make([]Petty_Cash_Overview, 0)
 	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
 	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
-	filter := bson.D{{"date", bson.D{{"$lte", end_date}, {"$gte", start_date}}}}
-	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"amount", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	filter := bson.D{{Key: "date", Value: bson.D{{Key: "$lte", Value: end_date}, {Key: "$gte", Value: start_date}}}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "amount", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {

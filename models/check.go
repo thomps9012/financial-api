@@ -83,8 +83,8 @@ func GetUserCheckRequests(user_id string) ([]Check_Request_Overview, error) {
 	if err != nil {
 		return []Check_Request_Overview{}, err
 	}
-	filter := bson.D{{"user_id", user_id}}
-	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"order_total", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "order_total", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
@@ -111,8 +111,8 @@ func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
 	if err != nil {
 		return []Check_Request{}, err
 	}
-	filter := bson.D{{"user_id", user_id}}
-	projection := bson.D{{"action_history", 0}}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "action_history", Value: 0}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
@@ -181,10 +181,13 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
-	filter := bson.D{{"_id", ec.ID}}
-	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}, {"last_user_before_reject", 1}})
+	filter := bson.D{{Key: "_id", Value: ec.ID}}
+	opts := options.FindOne().SetProjection(bson.D{{Key: "action_history", Value: 1}, {Key: "current_status", Value: 1}, {Key: "current_user", Value: 1}, {Key: "last_user_before_reject", Value: 1}})
 	request := new(Check_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
+	if err != nil {
+		return Check_Request_Overview{}, err
+	}
 	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
 		edit_action := Action{
 			ID:         uuid.NewString(),
@@ -193,6 +196,9 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 			Created_At: time.Now(),
 		}
 		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
 		current_user, err := FindUserName(res.Current_User)
 		if err != nil {
 			return Check_Request_Overview{}, err
@@ -218,6 +224,9 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 			Created_At: time.Now(),
 		}
 		res, err := ec.SaveEdits(edit_action, "PENDING", request.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
 		current_user, err := FindUserName(res.Current_User)
 		if err != nil {
 			return Check_Request_Overview{}, err
@@ -252,11 +261,11 @@ func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user s
 	}
 	var update bson.D
 	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
-		update = bson.D{{"$set", bson.D{{"grant_id", ec.Grant_ID}, {"date", ec.Date}, {"category", ec.Category}, {"vendor", ec.Vendor}, {"description", ec.Description}, {"purchases", ec.Purchases}, {"receipts", ec.Receipts}, {"credit_card", ec.Credit_Card}, {"order_total", new_total}, {"current_status", new_status}, {"current_user", new_user}, {"last_user_before_reject", "null"}}}, {"$push", bson.D{{"action_history", action}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "grant_id", Value: ec.Grant_ID}, {Key: "date", Value: ec.Date}, {Key: "category", Value: ec.Category}, {Key: "vendor", Value: ec.Vendor}, {Key: "description", Value: ec.Description}, {Key: "purchases", Value: ec.Purchases}, {Key: "receipts", Value: ec.Receipts}, {Key: "credit_card", Value: ec.Credit_Card}, {Key: "order_total", Value: new_total}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}, {Key: "last_user_before_reject", Value: "null"}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
 	} else {
-		update = bson.D{{"$set", bson.D{{"grant_id", ec.Grant_ID}, {"date", ec.Date}, {"category", ec.Category}, {"vendor", ec.Vendor}, {"description", ec.Description}, {"purchases", ec.Purchases}, {"receipts", ec.Receipts}, {"credit_card", ec.Credit_Card}, {"order_total", new_total}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "grant_id", Value: ec.Grant_ID}, {Key: "date", Value: ec.Date}, {Key: "category", Value: ec.Category}, {Key: "vendor", Value: ec.Vendor}, {Key: "description", Value: ec.Description}, {Key: "purchases", Value: ec.Purchases}, {Key: "receipts", Value: ec.Receipts}, {Key: "credit_card", Value: ec.Credit_Card}, {Key: "order_total", Value: new_total}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
 	}
-	filter := bson.D{{"_id", ec.ID}}
+	filter := bson.D{{Key: "_id", Value: ec.ID}}
 	check_req := new(Check_Request)
 	upsert := true
 	after := options.After
@@ -275,7 +284,7 @@ func DeleteCheckRequest(request_id string) (Check_Request_Overview, error) {
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
-	filter := bson.D{{"_id", request_id}}
+	filter := bson.D{{Key: "_id", Value: request_id}}
 	request_info := new(Check_Request_Overview)
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
@@ -295,7 +304,7 @@ func CheckRequestDetail(check_id string) (Check_Request, error) {
 	if err != nil {
 		return Check_Request{}, err
 	}
-	filter := bson.D{{"_id", check_id}}
+	filter := bson.D{{Key: "_id", Value: check_id}}
 	request_detail := new(Check_Request)
 	err = collection.FindOne(context.TODO(), filter).Decode(&request_detail)
 	if err != nil {
@@ -308,7 +317,7 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
-	filter := bson.D{{"_id", c.ID}}
+	filter := bson.D{{Key: "_id", Value: c.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&c)
 	if err != nil {
 		return Check_Request_Overview{}, err
@@ -321,7 +330,7 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 		return Check_Request_Overview{}, err
 	}
 	c.Action_History = append(c.Action_History, new_action.Action)
-	update := bson.D{{"$set", bson.D{{"current_user", new_action.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", new_action.Action.Status}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	response := new(Check_Request_Overview)
 	upsert := true
 	after := options.After
@@ -341,7 +350,7 @@ func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
-	filter := bson.D{{"_id", c.ID}}
+	filter := bson.D{{Key: "_id", Value: c.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&c)
 	if err != nil {
 		return Check_Request_Overview{}, err
@@ -351,7 +360,7 @@ func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
 	}
 	reject_info := RejectRequest(c.User_ID, c.Current_User)
 	c.Action_History = append(c.Action_History, reject_info.Action)
-	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Check_Request_Overview)
 	upsert := true
 	after := options.After
@@ -378,8 +387,8 @@ func MonthlyCheckRequests(month int, year int) ([]Check_Request_Overview, error)
 	response := make([]Check_Request_Overview, 0)
 	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
 	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
-	filter := bson.D{{"date", bson.D{{"$lte", end_date}, {"$gte", start_date}}}}
-	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"order_total", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	filter := bson.D{{Key: "date", Value: bson.D{{Key: "$lte", Value: end_date}, {Key: "$gte", Value: start_date}}}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "order_total", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {

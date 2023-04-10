@@ -81,8 +81,8 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	filter := bson.D{{"user_id", user_id}}
-	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"reimbursement", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "reimbursement", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
@@ -105,9 +105,12 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 }
 func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
 	collection, err := database.Use("mileage_requests")
+	if err != nil {
+		return []Mileage_Request{}, err
+	}
 	requests := make([]Mileage_Request, 0)
-	filter := bson.D{{"user_id", user_id}}
-	projection := bson.D{{"action_history", 0}}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "action_history", Value: 0}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
@@ -176,8 +179,8 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	filter := bson.D{{"_id", em.ID}}
-	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}, {"last_user_before_reject", 1}})
+	filter := bson.D{{Key: "_id", Value: em.ID}}
+	opts := options.FindOne().SetProjection(bson.D{{Key: "action_history", Value: 1}, {Key: "current_status", Value: 1}, {Key: "current_user", Value: 1}, {Key: "last_user_before_reject", Value: 1}})
 	request := new(Mileage_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
 	if err != nil {
@@ -244,11 +247,11 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	new_reimbursement := *em.Tolls + *em.Parking + float64(new_mileage)*current_mileage_rate
 	var update bson.D
 	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
-		update = bson.D{{"$set", bson.D{{"reimbursement", new_reimbursement}, {"grant_id", em.Grant_ID}, {"date", em.Date}, {"category", em.Category}, {"starting_location", em.Starting_Location}, {"destination", em.Destination}, {"trip_purpose", em.Trip_Purpose}, {"start_odometer", em.Start_Odometer}, {"end_odometer", em.End_Odometer}, {"tolls", em.Tolls}, {"parking", em.Parking}, {"current_status", new_status}, {"current_user", new_user}, {"last_user_before_reject", "null"}}}, {"$push", bson.D{{"action_history", action}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "reimbursement", Value: new_reimbursement}, {Key: "grant_id", Value: em.Grant_ID}, {Key: "date", Value: em.Date}, {Key: "category", Value: em.Category}, {Key: "starting_location", Value: em.Starting_Location}, {Key: "destination", Value: em.Destination}, {Key: "trip_purpose", Value: em.Trip_Purpose}, {Key: "start_odometer", Value: em.Start_Odometer}, {Key: "end_odometer", Value: em.End_Odometer}, {Key: "tolls", Value: em.Tolls}, {Key: "parking", Value: em.Parking}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}, {Key: "last_user_before_reject", Value: "null"}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
 	} else {
-		update = bson.D{{"$set", bson.D{{"reimbursement", new_reimbursement}, {"grant_id", em.Grant_ID}, {"date", em.Date}, {"category", em.Category}, {"starting_location", em.Starting_Location}, {"destination", em.Destination}, {"trip_purpose", em.Trip_Purpose}, {"start_odometer", em.Start_Odometer}, {"end_odometer", em.End_Odometer}, {"tolls", em.Tolls}, {"parking", em.Parking}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "reimbursement", Value: new_reimbursement}, {Key: "grant_id", Value: em.Grant_ID}, {Key: "date", Value: em.Date}, {Key: "category", Value: em.Category}, {Key: "starting_location", Value: em.Starting_Location}, {Key: "destination", Value: em.Destination}, {Key: "trip_purpose", Value: em.Trip_Purpose}, {Key: "start_odometer", Value: em.Start_Odometer}, {Key: "end_odometer", Value: em.End_Odometer}, {Key: "tolls", Value: em.Tolls}, {Key: "parking", Value: em.Parking}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
 	}
-	filter := bson.D{{"_id", em.ID}}
+	filter := bson.D{{Key: "_id", Value: em.ID}}
 	mileage_req := new(Mileage_Request)
 	upsert := true
 	after := options.After
@@ -267,7 +270,7 @@ func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	filter := bson.D{{"_id", mileage_id}}
+	filter := bson.D{{Key: "_id", Value: mileage_id}}
 	request_info := new(Mileage_Overview)
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
@@ -287,7 +290,7 @@ func MileageDetail(mileage_id string) (Mileage_Request, error) {
 	if err != nil {
 		return Mileage_Request{}, err
 	}
-	filter := bson.D{{"_id", mileage_id}}
+	filter := bson.D{{Key: "_id", Value: mileage_id}}
 	request_detail := new(Mileage_Request)
 	err = collection.FindOne(context.TODO(), filter).Decode(&request_detail)
 	if err != nil {
@@ -300,7 +303,7 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	filter := bson.D{{"_id", m.ID}}
+	filter := bson.D{{Key: "_id", Value: m.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&m)
 	if err != nil {
 		return Mileage_Overview{}, err
@@ -313,7 +316,7 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 		return Mileage_Overview{}, err
 	}
 	m.Action_History = append(m.Action_History, new_action.Action)
-	update := bson.D{{"$set", bson.D{{"current_user", new_action.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", new_action.Action.Status}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	response := new(Mileage_Overview)
 	upsert := true
 	after := options.After
@@ -333,7 +336,7 @@ func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	filter := bson.D{{"_id", m.ID}}
+	filter := bson.D{{Key: "_id", Value: m.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&m)
 	if err != nil {
 		return Mileage_Overview{}, err
@@ -343,7 +346,7 @@ func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 	}
 	reject_info := RejectRequest(m.User_ID, m.Current_User)
 	m.Action_History = append(m.Action_History, reject_info.Action)
-	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Mileage_Overview)
 	upsert := true
 	after := options.After
@@ -370,8 +373,8 @@ func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
 	response := make([]Mileage_Overview, 0)
 	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.UTC)
-	filter := bson.D{{"date", bson.D{{"$lte", end_date}, {"$gte", start_date}}}}
-	projection := bson.D{{"_id", 1}, {"user_id", 1}, {"date", 1}, {"reimbursement", 1}, {"current_user", 1}, {"current_status", 1}, {"is_active", 1}}
+	filter := bson.D{{Key: "date", Value: bson.D{{Key: "$lte", Value: end_date}, {Key: "$gte", Value: start_date}}}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "reimbursement", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {

@@ -20,7 +20,7 @@ type UserLogin struct {
 
 type LoginRes struct {
 	UserID      string   `json:"user_id"`
-	Token       string   `json:'token"`
+	Token       string   `json:"token"`
 	Admin       bool     `json:"admin" bson:"admin"`
 	Permissions []string `json:"permissions" bson:"permissions"`
 }
@@ -75,7 +75,7 @@ func (ul *UserLogin) Exists() (bool, error) {
 		return false, err
 	}
 	filter := bson.D{{Key: "_id", Value: ul.ID}}
-	count, err := users.CountDocuments(nil, filter)
+	count, err := users.CountDocuments(context.TODO(), filter)
 	if err != nil {
 		return false, err
 	}
@@ -177,12 +177,15 @@ func GetPublicInfo(user_id string) (PublicInfo, error) {
 		return PublicInfo{}, err
 	}
 	user_info := make([]PublicInfo, 0)
-	filter := bson.D{{"$match", bson.D{{"_id", user_id}}}}
-	mileage_stage := bson.D{{"$lookup", bson.D{{"from", "mileage"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "mileage_requests"}}}}
-	check_stage := bson.D{{"$lookup", bson.D{{"from", "check_requests"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "check_requests"}}}}
-	petty_cash_stage := bson.D{{"$lookup", bson.D{{"from", "petty_cash"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "petty_cash_requests"}}}}
+	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: user_id}}}}
+	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
+	check_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "check_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "check_requests"}}}}
+	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
 	pipeline := mongo.Pipeline{filter, mileage_stage, check_stage, petty_cash_stage}
 	cursor, err := users.Aggregate(context.TODO(), pipeline)
+	if err != nil {
+		return PublicInfo{}, err
+	}
 	err = cursor.All(context.TODO(), &user_info)
 	if err != nil {
 		return PublicInfo{}, err
@@ -195,10 +198,13 @@ func FindUserName(user_id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filter := bson.D{{"_id", user_id}}
-	projection := bson.D{{"name", 1}}
+	filter := bson.D{{Key: "_id", Value: user_id}}
+	projection := bson.D{{Key: "name", Value: 1}}
 	opts := options.FindOne().SetProjection(projection)
 	err = users.FindOne(context.TODO(), filter, opts).Decode(&user)
+	if err != nil {
+		return "", err
+	}
 	return user.Name, nil
 }
 func (u *User) AddVehicle(name string, description string) (Vehicle, error) {
@@ -210,9 +216,9 @@ func (u *User) AddVehicle(name string, description string) (Vehicle, error) {
 	new_vehicle.ID = uuid.NewString()
 	new_vehicle.Name = name
 	new_vehicle.Description = description
-	filter := bson.D{{"_id", u.ID}}
-	projection := bson.D{{"vehicles", 1}}
-	update := bson.D{{"$push", bson.D{{"vehicles", new_vehicle}}}}
+	filter := bson.D{{Key: "_id", Value: u.ID}}
+	projection := bson.D{{Key: "vehicles", Value: 1}}
+	update := bson.D{{Key: "$push", Value: bson.D{{Key: "vehicles", Value: new_vehicle}}}}
 	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.After)
 	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
 	if err != nil {
@@ -225,9 +231,9 @@ func (u *User) EditVehicle(new_vehicle Vehicle) (Vehicle, error) {
 	if err != nil {
 		return Vehicle{}, err
 	}
-	filter := bson.D{{"_id", u.ID}}
-	projection := bson.D{{"vehicles", 1}}
-	update := bson.D{{"$pull", bson.D{{"vehicles", bson.D{{"_id", new_vehicle.ID}}}}}, {"$push", bson.D{{"vehicles", new_vehicle}}}}
+	filter := bson.D{{Key: "_id", Value: u.ID}}
+	projection := bson.D{{Key: "vehicles", Value: 1}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "vehicles", Value: bson.D{{Key: "_id", Value: new_vehicle.ID}}}}}, {Key: "$push", Value: bson.D{{Key: "vehicles", Value: new_vehicle}}}}
 	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.After)
 	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
 	if err != nil {
@@ -240,9 +246,9 @@ func (u *User) RemoveVehicle(vehicle_id string) (Vehicle, error) {
 	if err != nil {
 		return Vehicle{}, err
 	}
-	filter := bson.D{{"_id", u.ID}}
-	projection := bson.D{{"vehicles", 1}}
-	update := bson.D{{"$pull", bson.D{{"vehicles", bson.D{{"_id", vehicle_id}}}}}}
+	filter := bson.D{{Key: "_id", Value: u.ID}}
+	projection := bson.D{{Key: "vehicles", Value: 1}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "vehicles", Value: bson.D{{Key: "_id", Value: vehicle_id}}}}}}
 	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.Before)
 	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
 	if err != nil {
@@ -263,9 +269,9 @@ func FindAllUsers() ([]PublicInfo, error) {
 	if err != nil {
 		return []PublicInfo{}, err
 	}
-	mileage_stage := bson.D{{"$lookup", bson.D{{"from", "mileage"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "mileage_requests"}}}}
-	check_stage := bson.D{{"$lookup", bson.D{{"from", "check_requests"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "check_requests"}}}}
-	petty_cash_stage := bson.D{{"$lookup", bson.D{{"from", "petty_cash"}, {"localField", "_id"}, {"foreignField", "user_id"}, {"as", "petty_cash_requests"}}}}
+	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
+	check_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "check_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "check_requests"}}}}
+	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
 	pipeline := mongo.Pipeline{mileage_stage, check_stage, petty_cash_stage}
 	cursor, err := users.Aggregate(context.TODO(), pipeline)
 	if err != nil {
@@ -284,8 +290,8 @@ func (u *User) Deactivate() (PublicInfo, error) {
 		return PublicInfo{}, err
 	}
 	user_info := new(PublicInfo)
-	filter := bson.D{{"_id", u.ID}}
-	update := bson.D{{"$set", bson.D{{"is_active", false}}}}
+	filter := bson.D{{Key: "_id", Value: u.ID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "is_active", Value: false}}}}
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&user_info)
 	if err != nil {
