@@ -148,7 +148,7 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	new_request.Created_At = time.Now()
 	new_request.Last_User_Before_Reject = bson.TypeNull.String()
 	new_request.Is_Active = true
-	first_action, _ := FirstActions("check_request", new_request.ID, user_id)
+	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
 	current_user := methods.NewRequestUser("check_request", "nil")
 	new_request.Current_User = current_user.ID
@@ -187,12 +187,10 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
 	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
 		edit_action := Action{
-			ID:           uuid.NewString(),
-			Request_ID:   ec.ID,
-			Request_Type: MILEAGE,
-			User:         ec.User_ID,
-			Status:       "REJECTED_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       ec.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
 		}
 		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
 		current_user, err := FindUserName(res.Current_User)
@@ -214,12 +212,10 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 	}
 	if request.Current_Status == "PENDING" {
 		edit_action := Action{
-			ID:           uuid.NewString(),
-			Request_ID:   ec.ID,
-			Request_Type: MILEAGE,
-			User:         ec.User_ID,
-			Status:       "PENDING_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       ec.User_ID,
+			Status:     "PENDING_EDIT",
+			Created_At: time.Now(),
 		}
 		res, err := ec.SaveEdits(edit_action, "PENDING", request.Current_User)
 		current_user, err := FindUserName(res.Current_User)
@@ -320,7 +316,7 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 	if c.Current_User != user_id {
 		return Check_Request_Overview{}, errors.New("you're attempting to approve a request for which you are unauthorized")
 	}
-	new_action, err := ApproveRequest("check_request", c.ID, c.Current_User, c.Category, c.Current_Status)
+	new_action, err := ApproveRequest("check_request", c.Current_User, c.Category, c.Current_Status)
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
@@ -353,7 +349,7 @@ func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
 	if c.Current_User != user_id {
 		return Check_Request_Overview{}, errors.New("you're attempting to reject a request for which you are unauthorized")
 	}
-	reject_info := RejectRequest("check_request", c.ID, c.User_ID, c.Current_User)
+	reject_info := RejectRequest(c.User_ID, c.Current_User)
 	c.Action_History = append(c.Action_History, reject_info.Action)
 	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Check_Request_Overview)

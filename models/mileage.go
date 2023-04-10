@@ -146,7 +146,7 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	new_request.Created_At = time.Now()
 	new_request.Last_User_Before_Reject = bson.TypeNull.String()
 	new_request.Is_Active = true
-	first_action, _ := FirstActions("mileage", new_request.ID, user_id)
+	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
 	current_user := methods.NewRequestUser("mileage", "nil")
 	new_request.Current_User = current_user.ID
@@ -185,12 +185,10 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	}
 	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
 		edit_action := Action{
-			ID:           uuid.NewString(),
-			Request_ID:   em.ID,
-			Request_Type: MILEAGE,
-			User:         em.User_ID,
-			Status:       "REJECTED_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       em.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
 		}
 		res, err := em.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
 		if err != nil {
@@ -212,12 +210,10 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	}
 	if request.Current_Status == "PENDING" {
 		edit_action := Action{
-			ID:           uuid.NewString(),
-			Request_ID:   em.ID,
-			Request_Type: MILEAGE,
-			User:         em.User_ID,
-			Status:       "PENDING_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       em.User_ID,
+			Status:     "PENDING_EDIT",
+			Created_At: time.Now(),
 		}
 		res, err := em.SaveEdits(edit_action, "PENDING", request.Current_User)
 		if err != nil {
@@ -312,7 +308,7 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 	if m.Current_User != user_id {
 		return Mileage_Overview{}, errors.New("you are attempting to approve a request for which you are unauthorized")
 	}
-	new_action, err := ApproveRequest("mileage", m.ID, m.Current_User, m.Category, m.Current_Status)
+	new_action, err := ApproveRequest("mileage", m.Current_User, m.Category, m.Current_Status)
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -345,7 +341,7 @@ func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 	if m.Current_User != user_id {
 		return Mileage_Overview{}, errors.New("you are attempting to reject a request for which you are unauthorized")
 	}
-	reject_info := RejectRequest("mileage", m.ID, m.User_ID, m.Current_User)
+	reject_info := RejectRequest(m.User_ID, m.Current_User)
 	m.Action_History = append(m.Action_History, reject_info.Action)
 	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Mileage_Overview)

@@ -36,32 +36,9 @@ func CreatePettyCash(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusCreated).JSON(responses.CreatePettyCash(res))
 }
-func MonthlyPettyCash(c *fiber.Ctx) error {
-	var mr *methods.MalformedRequest
-	monthly_request := new(models.MonthlyRequestInput)
-	err := methods.DecodeJSONBody(c, monthly_request)
-	if err != nil {
-		if errors.As(err, &mr) {
-			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
-		} else {
-			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-		}
-	} else {
-		c.BodyParser(monthly_request)
-	}
-	errors := methods.ValidateStruct(*monthly_request)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
-	}
-	response, err := models.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-	}
-	return c.Status(fiber.StatusOK).JSON(responses.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year, response))
-}
 func PettyCashDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
-	find_request_input := new(models.FindCheckInput)
+	find_request_input := new(models.FindPettyCashInput)
 	err := methods.DecodeJSONBody(c, find_request_input)
 	if err != nil {
 		if errors.As(err, &mr) {
@@ -80,7 +57,7 @@ func PettyCashDetail(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.PettyCashDetails(find_request_input.CheckID)
+	data, err := models.PettyCashDetails(find_request_input.PettyCashID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
@@ -163,7 +140,7 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 	}
 	request := new(models.Petty_Cash_Request)
 	request.ID = approve_info.RequestID
-	data, err := request.Approve()
+	data, err := request.Approve(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
@@ -192,9 +169,32 @@ func RejectPettyCash(c *fiber.Ctx) error {
 	}
 	request := new(models.Petty_Cash_Request)
 	request.ID = reject_info.RequestID
-	data, err := request.Reject()
+	data, err := request.Reject(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.RejectPettyCash(data))
+}
+func MonthlyPettyCash(c *fiber.Ctx) error {
+	var mr *methods.MalformedRequest
+	monthly_request := new(models.MonthlyRequestInput)
+	err := methods.DecodeJSONBody(c, monthly_request)
+	if err != nil {
+		if errors.As(err, &mr) {
+			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		}
+	} else {
+		c.BodyParser(monthly_request)
+	}
+	errors := methods.ValidateStruct(*monthly_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
+	response, err := models.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	return c.Status(fiber.StatusOK).JSON(responses.MonthlyPettyCash(int(monthly_request.Month), monthly_request.Year, response))
 }

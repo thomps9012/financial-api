@@ -1,7 +1,11 @@
 package models
 
 import (
+	"context"
+	database "financial-api/db"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Status string
@@ -70,21 +74,6 @@ type Request_Info_With_Action_History struct {
 	Action_History []Action     `json:"action_history" bson:"action_history"`
 }
 
-type ErrorRequestInfo struct {
-	Date     time.Time `json:"date" bson:"date"`
-	Category string    `json:"category" bson:"category"`
-	Query    string    `json:"query" bson:"query"`
-}
-type ErrorLog struct {
-	ID           string           `json:"id" bson:"_id"`
-	UserID       string           `json:"user_id" bson:"user_id"`
-	UserName     string           `json:"user_name" bson:"user_name"`
-	UserEmail    string           `json:"user_email" bson:"user_email"`
-	ErrorMessage string           `json:"error_message" bson:"error_message"`
-	ErrorPath    string           `json:"error_path" bson:"error_path"`
-	RequestInfo  ErrorRequestInfo `json:"request_info" bson:"request_info"`
-}
-
 type MonthlyRequestInput struct {
 	Month time.Month `json:"month" bson:"month" validate:"required"`
 	Year  int        `json:"year" bson:"year" validate:"required"`
@@ -92,6 +81,39 @@ type MonthlyRequestInput struct {
 
 type ApproveRejectRequest struct {
 	RequestID string `json:"request_id" bson:"request_id" validate:"required"`
+}
+
+type ErrorLog struct {
+	ID           string    `json:"id" bson:"_id"`
+	UserID       string    `json:"user_id" bson:"user_id" validate:"required"`
+	Error        string    `json:"error" bson:"error" validate:"required"`
+	ErrorPath    string    `json:"error_path" bson:"error_path" validate:"required"`
+	ErrorMessage string    `json:"error_message" bson:"error_message" validate:"required"`
+	CreatedAt    time.Time `json:"created_at" bson:"created_at"`
+}
+
+type ErrorLogOverview struct {
+	ID           string    `json:"id" bson:"_id"`
+	ErrorMessage string    `json:"error_message" bson:"error_message" validate:"required"`
+	CreatedAt    time.Time `json:"created_at" bson:"created_at"`
+}
+
+func (el *ErrorLog) Save() (ErrorLogOverview, error) {
+	el.ID = uuid.NewString()
+	el.CreatedAt = time.Now()
+	collection, err := database.Use("error_logs")
+	if err != nil {
+		return ErrorLogOverview{}, err
+	}
+	_, err = collection.InsertOne(context.TODO(), el)
+	if err != nil {
+		return ErrorLogOverview{}, err
+	}
+	return ErrorLogOverview{
+		ID:           el.ID,
+		ErrorMessage: el.ErrorMessage,
+		CreatedAt:    el.CreatedAt,
+	}, nil
 }
 
 // func (e *ErrorLog) Create() (string, error) {

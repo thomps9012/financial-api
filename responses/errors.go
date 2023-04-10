@@ -2,6 +2,7 @@ package responses
 
 import (
 	"financial-api/methods"
+	"financial-api/models"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -78,11 +79,11 @@ func InvalidEmail() fiber.Map {
 	}
 }
 
-func LogError() fiber.Map {
+func LogError(data models.ErrorLogOverview) fiber.Map {
 	return fiber.Map{
 		"status":  "INTERNAL SERVER ERROR",
 		"code":    fiber.StatusInternalServerError,
 		"message": "Your error has been logged in the system @ " + methods.TimeNowFormat(),
-		"data":    nil,
+		"data":    data,
 	}
 }

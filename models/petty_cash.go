@@ -33,7 +33,6 @@ type Petty_Cash_Overview struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
 	Amount         float64   `json:"amount" bson:"amount"`
-	Grant          Grant     `json:"grant" bson:"grant"`
 	Date           time.Time `json:"date" bson:"date"`
 	Current_User   string    `json:"current_user" bson:"current_user"`
 	Current_Status string    `json:"current_status" bson:"current_status"`
@@ -131,7 +130,7 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	new_request.Created_At = time.Now()
 	new_request.Last_User_Before_Reject = bson.TypeNull.String()
 	new_request.Is_Active = true
-	first_action, _ := FirstActions("petty_cash", new_request.ID, user_id)
+	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
 	current_user := methods.NewRequestUser("petty_cash", string(pi.Category))
 	new_request.Current_User = current_user.ID
@@ -160,52 +159,85 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		return Petty_Cash_Overview{}, err
 	}
 	filter := bson.D{{"_id", ep.ID}}
-	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}})
+	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}, {"last_user_before_reject", 1}})
 	request := new(Petty_Cash_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
-	if request.Current_Status == "REJECTED" {
+	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
 		edit_action := Action{
-			ID:           uuid.NewString(),
-			Request_ID:   ep.ID,
-			Request_Type: MILEAGE,
-			User:         ep.User_ID,
-			Status:       "REJECTED_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       ep.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
 		}
-		err := ep.SaveEdits(edit_action, "REJECTED_EDIT", request.Last_User_Before_Reject)
+		res, err := ep.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
 		if err != nil {
 			return Petty_Cash_Overview{}, err
 		}
+		username, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
+		return Petty_Cash_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Amount:         res.Amount,
+			Date:           res.Date,
+			Current_User:   username,
+			Current_Status: res.Current_Status,
+			Is_Active:      res.Is_Active,
+		}, nil
 	}
 	if request.Current_Status == "PENDING" {
 		edit_action := Action{
-			ID:           uuid.NewString(),
-			Request_ID:   ep.ID,
-			Request_Type: MILEAGE,
-			User:         ep.User_ID,
-			Status:       "PENDING_EDIT",
-			Created_At:   time.Now(),
+			ID:         uuid.NewString(),
+			User:       ep.User_ID,
+			Status:     "PENDING_EDIT",
+			Created_At: time.Now(),
 		}
-		err := ep.SaveEdits(edit_action, "PENDING", request.Current_User)
+		res, err := ep.SaveEdits(edit_action, "PENDING", request.Current_User)
 		if err != nil {
 			return Petty_Cash_Overview{}, err
 		}
+		username, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
+		return Petty_Cash_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Amount:         res.Amount,
+			Date:           res.Date,
+			Current_User:   username,
+			Current_Status: res.Current_Status,
+			Is_Active:      res.Is_Active,
+		}, nil
 	}
 	return Petty_Cash_Overview{}, errors.New("this request is currently being processed by the finance team")
 }
-func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) error {
+func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) (Petty_Cash_Request, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return err
+		return Petty_Cash_Request{}, err
 	}
-	update := bson.D{{"$set", bson.D{{"grant_id", ep.Grant_ID}, {"date", ep.Date}, {"category", ep.Category}, {"amount", ep.Amount}, {"description", ep.Description}, {"receipts", ep.Receipts}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+	var update bson.D
+	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
+		update = bson.D{{"$set", bson.D{{"grant_id", ep.Grant_ID}, {"date", ep.Date}, {"category", ep.Category}, {"amount", ep.Amount}, {"description", ep.Description}, {"receipts", ep.Receipts}, {"current_status", new_status}, {"current_user", new_user}, {"last_user_before_reject", "null"}}}, {"$push", bson.D{{"action_history", action}}}}
+	} else {
+		update = bson.D{{"$set", bson.D{{"grant_id", ep.Grant_ID}, {"date", ep.Date}, {"category", ep.Category}, {"amount", ep.Amount}, {"description", ep.Description}, {"receipts", ep.Receipts}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+	}
 	filter := bson.D{{"_id", ep.ID}}
-	mileage_req := new(Petty_Cash_Request)
-	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&mileage_req)
-	if err != nil {
-		return err
+	request := new(Petty_Cash_Request)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		Upsert:         &upsert,
+		ReturnDocument: &after,
 	}
-	return nil
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&request)
+	if err != nil {
+		return Petty_Cash_Request{}, err
+	}
+	return *request, nil
 }
 func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")
@@ -240,7 +272,7 @@ func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
 	}
 	return *request_detail, nil
 }
-func (c *Petty_Cash_Request) Approve() (Petty_Cash_Overview, error) {
+func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
@@ -250,21 +282,30 @@ func (c *Petty_Cash_Request) Approve() (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	new_action, err := ApproveRequest("petty_cash", c.ID, c.Current_User, c.Category, c.Current_Status)
+	if user_id != c.Current_User {
+		return Petty_Cash_Overview{}, errors.New("you are attempting to approve a request for which you are not authorized")
+	}
+	new_action, err := ApproveRequest("petty_cash", c.Current_User, c.Category, c.Current_Status)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
 	c.Action_History = append(c.Action_History, new_action.Action)
 	update := bson.D{{"$set", bson.D{{"current_user", new_action.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", new_action.Action.Status}}}}
 	response := new(Petty_Cash_Overview)
-	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&response)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		Upsert:         &upsert,
+		ReturnDocument: &after,
+	}
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
 	response.Current_User = new_action.NewUser.Name
 	return *response, nil
 }
-func (c *Petty_Cash_Request) Reject() (Petty_Cash_Overview, error) {
+func (c *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
@@ -274,11 +315,20 @@ func (c *Petty_Cash_Request) Reject() (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	reject_info := RejectRequest("petty_cash", c.ID, c.User_ID, c.Current_User)
+	if user_id != c.Current_User {
+		return Petty_Cash_Overview{}, errors.New("you are attempting to reject a request for which you are not authorized")
+	}
+	reject_info := RejectRequest(c.User_ID, c.Current_User)
 	c.Action_History = append(c.Action_History, reject_info.Action)
 	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", c.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Petty_Cash_Overview)
-	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&response)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		Upsert:         &upsert,
+		ReturnDocument: &after,
+	}
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}

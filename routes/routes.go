@@ -56,7 +56,6 @@ func Use(app *fiber.App) {
 	check_req.Get("/monthly", middleware.AdminRoute, handlers.MonthlyCheckRequests)
 	check_req.Get("/detail", handlers.CheckRequestDetail)
 
-	// break point
 	petty_cash := api.Group("/petty_cash", middleware.Protected())
 	petty_cash.Post("/", handlers.CreatePettyCash)
 	petty_cash.Put("/", handlers.EditPettyCash)
@@ -73,6 +72,7 @@ func Use(app *fiber.App) {
 	grant.Get("/mileage", middleware.AdminRoute, handlers.GrantMileage)
 	grant.Get("/petty_cash", middleware.AdminRoute, handlers.GrantPettyCash)
 
+	// break point
 	errors := api.Group("/error")
 	errors.Post("/", handlers.LogError)
 }

@@ -197,7 +197,6 @@ func FindUserName(user_id string) (string, error) {
 	}
 	filter := bson.D{{"_id", user_id}}
 	projection := bson.D{{"name", 1}}
-	// projection := bson.D{{"name", 1}, {"admin", 0}, {"permissions", 0}, {"last_login", 0}, {"incomplete_actions", 0}}
 	opts := options.FindOne().SetProjection(projection)
 	err = users.FindOne(context.TODO(), filter, opts).Decode(&user)
 	return user.Name, nil
