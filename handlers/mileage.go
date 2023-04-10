@@ -165,8 +165,8 @@ func ApproveMileage(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
 	mileage := new(models.Mileage_Request)
-	mileage.ID = approve_info.ID
-	data, err := mileage.Approve()
+	mileage.ID = approve_info.RequestID
+	data, err := mileage.Approve(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
@@ -194,8 +194,8 @@ func RejectMileage(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
 	mileage := new(models.Mileage_Request)
-	mileage.ID = reject_info.ID
-	data, err := mileage.Reject()
+	mileage.ID = reject_info.RequestID
+	data, err := mileage.Reject(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}

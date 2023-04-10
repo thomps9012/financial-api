@@ -43,14 +43,6 @@ func FirstActions(request_type string, request_id string, user_id string) ([]Act
 				Status:       "CREATED",
 				Created_At:   time.Now(),
 			},
-			{
-				ID:           uuid.NewString(),
-				Request_ID:   request_id,
-				Request_Type: MILEAGE,
-				User:         user_id,
-				Status:       "PENDING",
-				Created_At:   time.Now(),
-			},
 		}, nil
 	case "check_request":
 		return []Action{
@@ -62,14 +54,6 @@ func FirstActions(request_type string, request_id string, user_id string) ([]Act
 				Status:       "CREATED",
 				Created_At:   time.Now(),
 			},
-			{
-				ID:           uuid.NewString(),
-				Request_ID:   request_id,
-				Request_Type: CHECK,
-				User:         user_id,
-				Status:       "PENDING",
-				Created_At:   time.Now(),
-			},
 		}, nil
 	case "petty_cash":
 		return []Action{
@@ -79,14 +63,6 @@ func FirstActions(request_type string, request_id string, user_id string) ([]Act
 				Request_Type: PETTY_CASH,
 				User:         user_id,
 				Status:       "CREATED",
-				Created_At:   time.Now(),
-			},
-			{
-				ID:           uuid.NewString(),
-				Request_ID:   request_id,
-				Request_Type: PETTY_CASH,
-				User:         user_id,
-				Status:       "PENDING",
 				Created_At:   time.Now(),
 			},
 		}, nil

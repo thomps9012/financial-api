@@ -162,7 +162,7 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
 	request := new(models.Petty_Cash_Request)
-	request.ID = approve_info.ID
+	request.ID = approve_info.RequestID
 	data, err := request.Approve()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -191,7 +191,7 @@ func RejectPettyCash(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
 	request := new(models.Petty_Cash_Request)
-	request.ID = reject_info.ID
+	request.ID = reject_info.RequestID
 	data, err := request.Reject()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))

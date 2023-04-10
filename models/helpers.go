@@ -91,8 +91,7 @@ type MonthlyRequestInput struct {
 }
 
 type ApproveRejectRequest struct {
-	ID              string `json:"id" bson:"_id" validate:"required"`
-	Request_User_ID string `json:"request_user_id" bson:"request_user_id" validate:"required"`
+	RequestID string `json:"request_id" bson:"request_id" validate:"required"`
 }
 
 // func (e *ErrorLog) Create() (string, error) {

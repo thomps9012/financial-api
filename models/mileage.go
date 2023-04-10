@@ -77,7 +77,7 @@ type EditMileageInput struct {
 	Parking           *float64  `json:"parking" bson:"parking" validate:"required"`
 }
 
-var current_mileage_rate = 65.5
+var current_mileage_rate = .655
 
 func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	collection, err := database.Use("mileage")
@@ -181,13 +181,13 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 		return Mileage_Overview{}, err
 	}
 	filter := bson.D{{"_id", em.ID}}
-	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}})
+	opts := options.FindOne().SetProjection(bson.D{{"action_history", 1}, {"current_status", 1}, {"current_user", 1}, {"last_user_before_reject", 1}})
 	request := new(Mileage_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	if request.Current_Status == "REJECTED" {
+	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
 		edit_action := Action{
 			ID:           uuid.NewString(),
 			Request_ID:   em.ID,
@@ -196,10 +196,23 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 			Status:       "REJECTED_EDIT",
 			Created_At:   time.Now(),
 		}
-		err := em.SaveEdits(edit_action, "REJECTED_EDIT", request.Last_User_Before_Reject)
+		res, err := em.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
 		if err != nil {
 			return Mileage_Overview{}, err
 		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Mileage_Overview{}, err
+		}
+		return Mileage_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Reimbursement:  res.Reimbursement,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
 	}
 	if request.Current_Status == "PENDING" {
 		edit_action := Action{
@@ -210,26 +223,52 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 			Status:       "PENDING_EDIT",
 			Created_At:   time.Now(),
 		}
-		err := em.SaveEdits(edit_action, "PENDING", request.Current_User)
+		res, err := em.SaveEdits(edit_action, "PENDING", request.Current_User)
 		if err != nil {
 			return Mileage_Overview{}, err
 		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Mileage_Overview{}, err
+		}
+		return Mileage_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Reimbursement:  res.Reimbursement,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
 	}
 	return Mileage_Overview{}, errors.New("this request is currently being processed by the finance team")
 }
-func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user string) error {
+func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user string) (Mileage_Request, error) {
 	collection, err := database.Use("mileage")
 	if err != nil {
-		return err
+		return Mileage_Request{}, err
 	}
-	update := bson.D{{"$set", bson.D{{"grant_id", em.Grant_ID}, {"date", em.Date}, {"category", em.Category}, {"starting_location", em.Starting_Location}, {"destination", em.Destination}, {"trip_purpose", em.Trip_Purpose}, {"start_odometer", em.Start_Odometer}, {"end_odometer", em.End_Odometer}, {"tolls", em.Tolls}, {"parking", em.Parking}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+	new_mileage := em.End_Odometer - *em.Start_Odometer
+	new_reimbursement := *em.Tolls + *em.Parking + float64(new_mileage)*current_mileage_rate
+	var update bson.D
+	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
+		update = bson.D{{"$set", bson.D{{"reimbursement", new_reimbursement}, {"grant_id", em.Grant_ID}, {"date", em.Date}, {"category", em.Category}, {"starting_location", em.Starting_Location}, {"destination", em.Destination}, {"trip_purpose", em.Trip_Purpose}, {"start_odometer", em.Start_Odometer}, {"end_odometer", em.End_Odometer}, {"tolls", em.Tolls}, {"parking", em.Parking}, {"current_status", new_status}, {"current_user", new_user}, {"last_user_before_reject", "null"}}}, {"$push", bson.D{{"action_history", action}}}}
+	} else {
+		update = bson.D{{"$set", bson.D{{"reimbursement", new_reimbursement}, {"grant_id", em.Grant_ID}, {"date", em.Date}, {"category", em.Category}, {"starting_location", em.Starting_Location}, {"destination", em.Destination}, {"trip_purpose", em.Trip_Purpose}, {"start_odometer", em.Start_Odometer}, {"end_odometer", em.End_Odometer}, {"tolls", em.Tolls}, {"parking", em.Parking}, {"current_status", new_status}, {"current_user", new_user}}}, {"$push", bson.D{{"action_history", action}}}}
+	}
 	filter := bson.D{{"_id", em.ID}}
 	mileage_req := new(Mileage_Request)
-	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&mileage_req)
-	if err != nil {
-		return err
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
 	}
-	return nil
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&mileage_req)
+	if err != nil {
+		return Mileage_Request{}, err
+	}
+	return *mileage_req, nil
 }
 func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
 	collection, err := database.Use("mileage")
@@ -264,7 +303,7 @@ func MileageDetail(mileage_id string) (Mileage_Request, error) {
 	}
 	return *request_detail, nil
 }
-func (m *Mileage_Request) Approve() (Mileage_Overview, error) {
+func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
@@ -273,6 +312,9 @@ func (m *Mileage_Request) Approve() (Mileage_Overview, error) {
 	err = collection.FindOne(context.TODO(), filter).Decode(&m)
 	if err != nil {
 		return Mileage_Overview{}, err
+	}
+	if m.Current_User != user_id {
+		return Mileage_Overview{}, errors.New("you are attempting to approve a request for which you are unauthorized")
 	}
 	new_action, err := ApproveRequest("mileage", m.ID, m.Current_User, m.Category, m.Current_Status)
 	if err != nil {
@@ -281,14 +323,20 @@ func (m *Mileage_Request) Approve() (Mileage_Overview, error) {
 	m.Action_History = append(m.Action_History, new_action.Action)
 	update := bson.D{{"$set", bson.D{{"current_user", new_action.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", new_action.Action.Status}}}}
 	response := new(Mileage_Overview)
-	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&response)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
 	response.Current_User = new_action.NewUser.Name
 	return *response, nil
 }
-func (m *Mileage_Request) Reject() (Mileage_Overview, error) {
+func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 	collection, err := database.Use("mileage")
 	if err != nil {
 		return Mileage_Overview{}, err
@@ -298,11 +346,20 @@ func (m *Mileage_Request) Reject() (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
+	if m.Current_User != user_id {
+		return Mileage_Overview{}, errors.New("you are attempting to reject a request for which you are unauthorized")
+	}
 	reject_info := RejectRequest("mileage", m.ID, m.User_ID, m.Current_User)
 	m.Action_History = append(m.Action_History, reject_info.Action)
 	update := bson.D{{"$set", bson.D{{"current_user", reject_info.NewUser.ID}, {"action_history", m.Action_History}, {"current_status", "REJECTED"}, {"last_user_before_reject", reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Mileage_Overview)
-	err = collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&response)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
