@@ -27,6 +27,7 @@ func Setup() *fiber.App {
 		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Requested-With",
 	}))
+	// ADD ON PRODUCTION
 	// app.Use(limiter.New())
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,

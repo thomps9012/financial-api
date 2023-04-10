@@ -116,23 +116,6 @@ func (el *ErrorLog) Save() (ErrorLogOverview, error) {
 	}, nil
 }
 
-// func (e *ErrorLog) Create() (string, error) {
-// 	var user User
-// 	collection := conn.Db.Collection("errors")
-// 	e.ID = uuid.NewString()
-// 	found_user, err := user.FindByID(e.UserID)
-// 	e.UserName = found_user.Name
-// 	e.UserEmail = found_user.Email
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	_, insert_err := collection.InsertOne(context.TODO(), *e)
-// 	if insert_err != nil {
-// 		panic(insert_err)
-// 	}
-// 	return e.ID, nil
-// }
-
 // // test coverage
 // func (r *Request_Info) CheckStatus(new_status Status) bool {
 // 	return r.Current_Status != new_status
