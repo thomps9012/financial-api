@@ -39,29 +39,6 @@ func CreateMileage(c *fiber.Ctx) error {
 func MileageVariance(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNotImplemented).JSON(responses.MileageVariance())
 }
-func MonthlyMileage(c *fiber.Ctx) error {
-	var mr *methods.MalformedRequest
-	monthly_request := new(models.MonthlyRequestInput)
-	err := methods.DecodeJSONBody(c, monthly_request)
-	if err != nil {
-		if errors.As(err, &mr) {
-			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
-		} else {
-			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-		}
-	} else {
-		c.BodyParser(monthly_request)
-	}
-	errors := methods.ValidateStruct(*monthly_request)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
-	}
-	response, err := models.MonthlyMileage(int(monthly_request.Month), monthly_request.Year)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-	}
-	return c.Status(fiber.StatusOK).JSON(responses.MonthlyMileage(int(monthly_request.Month), monthly_request.Year, response))
-}
 func MileageDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_mileage_input := new(models.FindMileageInput)
@@ -141,7 +118,7 @@ func DeleteMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.DeleteMileage(data))
+	return c.Status(fiber.StatusOK).JSON(responses.DeleteMileage(data))
 }
 func ApproveMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -170,7 +147,7 @@ func ApproveMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.ApproveMileage(data))
+	return c.Status(fiber.StatusOK).JSON(responses.ApproveMileage(data))
 }
 func RejectMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -199,5 +176,28 @@ func RejectMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusConflict).JSON(responses.RejectMileage(data))
+	return c.Status(fiber.StatusOK).JSON(responses.RejectMileage(data))
+}
+func MonthlyMileage(c *fiber.Ctx) error {
+	var mr *methods.MalformedRequest
+	monthly_request := new(models.MonthlyRequestInput)
+	err := methods.DecodeJSONBody(c, monthly_request)
+	if err != nil {
+		if errors.As(err, &mr) {
+			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		}
+	} else {
+		c.BodyParser(monthly_request)
+	}
+	errors := methods.ValidateStruct(*monthly_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
+	response, err := models.MonthlyMileage(int(monthly_request.Month), monthly_request.Year)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	return c.Status(fiber.StatusOK).JSON(responses.MonthlyMileage(int(monthly_request.Month), monthly_request.Year, response))
 }

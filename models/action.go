@@ -78,7 +78,7 @@ func ApproveStatusHandler(category Category, current_status string, exec_review 
 		return "FINANCE_APPROVED"
 	} else if current_status == "MANAGER_APPROVED" {
 		return "SUPERVISOR_APPROVED"
-	} else if current_status == "PENDING" {
+	} else {
 		switch category {
 		case ADMINISTRATIVE:
 		case IHBT:
@@ -110,7 +110,7 @@ func NewUserHandler(category Category, current_status string, exec_review bool) 
 			ID:   "109157735191825776845",
 			Name: "Finance Requests",
 		}
-	} else if current_status == "PENDING" {
+	} else {
 		switch category {
 		case PERKINS:
 		case LORAIN:
@@ -153,8 +153,7 @@ func ApproveRequest(request_type string, request_id string, user_id string, requ
 				Name: "Anita Bradley",
 			},
 		}, nil
-	case "check_request":
-	case "petty_cash":
+	default:
 		new_user := NewUserHandler(request_category, current_status, false)
 		new_status := ApproveStatusHandler(request_category, current_status, false)
 		return ApproveAction{

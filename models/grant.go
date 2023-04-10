@@ -42,7 +42,7 @@ func (g *Grant) GetOneGrant() (Grant, error) {
 	return *grant, nil
 }
 func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
-	mileage_coll, err := database.Use("mileage")
+	mileage_coll, err := database.Use("mileage_requests")
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
@@ -59,7 +59,7 @@ func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
 	return data, nil
 }
 func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
-	petty_cash_coll, err := database.Use("petty_cash")
+	petty_cash_coll, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}
@@ -76,7 +76,7 @@ func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
 	return data, nil
 }
 func (g *Grant) GetGrantCheckRequest() ([]Check_Request_Overview, error) {
-	check_req_coll, err := database.Use("check_request")
+	check_req_coll, err := database.Use("check_requests")
 	if err != nil {
 		return []Check_Request_Overview{}, err
 	}

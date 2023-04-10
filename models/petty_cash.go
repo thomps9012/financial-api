@@ -63,7 +63,7 @@ type FindPettyCashInput struct {
 }
 
 func GetUserPettyCash(user_id string) ([]Petty_Cash_Overview, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	requests := make([]Petty_Cash_Overview, 0)
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
@@ -91,7 +91,7 @@ func GetUserPettyCash(user_id string) ([]Petty_Cash_Overview, error) {
 	return requests, nil
 }
 func GetUserPettyCashDetail(user_id string) ([]Petty_Cash_Request, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	requests := make([]Petty_Cash_Request, 0)
 	if err != nil {
 		return []Petty_Cash_Request{}, err
@@ -133,10 +133,10 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	new_request.Is_Active = true
 	first_action, _ := FirstActions("petty_cash", new_request.ID, user_id)
 	new_request.Action_History = first_action
-	current_user := methods.NewRequestUser("petty_cash", "nil")
+	current_user := methods.NewRequestUser("petty_cash", string(pi.Category))
 	new_request.Current_User = current_user.ID
 	new_request.Current_Status = "PENDING"
-	check_req_coll, err := database.Use("petty_cash")
+	check_req_coll, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
@@ -155,7 +155,7 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	}, nil
 }
 func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
@@ -194,7 +194,7 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 	return Petty_Cash_Overview{}, errors.New("this request is currently being processed by the finance team")
 }
 func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) error {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return err
 	}
@@ -208,7 +208,7 @@ func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user st
 	return nil
 }
 func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
@@ -228,7 +228,7 @@ func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
 	return *request_info, nil
 }
 func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Request{}, err
 	}
@@ -241,7 +241,7 @@ func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
 	return *request_detail, nil
 }
 func (c *Petty_Cash_Request) Approve() (Petty_Cash_Overview, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
@@ -265,7 +265,7 @@ func (c *Petty_Cash_Request) Approve() (Petty_Cash_Overview, error) {
 	return *response, nil
 }
 func (c *Petty_Cash_Request) Reject() (Petty_Cash_Overview, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
@@ -290,7 +290,7 @@ func (c *Petty_Cash_Request) Reject() (Petty_Cash_Overview, error) {
 	return *response, nil
 }
 func MonthlyPettyCash(month int, year int) ([]Petty_Cash_Overview, error) {
-	collection, err := database.Use("petty_cash")
+	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}

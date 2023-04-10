@@ -36,29 +36,6 @@ func CreateCheckRequest(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusCreated).JSON(responses.NewCheckRequest(res))
 }
-func MonthlyCheckRequests(c *fiber.Ctx) error {
-	var mr *methods.MalformedRequest
-	monthly_request := new(models.MonthlyRequestInput)
-	err := methods.DecodeJSONBody(c, monthly_request)
-	if err != nil {
-		if errors.As(err, &mr) {
-			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
-		} else {
-			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-		}
-	} else {
-		c.BodyParser(monthly_request)
-	}
-	errors := methods.ValidateStruct(*monthly_request)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
-	}
-	response, err := models.MonthlyCheckRequests(int(monthly_request.Month), monthly_request.Year)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-	}
-	return c.Status(fiber.StatusOK).JSON(responses.MonthlyCheckRequests(int(monthly_request.Month), monthly_request.Year, response))
-}
 func CheckRequestDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_check_input := new(models.FindCheckInput)
@@ -138,7 +115,7 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.DeleteCheckRequest(data))
+	return c.Status(fiber.StatusOK).JSON(responses.DeleteCheckRequest(data))
 }
 func ApproveCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -163,11 +140,11 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 	}
 	request := new(models.Check_Request)
 	request.ID = approve_info.RequestID
-	data, err := request.Approve()
+	data, err := request.Approve(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.ApproveCheckRequest(data))
+	return c.Status(fiber.StatusOK).JSON(responses.ApproveCheckRequest(data))
 }
 func RejectCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -192,9 +169,32 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 	}
 	request := new(models.Check_Request)
 	request.ID = reject_info.RequestID
-	data, err := request.Reject()
+	data, err := request.Reject(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusConflict).JSON(responses.RejectCheckRequest(data))
+	return c.Status(fiber.StatusOK).JSON(responses.RejectCheckRequest(data))
+}
+func MonthlyCheckRequests(c *fiber.Ctx) error {
+	var mr *methods.MalformedRequest
+	monthly_request := new(models.MonthlyRequestInput)
+	err := methods.DecodeJSONBody(c, monthly_request)
+	if err != nil {
+		if errors.As(err, &mr) {
+			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		}
+	} else {
+		c.BodyParser(monthly_request)
+	}
+	errors := methods.ValidateStruct(*monthly_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
+	response, err := models.MonthlyCheckRequests(int(monthly_request.Month), monthly_request.Year)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	return c.Status(fiber.StatusOK).JSON(responses.MonthlyCheckRequests(int(monthly_request.Month), monthly_request.Year, response))
 }

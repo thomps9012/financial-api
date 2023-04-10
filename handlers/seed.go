@@ -260,14 +260,10 @@ var checkRequestSeeds = []interface{}{
 		Date:     time.Now().Add(time.Hour * -72),
 		Category: "ADMINISTRATIVE",
 		Vendor: models.Vendor{
-			Name: "Office Depot",
-			Address: models.Address{
-				Website:  "www.test.com",
-				Street:   "123 st",
-				City:     "Anytown",
-				State:    "OH",
-				Zip_Code: 55555,
-			},
+			Name:         "Office Depot",
+			Website:      "www.test.com",
+			AddressLine1: "123 st, Anytown, OH, 55555",
+			AddressLine2: "",
 		},
 		Description: "Office Supplies for December",
 		Purchases: []models.Purchase{
@@ -319,14 +315,10 @@ var checkRequestSeeds = []interface{}{
 		Date:     time.Now().Add(time.Hour * -72),
 		Category: "ADMINISTRATIVE",
 		Vendor: models.Vendor{
-			Name: "Office Depot",
-			Address: models.Address{
-				Website:  "www.test.com",
-				Street:   "123 st",
-				City:     "Anytown",
-				State:    "OH",
-				Zip_Code: 55555,
-			},
+			Name:         "Office Depot",
+			Website:      "www.test.com",
+			AddressLine1: "123 st, Anytown, OH, 55555",
+			AddressLine2: "",
 		},
 		Description: "Office Supplies for December",
 		Purchases: []models.Purchase{
@@ -475,7 +467,7 @@ func SeedData(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	mileage, err := database.Use("mileage")
+	mileage, err := database.Use("mileage_requests")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
@@ -491,7 +483,7 @@ func SeedData(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	petty_cash, err := database.Use("petty_cash")
+	petty_cash, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
@@ -525,7 +517,7 @@ func DeleteSeeds(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	mileage, err := database.Use("mileage")
+	mileage, err := database.Use("mileage_requests")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
@@ -541,7 +533,7 @@ func DeleteSeeds(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	petty_cash, err := database.Use("petty_cash")
+	petty_cash, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}

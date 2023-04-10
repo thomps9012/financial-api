@@ -87,5 +87,5 @@ func Logout(c *fiber.Ctx) error {
 		Name:  "user_id",
 		Value: "",
 	})
-	return c.Status(fiber.StatusAccepted).JSON(responses.LoggedOut())
+	return c.Status(fiber.StatusOK).JSON(responses.LoggedOut())
 }

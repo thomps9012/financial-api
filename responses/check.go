@@ -17,14 +17,6 @@ func NewCheckRequest(data models.Check_Request_Overview) fiber.Map {
 		"data":    data,
 	}
 }
-func MonthlyCheckRequests(month int, year int, data []models.Check_Request_Overview) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Monthly Check Request Report for " + time.Month(month).String() + ", " + strconv.FormatInt(int64(year), 64),
-		"data":    data,
-	}
-}
 func CheckRequestDetail(data models.Check_Request) fiber.Map {
 	return fiber.Map{
 		"status":  "OK",
@@ -62,6 +54,14 @@ func RejectCheckRequest(data models.Check_Request_Overview) fiber.Map {
 		"status":  "OK",
 		"code":    200,
 		"message": "Check Request with " + data.ID + " has been REJECTED",
+		"data":    data,
+	}
+}
+func MonthlyCheckRequests(month int, year int, data []models.Check_Request_Overview) fiber.Map {
+	return fiber.Map{
+		"status":  "OK",
+		"code":    200,
+		"message": "Monthly Check Request Report for " + time.Month(month).String() + ", " + strconv.Itoa(year),
 		"data":    data,
 	}
 }

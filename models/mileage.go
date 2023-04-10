@@ -34,21 +34,6 @@ type Mileage_Request struct {
 	Last_User_Before_Reject string    `json:"last_user_before_reject" bson:"last_user_before_reject"`
 	Is_Active               bool      `json:"is_active" bson:"is_active"`
 }
-
-type Mileage_Overview struct {
-	ID             string    `json:"id" bson:"_id"`
-	User_ID        string    `json:"user_id" bson:"user_id"`
-	Date           time.Time `json:"date" bson:"date"`
-	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
-	Current_Status string    `json:"current_status" bson:"current_status"`
-	Current_User   string    `json:"current_user" bson:"current_user"`
-	Is_Active      bool      `json:"is_active" bson:"is_active"`
-}
-
-type FindMileageInput struct {
-	MileageID string `json:"mileage_id" bson:"mileage_id" validate:"required"`
-}
-
 type MileageInput struct {
 	Grant_ID          string    `json:"grant_id" bson:"grant_id" validate:"required"`
 	Date              time.Time `json:"date" bson:"date" validate:"required"`
@@ -61,7 +46,6 @@ type MileageInput struct {
 	Tolls             *float64  `json:"tolls" bson:"tolls" validate:"required"`
 	Parking           *float64  `json:"parking" bson:"parking" validate:"required"`
 }
-
 type EditMileageInput struct {
 	ID                string    `json:"id" bson:"_id" validate:"required"`
 	User_ID           string    `json:"user_id" bson:"user_id" validate:"required"`
@@ -76,11 +60,23 @@ type EditMileageInput struct {
 	Tolls             *float64  `json:"tolls" bson:"tolls" validate:"required"`
 	Parking           *float64  `json:"parking" bson:"parking" validate:"required"`
 }
+type Mileage_Overview struct {
+	ID             string    `json:"id" bson:"_id"`
+	User_ID        string    `json:"user_id" bson:"user_id"`
+	Date           time.Time `json:"date" bson:"date"`
+	Reimbursement  float64   `json:"reimbursement" bson:"reimbursement"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_User   string    `json:"current_user" bson:"current_user"`
+	Is_Active      bool      `json:"is_active" bson:"is_active"`
+}
+type FindMileageInput struct {
+	MileageID string `json:"mileage_id" bson:"mileage_id" validate:"required"`
+}
 
 var current_mileage_rate = .655
 
 func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	requests := make([]Mileage_Overview, 0)
 	if err != nil {
 		return []Mileage_Overview{}, err
@@ -108,7 +104,7 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	return requests, nil
 }
 func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	requests := make([]Mileage_Request, 0)
 	filter := bson.D{{"user_id", user_id}}
 	projection := bson.D{{"action_history", 0}}
@@ -157,7 +153,7 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	new_request.Current_Status = "PENDING"
 	trip_sum := *mi.Tolls + *mi.Parking + float64(new_request.Trip_Mileage)*current_mileage_rate
 	new_request.Reimbursement = trip_sum
-	mileage_coll, err := database.Use("mileage")
+	mileage_coll, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -176,7 +172,7 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	}, nil
 }
 func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -241,10 +237,10 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 			Is_Active:      res.Is_Active,
 		}, nil
 	}
-	return Mileage_Overview{}, errors.New("this request is currently being processed by the finance team")
+	return Mileage_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
 }
 func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user string) (Mileage_Request, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Request{}, err
 	}
@@ -271,7 +267,7 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	return *mileage_req, nil
 }
 func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -291,7 +287,7 @@ func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
 	return *request_info, nil
 }
 func MileageDetail(mileage_id string) (Mileage_Request, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Request{}, err
 	}
@@ -304,7 +300,7 @@ func MileageDetail(mileage_id string) (Mileage_Request, error) {
 	return *request_detail, nil
 }
 func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -337,7 +333,7 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 	return *response, nil
 }
 func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -371,7 +367,7 @@ func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 	return *response, nil
 }
 func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
-	collection, err := database.Use("mileage")
+	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}

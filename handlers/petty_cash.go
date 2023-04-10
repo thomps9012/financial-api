@@ -111,7 +111,7 @@ func EditPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.EditPettyCash(response))
+	return c.Status(fiber.StatusOK).JSON(responses.EditPettyCash(response))
 }
 func DeletePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -138,7 +138,7 @@ func DeletePettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.DeletePettyCash(data))
+	return c.Status(fiber.StatusOK).JSON(responses.DeletePettyCash(data))
 }
 func ApprovePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -167,7 +167,7 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusAccepted).JSON(responses.ApprovePettyCash(data))
+	return c.Status(fiber.StatusOK).JSON(responses.ApprovePettyCash(data))
 }
 func RejectPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -196,5 +196,5 @@ func RejectPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusConflict).JSON(responses.RejectPettyCash(data))
+	return c.Status(fiber.StatusOK).JSON(responses.RejectPettyCash(data))
 }

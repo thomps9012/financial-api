@@ -17,22 +17,6 @@ func CreateMileage(mileage_info models.Mileage_Overview) fiber.Map {
 		"data":    mileage_info,
 	}
 }
-func MonthlyMileage(month int, year int, mileage_info []models.Mileage_Overview) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Monthly Mileage Report for " + time.Month(month).String() + ", " + strconv.Itoa(year),
-		"data":    mileage_info,
-	}
-}
-func MileageVariance() fiber.Map {
-	return fiber.Map{
-		"status":  "NOT IMPLEMENTED",
-		"code":    501,
-		"message": "This API Endpoint is still in development",
-		"data":    nil,
-	}
-}
 func MileageDetail(mileage_info models.Mileage_Request) fiber.Map {
 	return fiber.Map{
 		"status":  "OK",
@@ -71,5 +55,21 @@ func RejectMileage(mileage_info models.Mileage_Overview) fiber.Map {
 		"code":    200,
 		"message": "Mileage Request " + mileage_info.ID + " has been REJECTED",
 		"data":    mileage_info,
+	}
+}
+func MonthlyMileage(month int, year int, mileage_info []models.Mileage_Overview) fiber.Map {
+	return fiber.Map{
+		"status":  "OK",
+		"code":    200,
+		"message": "Monthly Mileage Report for " + time.Month(month).String() + ", " + strconv.Itoa(year),
+		"data":    mileage_info,
+	}
+}
+func MileageVariance() fiber.Map {
+	return fiber.Map{
+		"status":  "NOT IMPLEMENTED",
+		"code":    501,
+		"message": "This API Endpoint is still in development",
+		"data":    nil,
 	}
 }
