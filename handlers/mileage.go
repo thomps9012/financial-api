@@ -9,6 +9,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @id add-mileage
+// @summary add mileage request
+// @description creates a mileage request for a logged in user
+// @param mileage-request-info body models.MileageInput true "new mileage request information"
+// @tags mileage, no-cache
+// @produce json
+// @success 201
+// @router /mileage [post]
 func CreateMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	mileage_request := new(models.MileageInput)
@@ -41,6 +49,15 @@ func MileageVariance(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusNotImplemented).JSON(responses.MileageVariance())
 }
+
+// @id mileage-detail
+// @summary mileage request detail
+// @description generates detailed information for a specific mileage request
+// @param mileage-request-id body models.FindMileageInput true "mileage request id to find"
+// @tags mileage
+// @produce json
+// @success 200
+// @router /mileage/detail [get]
 func MileageDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_mileage_input := new(models.FindMileageInput)
@@ -68,6 +85,15 @@ func MileageDetail(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.MileageDetail(data))
 }
+
+// @id edit-mileage
+// @summary edit mileage request
+// @description allows a logged in user to edit their pending or reject mileage requests
+// @param mileage-request-info body models.EditMileageInput true "mileage request information to update"
+// @tags mileage, no-cache
+// @produce json
+// @success 200
+// @router /mileage [put]
 func EditMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	mileage_request := new(models.EditMileageInput)
@@ -96,6 +122,15 @@ func EditMileage(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditMileage(response))
 }
+
+// @id delete-mileage
+// @summary delete mileage request
+// @description allows a logged in user to delete and removes one of their mileage requests
+// @param mileage-request-id body models.FindMileageInput true "mileage request id to delete"
+// @tags mileage, no-cache
+// @produce json
+// @success 200
+// @router /mileage [delete]
 func DeleteMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_mileage_input := new(models.FindMileageInput)
@@ -124,6 +159,15 @@ func DeleteMileage(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeleteMileage(data))
 }
+
+// @id approve-mileage
+// @summary approve mileage request
+// @description allows an administrative user to approve a specific mileage request
+// @param request-id body models.ApproveRejectRequest true "mileage request id to approve"
+// @tags mileage, no-cache, admin
+// @produce json
+// @success 200
+// @router /mileage/approve [post]
 func ApproveMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	approve_info := new(models.ApproveRejectRequest)
@@ -154,6 +198,15 @@ func ApproveMileage(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApproveMileage(data))
 }
+
+// @id reject-mileage
+// @summary reject mileage request
+// @description allows a logged in administrative user to reject a mileage request until further edits have been made
+// @param request-id body models.ApproveRejectRequest true "mileage request id to reject"
+// @tags mileage, no-cache, admin
+// @produce json
+// @success 200
+// @router /mileage/reject [post]
 func RejectMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	reject_info := new(models.ApproveRejectRequest)
@@ -184,6 +237,15 @@ func RejectMileage(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RejectMileage(data))
 }
+
+// @id monthly-mileage
+// @summary monthly mileage report
+// @description creates a monthly mileage report for the entire organization for a given month and year
+// @param month-year-input body models.MonthlyRequestInput true "month and year for report on organization wide mileage requests"
+// @tags mileage, reports, admin
+// @produce json
+// @success 200
+// @router /mileage/monthly [get]
 func MonthlyMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	monthly_request := new(models.MonthlyRequestInput)

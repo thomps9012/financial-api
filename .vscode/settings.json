@@ -4,6 +4,8 @@
         "godotenv",
         "gofiber",
         "IHBT",
-        "jwtware"
+        "joho",
+        "jwtware",
+        "swaggo"
     ]
 }

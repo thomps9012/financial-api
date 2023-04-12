@@ -9,6 +9,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @id add-check
+// @summary add check request
+// @description creates a check request for a logged in user
+// @param check-request-info body models.CheckRequestInput true "new check request information"
+// @tags check, no-cache
+// @produce json
+// @success 201
+// @router /check [post]
 func CreateCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	request := new(models.CheckRequestInput)
@@ -37,6 +45,15 @@ func CreateCheckRequest(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.NewCheckRequest(res))
 }
+
+// @id check-detail
+// @summary check request detail
+// @description generates detailed information for a specific check request
+// @param check-request-id body models.FindCheckInput true "check request id to find"
+// @tags check
+// @produce json
+// @success 200
+// @router /check/detail [get]
 func CheckRequestDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_check_input := new(models.FindCheckInput)
@@ -64,6 +81,15 @@ func CheckRequestDetail(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.CheckRequestDetail(data))
 }
+
+// @id edit-check
+// @summary edit check request
+// @description allows a logged in user to edit their pending or reject check requests
+// @param check-request-info body models.EditCheckInput true "check request information to update"
+// @tags check, no-cache
+// @produce json
+// @success 200
+// @router /check [put]
 func EditCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	request := new(models.EditCheckInput)
@@ -92,6 +118,15 @@ func EditCheckRequest(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditCheckRequest(response))
 }
+
+// @id delete-check
+// @summary delete check request
+// @description allows a logged in user to delete and removes one of their check requests
+// @param check-request-id body models.FindCheckInput true "check request id to delete"
+// @tags check, no-cache
+// @produce json
+// @success 200
+// @router /check [delete]
 func DeleteCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_request_input := new(models.FindCheckInput)
@@ -120,6 +155,15 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeleteCheckRequest(data))
 }
+
+// @id approve-check
+// @summary approve check request
+// @description allows an administrative user to approve a specific check request
+// @param request-id body models.ApproveRejectRequest true "check request id to approve"
+// @tags check, no-cache, admin
+// @produce json
+// @success 200
+// @router /check/approve [post]
 func ApproveCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	approve_info := new(models.ApproveRejectRequest)
@@ -150,6 +194,15 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApproveCheckRequest(data))
 }
+
+// @id reject-check
+// @summary reject check request
+// @description allows a logged in administrative user to reject a check request until further edits have been made
+// @param request-id body models.ApproveRejectRequest true "check request id to reject"
+// @tags check, no-cache, admin
+// @produce json
+// @success 200
+// @router /check/reject [post]
 func RejectCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	reject_info := new(models.ApproveRejectRequest)
@@ -180,6 +233,15 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RejectCheckRequest(data))
 }
+
+// @id monthly-check
+// @summary monthly check request report
+// @description creates a monthly check report for the entire organization for a given month and year
+// @param month-year-input body models.MonthlyRequestInput true "month and year for report on organization wide check requests"
+// @tags check, reports, admin
+// @produce json
+// @success 200
+// @router /check/monthly [get]
 func MonthlyCheckRequests(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	monthly_request := new(models.MonthlyRequestInput)

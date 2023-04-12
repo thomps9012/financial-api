@@ -349,6 +349,13 @@ var pettyCashSeeds = []interface{}{
 	},
 }
 
+// @id seed-data
+// @summary initial seed data
+// @description loads seed data for testing data and development purposes
+// @tags setup, no-cache
+// @produce json
+// @success 201
+// @router /seeds [post]
 func SeedData(c *fiber.Ctx) error {
 	grants, err := database.Use("grants")
 	if err != nil {
@@ -390,7 +397,7 @@ func SeedData(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	return c.Status(http.StatusAccepted).JSON(fiber.Map{
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
 		"grants":     g_res,
 		"users":      u_res,
 		"mileage":    m_res,
@@ -399,6 +406,13 @@ func SeedData(c *fiber.Ctx) error {
 	})
 }
 
+// @id delete-seed-data
+// @summary deletes seed data
+// @description removes seed data used for testing and development purposes
+// @tags setup, no-cache
+// @produce json
+// @success 200
+// @router /seeds [delete]
 func DeleteSeeds(c *fiber.Ctx) error {
 	grants, err := database.Use("grants")
 	if err != nil {
@@ -440,7 +454,7 @@ func DeleteSeeds(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	return c.Status(http.StatusAccepted).JSON(fiber.Map{
+	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"grants":     g_res,
 		"users":      u_res,
 		"mileage":    m_res,

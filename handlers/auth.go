@@ -27,6 +27,15 @@ func SetCookies(c *fiber.Ctx, login_res models.LoginRes, complete chan bool) {
 	complete <- true
 }
 
+// @id login-user
+// @summary login user
+// @description either logs a user in or creates an account depending on previous use of the application
+// @tags user, no-cache, auth
+// @param login-info body models.UserLogin true "user's account information"
+// @produce json
+// @success 201
+// @success 200
+// @router /auth/login [post]
 func Login(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	user_login := new(models.UserLogin)
@@ -75,6 +84,13 @@ func Login(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError("error setting cookies"))
 }
 
+// @id logout-user
+// @summary logout user
+// @description logs a user out and clears all server side cookies associated with their session
+// @tags user, no-cache, auth
+// @produce json
+// @success 200
+// @router /auth/logout [post]
 func Logout(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:  "admin",

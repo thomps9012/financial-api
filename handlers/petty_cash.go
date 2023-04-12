@@ -9,6 +9,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @id add-petty_cash
+// @summary add petty cash request
+// @description creates a petty cash request for a logged in user
+// @param petty-cash-request-info body models.PettyCashInput true "new petty cash request information"
+// @tags petty cash, no-cache
+// @produce json
+// @success 201
+// @router /petty_cash [post]
 func CreatePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	request := new(models.PettyCashInput)
@@ -37,6 +45,15 @@ func CreatePettyCash(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.CreatePettyCash(res))
 }
+
+// @id petty_cash-detail
+// @summary petty cash request detail
+// @description generates detailed information for a specific petty cash request
+// @param petty-cash-request-id body models.FindPettyCashInput true "petty cash request id to find"
+// @tags petty cash
+// @produce json
+// @success 200
+// @router /petty_cash/detail [get]
 func PettyCashDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_request_input := new(models.FindPettyCashInput)
@@ -64,6 +81,15 @@ func PettyCashDetail(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.PettyCashDetail(data))
 }
+
+// @id edit-petty_cash
+// @summary edit petty cash request
+// @description allows a logged in user to edit their pending or reject petty cash requests
+// @param petty-cash-request-info body models.EditPettyCash true "petty cash request information to update"
+// @tags petty cash, no-cache
+// @produce json
+// @success 200
+// @router /petty_cash [put]
 func EditPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	request := new(models.EditPettyCash)
@@ -92,6 +118,15 @@ func EditPettyCash(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditPettyCash(response))
 }
+
+// @id delete-petty_cash
+// @summary delete petty cash request
+// @description allows a logged in user to delete and removes one of their petty cash requests
+// @param petty-cash-request-id body models.FindPettyCashInput true "petty cash request id to delete"
+// @tags petty cash, no-cache
+// @produce json
+// @success 200
+// @router /petty_cash [delete]
 func DeletePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	find_request_input := new(models.FindPettyCashInput)
@@ -120,6 +155,15 @@ func DeletePettyCash(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeletePettyCash(data))
 }
+
+// @id approve-petty_cash
+// @summary approve petty cash request
+// @description allows an administrative user to approve a specific petty cash request
+// @param request-id body models.ApproveRejectRequest true "petty cash request id to approve"
+// @tags petty cash, no-cache, admin
+// @produce json
+// @success 200
+// @router /petty_cash/approve [post]
 func ApprovePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	approve_info := new(models.ApproveRejectRequest)
@@ -150,6 +194,15 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApprovePettyCash(data))
 }
+
+// @id reject-petty_cash
+// @summary reject petty cash request
+// @description allows a logged in administrative user to reject a petty cash request until further edits have been made
+// @param request-id body models.ApproveRejectRequest true "petty cash request id to reject"
+// @tags petty cash, no-cache, admin
+// @produce json
+// @success 200
+// @router /petty_cash/reject [post]
 func RejectPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	reject_info := new(models.ApproveRejectRequest)
@@ -180,6 +233,15 @@ func RejectPettyCash(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RejectPettyCash(data))
 }
+
+// @id monthly-petty_cash
+// @summary monthly petty cash request report
+// @description creates a monthly petty cash report for the entire organization for a given month and year
+// @param month-year-input body models.MonthlyRequestInput true "month and year for report on organization wide petty cash requests"
+// @tags petty cash, reports, admin
+// @produce json
+// @success 200
+// @router /petty_cash/monthly [get]
 func MonthlyPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
 	monthly_request := new(models.MonthlyRequestInput)

@@ -74,9 +74,26 @@ type Request_Info_With_Action_History struct {
 	Action_History []Action     `json:"action_history" bson:"action_history"`
 }
 
+type Month int
+
+const (
+	January Month = 1 + iota
+	February
+	March
+	April
+	May
+	June
+	July
+	August
+	September
+	October
+	November
+	December
+)
+
 type MonthlyRequestInput struct {
-	Month time.Month `json:"month" bson:"month" validate:"required"`
-	Year  int        `json:"year" bson:"year" validate:"required"`
+	Month Month `json:"month" bson:"month" validate:"required"`
+	Year  int   `json:"year" bson:"year" validate:"required"`
 }
 
 type ApproveRejectRequest struct {

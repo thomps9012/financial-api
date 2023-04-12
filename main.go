@@ -13,6 +13,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title Financial Request Handler API
+// @version 2.0
+// @description This is an API Endpoint for handling organizational financial reimbursement requests
+// @contact.name APP Support
+// @contact.email app_support@norainc.org
+// @BasePath /api
 func main() {
 	app := Setup()
 	log.Fatal(app.Listen(":" + config.ENV("PORT")))
@@ -24,6 +30,7 @@ func Setup() *fiber.App {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Requested-With",
