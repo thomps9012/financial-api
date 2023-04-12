@@ -14,6 +14,10 @@ const docTemplate = `{
             "name": "APP Support",
             "email": "app_support@norainc.org"
         },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -467,7 +471,10 @@ const docTemplate = `{
                 "operationId": "get-me",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MyInfoRes"
+                        }
                     }
                 }
             }
@@ -487,7 +494,10 @@ const docTemplate = `{
                 "operationId": "get-my-checks",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckRequestRes"
+                        }
                     }
                 }
             }
@@ -507,7 +517,10 @@ const docTemplate = `{
                 "operationId": "get-my-mileage",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageRes"
+                        }
                     }
                 }
             }
@@ -527,7 +540,10 @@ const docTemplate = `{
                 "operationId": "get-my-petty-cash",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashRes"
+                        }
                     }
                 }
             }
@@ -557,7 +573,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VehicleRes"
+                        }
                     }
                 }
             },
@@ -585,7 +604,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VehicleRes"
+                        }
                     }
                 }
             },
@@ -613,7 +635,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VehicleRes"
+                        }
                     }
                 }
             }
@@ -1261,6 +1286,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Action": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ApproveRejectRequest": {
             "type": "object",
             "required": [
@@ -1345,6 +1387,97 @@ const docTemplate = `{
                 },
                 "vendor": {
                     "$ref": "#/definitions/models.Vendor"
+                }
+            }
+        },
+        "models.Check_Request": {
+            "type": "object",
+            "properties": {
+                "action_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Action"
+                    }
+                },
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "credit_card": {
+                    "type": "string"
+                },
+                "current_status": {
+                    "type": "string"
+                },
+                "current_user": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "grant_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_user_before_reject": {
+                    "type": "string"
+                },
+                "order_total": {
+                    "type": "number"
+                },
+                "purchases": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Purchase"
+                    }
+                },
+                "receipts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "vendor": {
+                    "$ref": "#/definitions/models.Vendor"
+                }
+            }
+        },
+        "models.Check_Request_Overview": {
+            "type": "object",
+            "properties": {
+                "current_status": {
+                    "type": "string"
+                },
+                "current_user": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "order_total": {
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         },
@@ -1574,6 +1707,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.IncompleteAction": {
+            "type": "object",
+            "properties": {
+                "action_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "request_type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.MileageInput": {
             "type": "object",
             "required": [
@@ -1617,6 +1770,100 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "trip_purpose": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Mileage_Overview": {
+            "type": "object",
+            "properties": {
+                "current_status": {
+                    "type": "string"
+                },
+                "current_user": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "reimbursement": {
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Mileage_Request": {
+            "type": "object",
+            "properties": {
+                "action_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Action"
+                    }
+                },
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "current_status": {
+                    "type": "string"
+                },
+                "current_user": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "destination": {
+                    "type": "string"
+                },
+                "end_odometer": {
+                    "type": "integer"
+                },
+                "grant_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_user_before_reject": {
+                    "type": "string"
+                },
+                "parking": {
+                    "type": "number"
+                },
+                "reimbursement": {
+                    "type": "number"
+                },
+                "start_odometer": {
+                    "type": "integer"
+                },
+                "starting_location": {
+                    "type": "string"
+                },
+                "tolls": {
+                    "type": "number"
+                },
+                "trip_mileage": {
+                    "type": "integer"
+                },
+                "trip_purpose": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -1697,6 +1944,144 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                }
+            }
+        },
+        "models.Petty_Cash_Overview": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "current_status": {
+                    "type": "string"
+                },
+                "current_user": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Petty_Cash_Request": {
+            "type": "object",
+            "properties": {
+                "action_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Action"
+                    }
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "current_status": {
+                    "type": "string"
+                },
+                "current_user": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "grant_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_user_before_reject": {
+                    "type": "string"
+                },
+                "receipts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PublicInfo": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "type": "boolean"
+                },
+                "check_requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Check_Request_Overview"
+                    }
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "incomplete_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.IncompleteAction"
+                    }
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "mileage_requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Mileage_Overview"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "petty_cash_requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Petty_Cash_Overview"
+                    }
+                },
+                "vehicles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Vehicle"
                     }
                 }
             }
@@ -1788,6 +2173,100 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "responses.CheckRequestRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Check_Request"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileageRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Mileage_Request"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MyInfoRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.PublicInfo"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Petty_Cash_Request"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.VehicleRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Vehicle"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
@@ -1799,7 +2278,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Financial Request Handler API",
-	Description:      "This is an API Endpoint for handling organizational financial reimbursement requests",
+	Description:      "An API Endpoint for handling organizational financial reimbursement requests",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

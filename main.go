@@ -15,9 +15,11 @@ import (
 
 // @title Financial Request Handler API
 // @version 2.0
-// @description This is an API Endpoint for handling organizational financial reimbursement requests
+// @description An API Endpoint for handling organizational financial reimbursement requests
 // @contact.name APP Support
 // @contact.email app_support@norainc.org
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /api
 func main() {
 	app := Setup()

@@ -2,47 +2,58 @@ package responses
 
 import (
 	"financial-api/models"
-
-	"github.com/gofiber/fiber/v2"
 )
 
-func AllGrants(data []models.Grant) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "All Grants Data",
-		"data":    data,
+type GrantRes struct {
+	Status  string       `json:"status"`
+	Code    int          `json:"code"`
+	Message string       `json:"string"`
+	Data    models.Grant `json:"data"`
+}
+type GrantsRes struct {
+	Status  string         `json:"status"`
+	Code    int            `json:"code"`
+	Message string         `json:"string"`
+	Data    []models.Grant `json:"data"`
+}
+
+func AllGrants(data []models.Grant) GrantsRes {
+	return GrantsRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "All Grants Data",
+		Data:    data,
 	}
 }
-func OneGrant(data models.Grant) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Grant Data Found for Grant: " + data.Name,
-		"data":    data,
+func OneGrant(data models.Grant) GrantRes {
+	return GrantRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "Grant Data Found for Grant: " + data.Name,
+		Data:    data,
 	}
 }
-func GrantCheckRequests(grant models.Grant, data []models.Check_Request_Overview) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Check Requests for Grant " + grant.Name + " Found",
-		"data":    data,
+func GrantCheckRequests(grant models.Grant, data []models.Check_Request_Overview) CheckOverviewsRes {
+	return CheckOverviewsRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "Check Requests for Grant " + grant.Name + " Found",
+		Data:    data,
 	}
 }
-func GrantMileage(grant models.Grant, data []models.Mileage_Overview) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Mileage Requests for Grant " + grant.Name + " Found",
-		"data":    data,
+func GrantMileage(grant models.Grant, data []models.Mileage_Overview) MileageOverviewsRes {
+	return MileageOverviewsRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "Mileage Requests for Grant " + grant.Name + " Found",
+		Data:    data,
 	}
 }
-func GrantPettyCash(grant models.Grant, data []models.Petty_Cash_Overview) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Petty Cash Requests for Grant " + grant.Name + " Found",
-		"data":    data,
+func GrantPettyCash(grant models.Grant, data []models.Petty_Cash_Overview) PettyCashOverviewsRes {
+	return PettyCashOverviewsRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "Petty Cash Requests for Grant " + grant.Name + " Found",
+		Data:    data,
 	}
 }

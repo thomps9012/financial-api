@@ -7,83 +7,97 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func BadJWT() fiber.Map {
-	return fiber.Map{
-		"status":  "UNAUTHORIZED",
-		"code":    fiber.StatusUnauthorized,
-		"message": "Missing or incorrect JSON Web Token",
-		"data":    nil,
+func BadJWT() NilRes {
+	return NilRes{
+		Status:  "UNAUTHORIZED",
+		Code:    fiber.StatusUnauthorized,
+		Message: "Missing or incorrect JSON Web Token",
+		Data:    "null",
 	}
 }
 
-func BadUserID() fiber.Map {
-	return fiber.Map{
-		"status":  "BAD REQUEST",
-		"code":    400,
-		"message": "You're either not logged in or are using an invalid user id",
-		"data":    nil,
+func BadUserID() NilRes {
+	return NilRes{
+		Status:  "BAD REQUEST",
+		Code:    400,
+		Message: "You're either not logged in or are using an invalid user id",
+		Data:    "null",
 	}
 }
 
-func KeyNotFound() fiber.Map {
-	return fiber.Map{
-		"status":  "UNAUTHORIZED",
-		"code":    fiber.StatusUnauthorized,
-		"message": "You're attempting to access the resource using an incorrect email, expired or invalid token, please check your credentials or contact app_support@norainc.org",
-		"data":    nil,
+func KeyNotFound() NilRes {
+	return NilRes{
+		Status:  "UNAUTHORIZED",
+		Code:    fiber.StatusUnauthorized,
+		Message: "You're attempting to access the resource using an incorrect email, expired or invalid token, please check your credentials or contact app_support@norainc.org",
+		Data:    "null",
 	}
 }
 
-func NotAdmin() fiber.Map {
-	return fiber.Map{
-		"status":  "FORBIDDEN",
-		"code":    fiber.StatusForbidden,
-		"message": "You're attempting to visit an administrative resource without the proper permissions",
-		"data":    nil,
+func NotAdmin() NilRes {
+	return NilRes{
+		Status:  "FORBIDDEN",
+		Code:    fiber.StatusForbidden,
+		Message: "You're attempting to visit an administrative resource without the proper permissions",
+		Data:    "null",
 	}
 }
 
-func MalformedBody(errors []*methods.ErrorResponse) fiber.Map {
-	return fiber.Map{
-		"status":  "BAD REQUEST",
-		"code":    400,
-		"message": "You're request body is invalid",
-		"data":    errors,
+type MalformedBodyRes struct {
+	Status  string                   `json:"status"`
+	Code    int                      `json:"code"`
+	Message string                   `json:"string"`
+	Data    []*methods.ErrorResponse `json:"data"`
+}
+
+func MalformedBody(errors []*methods.ErrorResponse) MalformedBodyRes {
+	return MalformedBodyRes{
+		Status:  "BAD REQUEST",
+		Code:    400,
+		Message: "You're request body is invalid",
+		Data:    errors,
 	}
 }
 
-func MalformedRequest(code int, message string) fiber.Map {
-	return fiber.Map{
-		"status":  "BAD REQUEST",
-		"code":    code,
-		"message": message,
-		"data":    nil,
+func MalformedRequest(code int, message string) NilRes {
+	return NilRes{
+		Status:  "BAD REQUEST",
+		Code:    code,
+		Message: message,
+		Data:    "null",
 	}
 }
 
-func ServerError(message string) fiber.Map {
-	return fiber.Map{
-		"status":  "INTERNAL SERVER ERROR",
-		"code":    fiber.StatusInternalServerError,
-		"message": message,
-		"data":    nil,
+func ServerError(message string) NilRes {
+	return NilRes{
+		Status:  "INTERNAL SERVER ERROR",
+		Code:    fiber.StatusInternalServerError,
+		Message: message,
+		Data:    "null",
 	}
 }
 
-func InvalidEmail() fiber.Map {
-	return fiber.Map{
-		"status":  "FORBIDDEN",
-		"code":    fiber.StatusForbidden,
-		"message": "You're attempting to access a protected organization site",
-		"data":    nil,
+func InvalidEmail() NilRes {
+	return NilRes{
+		Status:  "FORBIDDEN",
+		Code:    fiber.StatusForbidden,
+		Message: "You're attempting to access a protected organization site",
+		Data:    "null",
 	}
 }
 
-func LogError(data models.ErrorLogOverview) fiber.Map {
-	return fiber.Map{
-		"status":  "INTERNAL SERVER ERROR",
-		"code":    fiber.StatusInternalServerError,
-		"message": "Your error has been logged in the system @ " + methods.TimeNowFormat(),
-		"data":    data,
+type ErrorLogRes struct {
+	Status  string                  `json:"status"`
+	Code    int                     `json:"code"`
+	Message string                  `json:"string"`
+	Data    models.ErrorLogOverview `json:"data"`
+}
+
+func LogError(data models.ErrorLogOverview) ErrorLogRes {
+	return ErrorLogRes{
+		Status:  "INTERNAL SERVER ERROR",
+		Code:    fiber.StatusInternalServerError,
+		Message: "Your error has been logged in the system @ " + methods.TimeNowFormat(),
+		Data:    data,
 	}
 }

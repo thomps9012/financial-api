@@ -14,7 +14,7 @@ import (
 // @description gathers basic request information for a logged in user and the requests' current status
 // @tags user, reports
 // @produce json
-// @success 200
+// @success 200 {object} responses.MyInfoRes
 // @router /me [get]
 func GetMe(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -48,7 +48,7 @@ func GetMe(c *fiber.Ctx) error {
 // @description gathers more detailed request information for a logged in user's mileage requests
 // @tags user, mileage, reports
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageRes
 // @router /me/mileage [get]
 func GetMyMileage(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -67,7 +67,7 @@ func GetMyMileage(c *fiber.Ctx) error {
 // @description gathers more detailed request information for a logged in user's check requests
 // @tags user, check, reports
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckRequestRes
 // @router /me/check [get]
 func GetMyCheckRequests(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -86,7 +86,7 @@ func GetMyCheckRequests(c *fiber.Ctx) error {
 // @description gathers more detailed request information for a logged in user's petty cash requests
 // @tags user, petty cash, reports
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashRes
 // @router /me/petty_cash [get]
 func GetMyPettyCash(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -103,7 +103,7 @@ func GetMyPettyCash(c *fiber.Ctx) error {
 // @param vehicle-info body models.VehicleInput true "user's vehicle information"
 // @tags user, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.VehicleRes
 // @router /me/vehicle [post]
 func AddVehicle(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -144,7 +144,7 @@ func AddVehicle(c *fiber.Ctx) error {
 // @param vehicle-info body models.Vehicle true "edited vehicle information"
 // @tags user, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.VehicleRes
 // @router /me/vehicle [put]
 func EditVehicle(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -183,7 +183,7 @@ func EditVehicle(c *fiber.Ctx) error {
 // @param vehicle-info body models.Vehicle true "deleted vehicle information"
 // @tags user, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.VehicleRes
 // @router /me/vehicle [delete]
 func RemoveVehicle(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

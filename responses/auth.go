@@ -2,33 +2,38 @@ package responses
 
 import (
 	"financial-api/methods"
-
-	"github.com/gofiber/fiber/v2"
 )
 
-func NewUser(token string) fiber.Map {
-	return fiber.Map{
-		"status":  "CREATED",
-		"code":    201,
-		"message": "New user successfully created @ " + methods.TimeNowFormat(),
-		"data":    token,
+type NilRes struct {
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Message string `json:"string"`
+	Data    string `json:"data"`
+}
+
+func NewUser(token string) NilRes {
+	return NilRes{
+		Status:  "CREATED",
+		Code:    201,
+		Message: "New user successfully created @ " + methods.TimeNowFormat(),
+		Data:    token,
 	}
 }
 
-func LoggedIn(token string) fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Successfully logged in @ " + methods.TimeNowFormat(),
-		"data":    token,
+func LoggedIn(token string) NilRes {
+	return NilRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "Successfully logged in @ " + methods.TimeNowFormat(),
+		Data:    token,
 	}
 }
 
-func LoggedOut() fiber.Map {
-	return fiber.Map{
-		"status":  "OK",
-		"code":    200,
-		"message": "Successfully logged out @ " + methods.TimeNowFormat(),
-		"data":    nil,
+func LoggedOut() NilRes {
+	return NilRes{
+		Status:  "OK",
+		Code:    200,
+		Message: "Successfully logged out @ " + methods.TimeNowFormat(),
+		Data:    "null",
 	}
 }
