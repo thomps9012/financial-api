@@ -15,7 +15,7 @@ import (
 // @param mileage-request-info body models.MileageInput true "new mileage request information"
 // @tags mileage, no-cache
 // @produce json
-// @success 201
+// @success 201 {object} responses.MileageOverviewRes
 // @router /mileage [post]
 func CreateMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -56,7 +56,7 @@ func MileageVariance(c *fiber.Ctx) error {
 // @param mileage-request-id body models.FindMileageInput true "mileage request id to find"
 // @tags mileage
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageRes
 // @router /mileage/detail [get]
 func MileageDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -92,7 +92,7 @@ func MileageDetail(c *fiber.Ctx) error {
 // @param mileage-request-info body models.EditMileageInput true "mileage request information to update"
 // @tags mileage, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewRes
 // @router /mileage [put]
 func EditMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -129,7 +129,7 @@ func EditMileage(c *fiber.Ctx) error {
 // @param mileage-request-id body models.FindMileageInput true "mileage request id to delete"
 // @tags mileage, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewRes
 // @router /mileage [delete]
 func DeleteMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -166,7 +166,7 @@ func DeleteMileage(c *fiber.Ctx) error {
 // @param request-id body models.ApproveRejectRequest true "mileage request id to approve"
 // @tags mileage, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewRes
 // @router /mileage/approve [post]
 func ApproveMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -205,7 +205,7 @@ func ApproveMileage(c *fiber.Ctx) error {
 // @param request-id body models.ApproveRejectRequest true "mileage request id to reject"
 // @tags mileage, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewRes
 // @router /mileage/reject [post]
 func RejectMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -244,7 +244,7 @@ func RejectMileage(c *fiber.Ctx) error {
 // @param month-year-input body models.MonthlyRequestInput true "month and year for report on organization wide mileage requests"
 // @tags mileage, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewsRes
 // @router /mileage/monthly [get]
 func MonthlyMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

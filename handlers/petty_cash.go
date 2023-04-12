@@ -15,7 +15,7 @@ import (
 // @param petty-cash-request-info body models.PettyCashInput true "new petty cash request information"
 // @tags petty cash, no-cache
 // @produce json
-// @success 201
+// @success 201 {object} responses.PettyCashOverviewRes
 // @router /petty_cash [post]
 func CreatePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -52,7 +52,7 @@ func CreatePettyCash(c *fiber.Ctx) error {
 // @param petty-cash-request-id body models.FindPettyCashInput true "petty cash request id to find"
 // @tags petty cash
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashRes
 // @router /petty_cash/detail [get]
 func PettyCashDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -88,7 +88,7 @@ func PettyCashDetail(c *fiber.Ctx) error {
 // @param petty-cash-request-info body models.EditPettyCash true "petty cash request information to update"
 // @tags petty cash, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewRes
 // @router /petty_cash [put]
 func EditPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -125,7 +125,7 @@ func EditPettyCash(c *fiber.Ctx) error {
 // @param petty-cash-request-id body models.FindPettyCashInput true "petty cash request id to delete"
 // @tags petty cash, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewRes
 // @router /petty_cash [delete]
 func DeletePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -162,7 +162,7 @@ func DeletePettyCash(c *fiber.Ctx) error {
 // @param request-id body models.ApproveRejectRequest true "petty cash request id to approve"
 // @tags petty cash, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewRes
 // @router /petty_cash/approve [post]
 func ApprovePettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -201,7 +201,7 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 // @param request-id body models.ApproveRejectRequest true "petty cash request id to reject"
 // @tags petty cash, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewRes
 // @router /petty_cash/reject [post]
 func RejectPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -240,7 +240,7 @@ func RejectPettyCash(c *fiber.Ctx) error {
 // @param month-year-input body models.MonthlyRequestInput true "month and year for report on organization wide petty cash requests"
 // @tags petty cash, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewsRes
 // @router /petty_cash/monthly [get]
 func MonthlyPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

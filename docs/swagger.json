@@ -41,10 +41,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     },
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     }
                 }
             }
@@ -64,7 +70,10 @@
                 "operationId": "logout-user",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     }
                 }
             }
@@ -94,7 +103,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             },
@@ -122,7 +134,10 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             },
@@ -150,7 +165,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             }
@@ -181,7 +199,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             }
@@ -210,7 +231,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckDetailRes"
+                        }
                     }
                 }
             }
@@ -241,7 +265,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewsRes"
+                        }
                     }
                 }
             }
@@ -272,7 +299,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             }
@@ -301,7 +331,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorLogRes"
+                        }
                     }
                 }
             }
@@ -319,7 +352,10 @@
                 "operationId": "get-grants",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.GrantsRes"
+                        }
                     }
                 }
             }
@@ -351,7 +387,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewsRes"
+                        }
                     }
                 }
             }
@@ -380,7 +419,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.GrantRes"
+                        }
                     }
                 }
             }
@@ -412,7 +454,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewsRes"
+                        }
                     }
                 }
             }
@@ -444,7 +489,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewsRes"
+                        }
                     }
                 }
             }
@@ -488,7 +536,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CheckRequestRes"
+                            "$ref": "#/definitions/responses.CheckRequestsRes"
                         }
                     }
                 }
@@ -511,7 +559,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MileageRes"
+                            "$ref": "#/definitions/responses.MileagesRes"
                         }
                     }
                 }
@@ -534,7 +582,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PettyCashRes"
+                            "$ref": "#/definitions/responses.PettyCashRequestsRes"
                         }
                     }
                 }
@@ -660,7 +708,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             },
@@ -688,7 +739,10 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             },
@@ -716,7 +770,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             }
@@ -747,7 +804,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             }
@@ -776,7 +836,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageRes"
+                        }
                     }
                 }
             }
@@ -807,7 +870,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewsRes"
+                        }
                     }
                 }
             }
@@ -838,7 +904,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             }
@@ -868,7 +937,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             },
@@ -896,7 +968,10 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             },
@@ -924,7 +999,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             }
@@ -955,7 +1033,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             }
@@ -984,7 +1065,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashRes"
+                        }
                     }
                 }
             }
@@ -1015,7 +1099,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1046,7 +1133,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             }
@@ -1102,7 +1192,10 @@
                 "operationId": "get-users",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UsersInfoRes"
+                        }
                     }
                 }
             }
@@ -1134,7 +1227,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1165,7 +1261,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     }
                 }
             }
@@ -1196,7 +1295,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserInfoRes"
+                        }
                     }
                 }
             }
@@ -1228,7 +1330,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1260,7 +1365,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1648,6 +1756,23 @@
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ErrorLogOverview": {
+            "type": "object",
+            "required": [
+                "error_message"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "error_message": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 }
             }
@@ -2166,7 +2291,61 @@
                 }
             }
         },
-        "responses.CheckRequestRes": {
+        "responses.CheckDetailRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Check_Request"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CheckOverviewRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Check_Request_Overview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CheckOverviewsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Check_Request_Overview"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CheckRequestsRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -2186,7 +2365,115 @@
                 }
             }
         },
+        "responses.ErrorLogRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.ErrorLogOverview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GrantRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Grant"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GrantsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Grant"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileageOverviewRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Mileage_Overview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileageOverviewsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Mileage_Overview"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.MileageRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Mileage_Request"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileagesRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -2223,7 +2510,61 @@
                 }
             }
         },
-        "responses.PettyCashRes": {
+        "responses.NilRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashOverviewRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Petty_Cash_Overview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashOverviewsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Petty_Cash_Overview"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashRequestsRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -2233,6 +2574,60 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Petty_Cash_Request"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Petty_Cash_Request"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UserInfoRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.PublicInfo"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UsersInfoRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PublicInfo"
                     }
                 },
                 "status": {

@@ -273,6 +273,17 @@ definitions:
     - error_path
     - user_id
     type: object
+  models.ErrorLogOverview:
+    properties:
+      created_at:
+        type: string
+      error_message:
+        type: string
+      id:
+        type: string
+    required:
+    - error_message
+    type: object
   models.FindCheckInput:
     properties:
       check_id:
@@ -624,7 +635,42 @@ definitions:
     - address_line_one
     - name
     type: object
-  responses.CheckRequestRes:
+  responses.CheckDetailRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Check_Request'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.CheckOverviewRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Check_Request_Overview'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.CheckOverviewsRes:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.Check_Request_Overview'
+        type: array
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.CheckRequestsRes:
     properties:
       code:
         type: integer
@@ -637,7 +683,77 @@ definitions:
       string:
         type: string
     type: object
+  responses.ErrorLogRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.ErrorLogOverview'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.GrantRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Grant'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.GrantsRes:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.Grant'
+        type: array
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.MileageOverviewRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Mileage_Overview'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.MileageOverviewsRes:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.Mileage_Overview'
+        type: array
+      status:
+        type: string
+      string:
+        type: string
+    type: object
   responses.MileageRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Mileage_Request'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.MileagesRes:
     properties:
       code:
         type: integer
@@ -661,13 +777,83 @@ definitions:
       string:
         type: string
     type: object
-  responses.PettyCashRes:
+  responses.NilRes:
+    properties:
+      code:
+        type: integer
+      data:
+        type: string
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.PettyCashOverviewRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Petty_Cash_Overview'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.PettyCashOverviewsRes:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.Petty_Cash_Overview'
+        type: array
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.PettyCashRequestsRes:
     properties:
       code:
         type: integer
       data:
         items:
           $ref: '#/definitions/models.Petty_Cash_Request'
+        type: array
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.PettyCashRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.Petty_Cash_Request'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.UserInfoRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.PublicInfo'
+      status:
+        type: string
+      string:
+        type: string
+    type: object
+  responses.UsersInfoRes:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.PublicInfo'
         type: array
       status:
         type: string
@@ -714,8 +900,12 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.NilRes'
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/responses.NilRes'
       summary: login user
       tags:
       - user
@@ -731,6 +921,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.NilRes'
       summary: logout user
       tags:
       - user
@@ -753,6 +945,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
       summary: delete check request
       tags:
       - check
@@ -772,6 +966,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
       summary: add check request
       tags:
       - check
@@ -791,6 +987,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
       summary: edit check request
       tags:
       - check
@@ -811,6 +1009,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
       summary: approve check request
       tags:
       - check
@@ -832,6 +1032,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckDetailRes'
       summary: check request detail
       tags:
       - check
@@ -852,6 +1054,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewsRes'
       summary: monthly check request report
       tags:
       - check
@@ -874,6 +1078,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
       summary: reject check request
       tags:
       - check
@@ -895,6 +1101,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.ErrorLogRes'
       summary: logs errors
       tags:
       - errors
@@ -907,6 +1115,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.GrantsRes'
       summary: all grant information
       tags:
       - grants
@@ -926,6 +1136,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewsRes'
       summary: one grant's check requests
       tags:
       - grants
@@ -948,6 +1160,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.GrantRes'
       summary: one grant information
       tags:
       - grants
@@ -967,6 +1181,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewsRes'
       summary: one grant's mileage requests
       tags:
       - grants
@@ -989,6 +1205,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewsRes'
       summary: one grant's petty cash requests
       tags:
       - grants
@@ -1022,7 +1240,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.CheckRequestRes'
+            $ref: '#/definitions/responses.CheckRequestsRes'
       summary: get my check reqs
       tags:
       - user
@@ -1039,7 +1257,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.MileageRes'
+            $ref: '#/definitions/responses.MileagesRes'
       summary: get my mileage reqs
       tags:
       - user
@@ -1056,7 +1274,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.PettyCashRes'
+            $ref: '#/definitions/responses.PettyCashRequestsRes'
       summary: get my petty cash reqs
       tags:
       - user
@@ -1143,6 +1361,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
       summary: delete mileage request
       tags:
       - mileage
@@ -1162,6 +1382,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
       summary: add mileage request
       tags:
       - mileage
@@ -1182,6 +1404,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
       summary: edit mileage request
       tags:
       - mileage
@@ -1202,6 +1426,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
       summary: approve mileage request
       tags:
       - mileage
@@ -1223,6 +1449,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageRes'
       summary: mileage request detail
       tags:
       - mileage
@@ -1243,6 +1471,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewsRes'
       summary: monthly mileage report
       tags:
       - mileage
@@ -1265,6 +1495,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
       summary: reject mileage request
       tags:
       - mileage
@@ -1287,6 +1519,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
       summary: delete petty cash request
       tags:
       - petty cash
@@ -1306,6 +1540,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
       summary: add petty cash request
       tags:
       - petty cash
@@ -1326,6 +1562,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
       summary: edit petty cash request
       tags:
       - petty cash
@@ -1347,6 +1585,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
       summary: approve petty cash request
       tags:
       - petty cash
@@ -1368,6 +1608,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashRes'
       summary: petty cash request detail
       tags:
       - petty cash
@@ -1388,6 +1630,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewsRes'
       summary: monthly petty cash request report
       tags:
       - petty cash
@@ -1410,6 +1654,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
       summary: reject petty cash request
       tags:
       - petty cash
@@ -1450,6 +1696,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.UsersInfoRes'
       summary: get all users
       tags:
       - user
@@ -1471,6 +1719,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewsRes'
       summary: user check requests
       tags:
       - user
@@ -1493,6 +1743,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.NilRes'
       summary: deactivates a user
       tags:
       - user
@@ -1515,6 +1767,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.UserInfoRes'
       summary: gets one user
       tags:
       - user
@@ -1537,6 +1791,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewsRes'
       summary: user mileage
       tags:
       - user
@@ -1560,6 +1816,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewsRes'
       summary: user petty cash
       tags:
       - user

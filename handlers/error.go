@@ -15,7 +15,7 @@ import (
 // @param error-info body models.ErrorLog true "error log information"
 // @tags errors
 // @produce json
-// @success 200
+// @success 200 {object} responses.ErrorLogRes
 // @router /error [post]
 func LogError(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

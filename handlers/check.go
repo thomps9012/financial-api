@@ -15,7 +15,7 @@ import (
 // @param check-request-info body models.CheckRequestInput true "new check request information"
 // @tags check, no-cache
 // @produce json
-// @success 201
+// @success 201 {object} responses.CheckOverviewRes
 // @router /check [post]
 func CreateCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -52,7 +52,7 @@ func CreateCheckRequest(c *fiber.Ctx) error {
 // @param check-request-id body models.FindCheckInput true "check request id to find"
 // @tags check
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckDetailRes
 // @router /check/detail [get]
 func CheckRequestDetail(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -88,7 +88,7 @@ func CheckRequestDetail(c *fiber.Ctx) error {
 // @param check-request-info body models.EditCheckInput true "check request information to update"
 // @tags check, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewRes
 // @router /check [put]
 func EditCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -125,7 +125,7 @@ func EditCheckRequest(c *fiber.Ctx) error {
 // @param check-request-id body models.FindCheckInput true "check request id to delete"
 // @tags check, no-cache
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewRes
 // @router /check [delete]
 func DeleteCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -162,7 +162,7 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 // @param request-id body models.ApproveRejectRequest true "check request id to approve"
 // @tags check, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewRes
 // @router /check/approve [post]
 func ApproveCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -201,7 +201,7 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 // @param request-id body models.ApproveRejectRequest true "check request id to reject"
 // @tags check, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewRes
 // @router /check/reject [post]
 func RejectCheckRequest(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -240,7 +240,7 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 // @param month-year-input body models.MonthlyRequestInput true "month and year for report on organization wide check requests"
 // @tags check, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewsRes
 // @router /check/monthly [get]
 func MonthlyCheckRequests(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

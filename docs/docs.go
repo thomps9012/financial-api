@@ -49,10 +49,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     },
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     }
                 }
             }
@@ -72,7 +78,10 @@ const docTemplate = `{
                 "operationId": "logout-user",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     }
                 }
             }
@@ -102,7 +111,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             },
@@ -130,7 +142,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             },
@@ -158,7 +173,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             }
@@ -189,7 +207,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             }
@@ -218,7 +239,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckDetailRes"
+                        }
                     }
                 }
             }
@@ -249,7 +273,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewsRes"
+                        }
                     }
                 }
             }
@@ -280,7 +307,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewRes"
+                        }
                     }
                 }
             }
@@ -309,7 +339,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorLogRes"
+                        }
                     }
                 }
             }
@@ -327,7 +360,10 @@ const docTemplate = `{
                 "operationId": "get-grants",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.GrantsRes"
+                        }
                     }
                 }
             }
@@ -359,7 +395,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewsRes"
+                        }
                     }
                 }
             }
@@ -388,7 +427,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.GrantRes"
+                        }
                     }
                 }
             }
@@ -420,7 +462,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewsRes"
+                        }
                     }
                 }
             }
@@ -452,7 +497,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewsRes"
+                        }
                     }
                 }
             }
@@ -496,7 +544,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CheckRequestRes"
+                            "$ref": "#/definitions/responses.CheckRequestsRes"
                         }
                     }
                 }
@@ -519,7 +567,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MileageRes"
+                            "$ref": "#/definitions/responses.MileagesRes"
                         }
                     }
                 }
@@ -542,7 +590,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PettyCashRes"
+                            "$ref": "#/definitions/responses.PettyCashRequestsRes"
                         }
                     }
                 }
@@ -668,7 +716,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             },
@@ -696,7 +747,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             },
@@ -724,7 +778,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             }
@@ -755,7 +812,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             }
@@ -784,7 +844,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageRes"
+                        }
                     }
                 }
             }
@@ -815,7 +878,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewsRes"
+                        }
                     }
                 }
             }
@@ -846,7 +912,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewRes"
+                        }
                     }
                 }
             }
@@ -876,7 +945,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             },
@@ -904,7 +976,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             },
@@ -932,7 +1007,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             }
@@ -963,7 +1041,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             }
@@ -992,7 +1073,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashRes"
+                        }
                     }
                 }
             }
@@ -1023,7 +1107,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1054,7 +1141,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewRes"
+                        }
                     }
                 }
             }
@@ -1110,7 +1200,10 @@ const docTemplate = `{
                 "operationId": "get-users",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UsersInfoRes"
+                        }
                     }
                 }
             }
@@ -1142,7 +1235,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CheckOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1173,7 +1269,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NilRes"
+                        }
                     }
                 }
             }
@@ -1204,7 +1303,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserInfoRes"
+                        }
                     }
                 }
             }
@@ -1236,7 +1338,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MileageOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1268,7 +1373,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PettyCashOverviewsRes"
+                        }
                     }
                 }
             }
@@ -1656,6 +1764,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ErrorLogOverview": {
+            "type": "object",
+            "required": [
+                "error_message"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "error_message": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 }
             }
@@ -2174,7 +2299,61 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CheckRequestRes": {
+        "responses.CheckDetailRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Check_Request"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CheckOverviewRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Check_Request_Overview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CheckOverviewsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Check_Request_Overview"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CheckRequestsRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -2194,7 +2373,115 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.ErrorLogRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.ErrorLogOverview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GrantRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Grant"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GrantsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Grant"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileageOverviewRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Mileage_Overview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileageOverviewsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Mileage_Overview"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.MileageRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Mileage_Request"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MileagesRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -2231,7 +2518,61 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PettyCashRes": {
+        "responses.NilRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashOverviewRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Petty_Cash_Overview"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashOverviewsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Petty_Cash_Overview"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashRequestsRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -2241,6 +2582,60 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Petty_Cash_Request"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PettyCashRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Petty_Cash_Request"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UserInfoRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.PublicInfo"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "string": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UsersInfoRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PublicInfo"
                     }
                 },
                 "status": {

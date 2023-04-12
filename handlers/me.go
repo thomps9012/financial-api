@@ -48,7 +48,7 @@ func GetMe(c *fiber.Ctx) error {
 // @description gathers more detailed request information for a logged in user's mileage requests
 // @tags user, mileage, reports
 // @produce json
-// @success 200 {object} responses.MileageRes
+// @success 200 {object} responses.MileagesRes
 // @router /me/mileage [get]
 func GetMyMileage(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -67,7 +67,7 @@ func GetMyMileage(c *fiber.Ctx) error {
 // @description gathers more detailed request information for a logged in user's check requests
 // @tags user, check, reports
 // @produce json
-// @success 200 {object} responses.CheckRequestRes
+// @success 200 {object} responses.CheckRequestsRes
 // @router /me/check [get]
 func GetMyCheckRequests(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -86,7 +86,7 @@ func GetMyCheckRequests(c *fiber.Ctx) error {
 // @description gathers more detailed request information for a logged in user's petty cash requests
 // @tags user, petty cash, reports
 // @produce json
-// @success 200 {object} responses.PettyCashRes
+// @success 200 {object} responses.PettyCashRequestsRes
 // @router /me/petty_cash [get]
 func GetMyPettyCash(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")

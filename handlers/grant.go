@@ -14,7 +14,7 @@ import (
 // @description generates basic information for all organization-wide grants
 // @tags grants
 // @produce json
-// @success 200
+// @success 200 {object} responses.GrantsRes
 // @router /grants [get]
 func GetAllGrants(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
@@ -34,7 +34,7 @@ func GetAllGrants(c *fiber.Ctx) error {
 // @param grant-info body models.Grant true "grant id"
 // @tags grants
 // @produce json
-// @success 200
+// @success 200 {object} responses.GrantRes
 // @router /grants/detail [get]
 func GetOneGrant(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -66,7 +66,7 @@ func GetOneGrant(c *fiber.Ctx) error {
 // @tags grants, check, reports, admin
 // @param grant-info body models.Grant true "grant id for which check request report should be run"
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewsRes
 // @router /grants/check [get]
 func GrantCheckRequests(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -102,7 +102,7 @@ func GrantCheckRequests(c *fiber.Ctx) error {
 // @param grant-info body models.Grant true "grant id for which mileage request report should be run"
 // @tags grants, mileage, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewsRes
 // @router /grants/mileage [get]
 func GrantMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -138,7 +138,7 @@ func GrantMileage(c *fiber.Ctx) error {
 // @param grant-info body models.Grant true "grant id for which petty cash request report should be run"
 // @tags grants, petty cash, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewsRes
 // @router /grants/petty_cash [get]
 func GrantPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

@@ -14,7 +14,7 @@ import (
 // @description gathers basic request information for all users in the system and the current status of their requests'
 // @tags user, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.UsersInfoRes
 // @router /user [get]
 func GetAllUsers(c *fiber.Ctx) error {
 	all_users, err := models.FindAllUsers()
@@ -34,7 +34,7 @@ type UserIDBody struct {
 // @param user-info body UserIDBody true "specific user's id information"
 // @tags user, reports, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.UserInfoRes
 // @router /user/detail [get]
 func GetOneUser(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -66,7 +66,7 @@ func GetOneUser(c *fiber.Ctx) error {
 // @param user-info body UserIDBody true "specific user's id information"
 // @tags user, no-cache, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.NilRes
 // @router /user/deactivate [delete]
 func DeactivateUser(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -101,7 +101,7 @@ func DeactivateUser(c *fiber.Ctx) error {
 // @param user-info body UserIDBody true "specific user's id information"
 // @tags user, reports, mileage, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.MileageOverviewsRes
 // @router /user/mileage [get]
 func UserMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -133,7 +133,7 @@ func UserMileage(c *fiber.Ctx) error {
 // @param user-info body UserIDBody true "specific user's id information"
 // @tags user, reports, petty cash, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.PettyCashOverviewsRes
 // @router /user/petty_cash [get]
 func UserPettyCash(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -165,7 +165,7 @@ func UserPettyCash(c *fiber.Ctx) error {
 // @param user-info body UserIDBody true "specific user's id information"
 // @tags user, reports, check, admin
 // @produce json
-// @success 200
+// @success 200 {object} responses.CheckOverviewsRes
 // @router /user/check [get]
 func UserCheckRequests(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest

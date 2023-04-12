@@ -33,8 +33,8 @@ func SetCookies(c *fiber.Ctx, login_res models.LoginRes, complete chan bool) {
 // @tags user, no-cache, auth
 // @param login-info body models.UserLogin true "user's account information"
 // @produce json
-// @success 201
-// @success 200
+// @success 201 {object} responses.NilRes
+// @success 200 {object} responses.NilRes
 // @router /auth/login [post]
 func Login(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -89,7 +89,7 @@ func Login(c *fiber.Ctx) error {
 // @description logs a user out and clears all server side cookies associated with their session
 // @tags user, no-cache, auth
 // @produce json
-// @success 200
+// @success 200 {object} responses.NilRes
 // @router /auth/logout [post]
 func Logout(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
