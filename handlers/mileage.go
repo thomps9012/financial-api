@@ -34,9 +34,11 @@ func CreateMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.CreateMileage(res))
 }
 func MileageVariance(c *fiber.Ctx) error {
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusNotImplemented).JSON(responses.MileageVariance())
 }
 func MileageDetail(c *fiber.Ctx) error {
@@ -91,6 +93,7 @@ func EditMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditMileage(response))
 }
 func DeleteMileage(c *fiber.Ctx) error {
@@ -118,6 +121,7 @@ func DeleteMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeleteMileage(data))
 }
 func ApproveMileage(c *fiber.Ctx) error {
@@ -147,6 +151,7 @@ func ApproveMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApproveMileage(data))
 }
 func RejectMileage(c *fiber.Ctx) error {
@@ -176,6 +181,7 @@ func RejectMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RejectMileage(data))
 }
 func MonthlyMileage(c *fiber.Ctx) error {

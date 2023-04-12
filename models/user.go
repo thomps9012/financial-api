@@ -26,15 +26,14 @@ type LoginRes struct {
 }
 
 type User struct {
-	ID                 string    `json:"id" bson:"_id"`
-	Email              string    `json:"email" bson:"email"`
-	Name               string    `json:"name" bson:"name"`
-	Last_Login         time.Time `json:"last_login" bson:"last_login"`
-	Vehicles           []Vehicle `json:"vehicles" bson:"vehicles"`
-	InComplete_Actions []Action  `json:"incomplete_actions" bson:"incomplete_actions"`
-	Is_Active          bool      `json:"is_active" bson:"is_active"`
-	Admin              bool      `json:"admin" bson:"admin"`
-	Permissions        []string  `json:"permissions" bson:"permissions"`
+	ID          string    `json:"id" bson:"_id"`
+	Email       string    `json:"email" bson:"email"`
+	Name        string    `json:"name" bson:"name"`
+	Last_Login  time.Time `json:"last_login" bson:"last_login"`
+	Vehicles    []Vehicle `json:"vehicles" bson:"vehicles"`
+	Is_Active   bool      `json:"is_active" bson:"is_active"`
+	Admin       bool      `json:"admin" bson:"admin"`
+	Permissions []string  `json:"permissions" bson:"permissions"`
 }
 
 type PublicInfo struct {
@@ -43,7 +42,7 @@ type PublicInfo struct {
 	Name                string                   `json:"name" bson:"name"`
 	Last_Login          time.Time                `json:"last_login" bson:"last_login"`
 	Vehicles            []Vehicle                `json:"vehicles" bson:"vehicles"`
-	InComplete_Actions  []Action                 `json:"incomplete_actions" bson:"incomplete_actions"`
+	InComplete_Actions  []IncompleteAction       `json:"incomplete_actions" bson:"incomplete_actions"`
 	Is_Active           bool                     `json:"is_active" bson:"is_active"`
 	Admin               bool                     `json:"admin" bson:"admin"`
 	Permissions         []string                 `json:"permissions" bson:"permissions"`
@@ -123,7 +122,6 @@ func (u *User) Create(user UserLogin) (LoginRes, error) {
 	u.Email = user.Email
 	u.Name = user.Name
 	u.Is_Active = true
-	u.InComplete_Actions = make([]Action, 0)
 	u.Last_Login = time.Now()
 	u.Vehicles = make([]Vehicle, 0)
 	u.Admin = isAdmin(u.Email)
@@ -181,7 +179,8 @@ func GetPublicInfo(user_id string) (PublicInfo, error) {
 	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
 	check_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "check_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "check_requests"}}}}
 	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
-	pipeline := mongo.Pipeline{filter, mileage_stage, check_stage, petty_cash_stage}
+	incomplete_action_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "incomplete_actions"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "incomplete_actions"}}}}
+	pipeline := mongo.Pipeline{filter, mileage_stage, check_stage, petty_cash_stage, incomplete_action_stage}
 	cursor, err := users.Aggregate(context.TODO(), pipeline)
 	if err != nil {
 		return PublicInfo{}, err
@@ -272,7 +271,8 @@ func FindAllUsers() ([]PublicInfo, error) {
 	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
 	check_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "check_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "check_requests"}}}}
 	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
-	pipeline := mongo.Pipeline{mileage_stage, check_stage, petty_cash_stage}
+	incomplete_action_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "incomplete_actions"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "incomplete_actions"}}}}
+	pipeline := mongo.Pipeline{mileage_stage, check_stage, petty_cash_stage, incomplete_action_stage}
 	cursor, err := users.Aggregate(context.TODO(), pipeline)
 	if err != nil {
 		return []PublicInfo{}, err

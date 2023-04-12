@@ -94,6 +94,7 @@ func AddVehicle(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.AddVehicle(vehicle))
 }
 func EditVehicle(c *fiber.Ctx) error {
@@ -123,6 +124,7 @@ func EditVehicle(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditVehicle(vehicle))
 }
 func RemoveVehicle(c *fiber.Ctx) error {
@@ -152,5 +154,6 @@ func RemoveVehicle(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RemoveVehicle(vehicle))
 }

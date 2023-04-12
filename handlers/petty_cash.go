@@ -34,6 +34,7 @@ func CreatePettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.CreatePettyCash(res))
 }
 func PettyCashDetail(c *fiber.Ctx) error {
@@ -88,6 +89,7 @@ func EditPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditPettyCash(response))
 }
 func DeletePettyCash(c *fiber.Ctx) error {
@@ -115,6 +117,7 @@ func DeletePettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeletePettyCash(data))
 }
 func ApprovePettyCash(c *fiber.Ctx) error {
@@ -144,6 +147,7 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApprovePettyCash(data))
 }
 func RejectPettyCash(c *fiber.Ctx) error {
@@ -173,6 +177,7 @@ func RejectPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RejectPettyCash(data))
 }
 func MonthlyPettyCash(c *fiber.Ctx) error {

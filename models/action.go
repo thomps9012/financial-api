@@ -1,6 +1,8 @@
 package models
 
 import (
+	"context"
+	database "financial-api/db"
 	"strings"
 	"time"
 
@@ -25,8 +27,36 @@ type RejectAction struct {
 	LastUserBeforeReject UserLogin `json:"last_user"`
 }
 
+type IncompleteAction struct {
+	ID          string `json:"id" bson:"_id"`
+	ActionID    string `json:"action_id" bson:"action_id"`
+	UserID      string `json:"user_id" bson:"user_id"`
+	RequestID   string `json:"request_id" bson:"request_id"`
+	RequestType string `json:"request_type" bson:"request_type"`
+}
+
 func NormalizeType(request_type string) string {
 	return strings.ToLower(strings.TrimSpace(request_type))
+}
+func CreateIncompleteAction(request_type string, request_id string, action Action, user string) error {
+	incomplete_action := new(IncompleteAction)
+	incomplete_action.ID = uuid.NewString()
+	incomplete_action.ActionID = action.ID
+	incomplete_action.UserID = user
+	incomplete_action.RequestID = request_id
+	incomplete_action.RequestType = NormalizeType(request_type)
+	collection, err := database.Use("incomplete_actions")
+	if err != nil {
+		return err
+	}
+	_, err = collection.InsertOne(context.TODO(), incomplete_action)
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 func FirstActions(user_id string) []Action {
 	return []Action{

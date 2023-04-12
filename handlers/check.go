@@ -34,6 +34,7 @@ func CreateCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.NewCheckRequest(res))
 }
 func CheckRequestDetail(c *fiber.Ctx) error {
@@ -88,6 +89,7 @@ func EditCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditCheckRequest(response))
 }
 func DeleteCheckRequest(c *fiber.Ctx) error {
@@ -115,6 +117,7 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeleteCheckRequest(data))
 }
 func ApproveCheckRequest(c *fiber.Ctx) error {
@@ -144,6 +147,7 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApproveCheckRequest(data))
 }
 func RejectCheckRequest(c *fiber.Ctx) error {
@@ -173,6 +177,7 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.RejectCheckRequest(data))
 }
 func MonthlyCheckRequests(c *fiber.Ctx) error {

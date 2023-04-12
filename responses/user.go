@@ -26,8 +26,8 @@ func DeactivateUser(user_info models.PublicInfo) fiber.Map {
 	return fiber.Map{
 		"status":  "OK",
 		"code":    200,
-		"message": "User " + user_info.ID + "'s account has been deactivated",
-		"data":    user_info,
+		"message": "User " + user_info.Name + "'s account has been deactivated",
+		"data":    nil,
 	}
 }
 func UserMileage(user_id string, user_info []models.Mileage_Overview) fiber.Map {

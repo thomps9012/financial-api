@@ -166,6 +166,10 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
+	err = CreateIncompleteAction("CHECK", new_request.ID, first_action[0], current_user.ID)
+	if err != nil {
+		return Check_Request_Overview{}, err
+	}
 	return Check_Request_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,

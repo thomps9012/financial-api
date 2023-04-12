@@ -164,6 +164,10 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
+	err = CreateIncompleteAction("MILEAGE", new_request.ID, first_action[0], current_user.ID)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
 	return Mileage_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,

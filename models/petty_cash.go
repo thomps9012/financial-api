@@ -143,6 +143,10 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
+	err = CreateIncompleteAction("PETTY_CASH", new_request.ID, first_action[0], current_user.ID)
+	if err != nil {
+		return Petty_Cash_Overview{}, err
+	}
 	return Petty_Cash_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,

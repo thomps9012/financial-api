@@ -18,17 +18,19 @@ func Use(app *fiber.App) {
 	auth := api.Group("/auth")
 	auth.Post("/login", handlers.Login)
 	auth.Post("/logout", handlers.Logout)
-
+	// cache-able route group begin
 	me := api.Group("/me", middleware.Protected())
 	me.Get("/", handlers.GetMe)
 	me.Get("/mileage", handlers.GetMyMileage)
 	me.Get("/check", handlers.GetMyCheckRequests)
 	me.Get("/petty_cash", handlers.GetMyPettyCash)
+	// cache-able route group end
 	vehicle := me.Group("/vehicle")
 	vehicle.Post("/", handlers.AddVehicle)
 	vehicle.Put("/", handlers.EditVehicle)
 	vehicle.Delete("/", handlers.RemoveVehicle)
 
+	// cache-able route begin
 	user := api.Group("/user", middleware.Protected(), middleware.AdminRoute)
 	user.Get("/", handlers.GetAllUsers)
 	user.Get("/detail", handlers.GetOneUser)
@@ -36,6 +38,7 @@ func Use(app *fiber.App) {
 	user.Get("/mileage", handlers.UserMileage)
 	user.Get("/check", handlers.UserCheckRequests)
 	user.Get("/petty_cash", handlers.UserPettyCash)
+	// cache-able route group end
 
 	mileage := api.Group("/mileage", middleware.Protected())
 	mileage.Post("/", handlers.CreateMileage)
@@ -44,8 +47,10 @@ func Use(app *fiber.App) {
 	mileage.Post("/approve", middleware.AdminRoute, handlers.ApproveMileage)
 	mileage.Post("/reject", middleware.AdminRoute, handlers.RejectMileage)
 	mileage.Get("/variance", handlers.MileageVariance)
+	// cache-able route begin
 	mileage.Get("/monthly", middleware.AdminRoute, handlers.MonthlyMileage)
 	mileage.Get("/detail", handlers.MileageDetail)
+	// cache-able route group end
 
 	check_req := api.Group("/check", middleware.Protected())
 	check_req.Post("/", handlers.CreateCheckRequest)
@@ -53,8 +58,10 @@ func Use(app *fiber.App) {
 	check_req.Delete("/", handlers.DeleteCheckRequest)
 	check_req.Post("/approve", middleware.AdminRoute, handlers.ApproveCheckRequest)
 	check_req.Post("/reject", middleware.AdminRoute, handlers.RejectCheckRequest)
+	// cache-able route begin
 	check_req.Get("/monthly", middleware.AdminRoute, handlers.MonthlyCheckRequests)
 	check_req.Get("/detail", handlers.CheckRequestDetail)
+	// cache-able route group end
 
 	petty_cash := api.Group("/petty_cash", middleware.Protected())
 	petty_cash.Post("/", handlers.CreatePettyCash)
@@ -62,15 +69,19 @@ func Use(app *fiber.App) {
 	petty_cash.Delete("/", handlers.DeletePettyCash)
 	petty_cash.Post("/approve", middleware.AdminRoute, handlers.ApprovePettyCash)
 	petty_cash.Post("/reject", middleware.AdminRoute, handlers.RejectPettyCash)
+	// cache-able route begin
 	petty_cash.Get("/monthly", middleware.AdminRoute, handlers.MonthlyPettyCash)
 	petty_cash.Get("/detail", handlers.PettyCashDetail)
+	// cache-able route group end
 
+	// cache-able route begin
 	grant := api.Group("/grant", middleware.Protected())
 	grant.Get("/", handlers.GetAllGrants)
 	grant.Get("/detail", handlers.GetOneGrant)
 	grant.Get("/check", middleware.AdminRoute, handlers.GrantCheckRequests)
 	grant.Get("/mileage", middleware.AdminRoute, handlers.GrantMileage)
 	grant.Get("/petty_cash", middleware.AdminRoute, handlers.GrantPettyCash)
+	// cache-able route group end
 
 	errors := api.Group("/error")
 	errors.Post("/", handlers.LogError)

@@ -147,20 +147,6 @@ var userSeeds = []interface{}{
 				Description: "2017 Model",
 			},
 		},
-		InComplete_Actions: []models.Action{
-			{
-				ID:         "1",
-				User:       "John",
-				Status:     "CREATED",
-				Created_At: time.Now(),
-			},
-			{
-				ID:         "2",
-				User:       "John",
-				Status:     "CREATED",
-				Created_At: time.Now(),
-			},
-		},
 		Is_Active:   true,
 		Admin:       false,
 		Permissions: []string{"EMPLOYEE"},
@@ -182,20 +168,6 @@ var userSeeds = []interface{}{
 				Description: "2017 Model",
 			},
 		},
-		InComplete_Actions: []models.Action{
-			{
-				ID:         "1",
-				User:       "John",
-				Status:     "CREATED",
-				Created_At: time.Now(),
-			},
-			{
-				ID:         "2",
-				User:       "John",
-				Status:     "CREATED",
-				Created_At: time.Now(),
-			},
-		},
 		Is_Active:   true,
 		Admin:       true,
 		Permissions: []string{"FINANCE_TEAM", "SUPERVISOR"},
@@ -215,20 +187,6 @@ var userSeeds = []interface{}{
 				ID:          "2",
 				Name:        "Toyota Corolla",
 				Description: "2017 Model",
-			},
-		},
-		InComplete_Actions: []models.Action{
-			{
-				ID:         "1",
-				User:       "John",
-				Status:     "PENDING",
-				Created_At: time.Now(),
-			},
-			{
-				ID:         "2",
-				User:       "John",
-				Status:     "PENDING",
-				Created_At: time.Now(),
 			},
 		},
 		Is_Active:   true,

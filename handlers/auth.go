@@ -71,6 +71,7 @@ func Login(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusOK).JSON(responses.LoggedIn(login_res.Token))
 		}
 	}
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError("error setting cookies"))
 }
 
@@ -87,5 +88,6 @@ func Logout(c *fiber.Ctx) error {
 		Name:  "user_id",
 		Value: "",
 	})
+	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.LoggedOut())
 }
