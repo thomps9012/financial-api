@@ -327,6 +327,19 @@ definitions:
       user_id:
         type: string
     type: object
+  models.LoginRes:
+    properties:
+      admin:
+        type: boolean
+      permissions:
+        items:
+          type: string
+        type: array
+      token:
+        type: string
+      user_id:
+        type: string
+    type: object
   models.Mileage_Overview:
     properties:
       current_status:
@@ -641,9 +654,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Check_Request'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.CheckOverviewRes:
@@ -652,9 +665,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Check_Request_Overview'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.CheckOverviewsRes:
@@ -665,9 +678,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Check_Request_Overview'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.CheckRequestsRes:
@@ -678,9 +691,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Check_Request'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.ErrorLogRes:
@@ -700,9 +713,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Grant'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.GrantsRes:
@@ -713,9 +726,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Grant'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.MileageOverviewRes:
@@ -724,9 +737,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Mileage_Overview'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.MileageOverviewsRes:
@@ -737,9 +750,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Mileage_Overview'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.MileageRes:
@@ -748,9 +761,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Mileage_Request'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.MileagesRes:
@@ -761,9 +774,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Mileage_Request'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.MyInfoRes:
@@ -772,9 +785,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.PublicInfo'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.NilRes:
@@ -783,9 +796,9 @@ definitions:
         type: integer
       data:
         type: string
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.PettyCashOverviewRes:
@@ -794,9 +807,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Petty_Cash_Overview'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.PettyCashOverviewsRes:
@@ -807,9 +820,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Petty_Cash_Overview'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.PettyCashRequestsRes:
@@ -820,9 +833,9 @@ definitions:
         items:
           $ref: '#/definitions/models.Petty_Cash_Request'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.PettyCashRes:
@@ -831,9 +844,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Petty_Cash_Request'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.UserInfoRes:
@@ -842,9 +855,20 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.PublicInfo'
+      message:
+        type: string
       status:
         type: string
-      string:
+    type: object
+  responses.UserLoginRes:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/models.LoginRes'
+      message:
+        type: string
+      status:
         type: string
     type: object
   responses.UsersInfoRes:
@@ -855,9 +879,9 @@ definitions:
         items:
           $ref: '#/definitions/models.PublicInfo'
         type: array
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
   responses.VehicleRes:
@@ -866,9 +890,9 @@ definitions:
         type: integer
       data:
         $ref: '#/definitions/models.Vehicle'
-      status:
+      message:
         type: string
-      string:
+      status:
         type: string
     type: object
 info:
@@ -901,11 +925,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.NilRes'
+            $ref: '#/definitions/responses.UserLoginRes'
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/responses.NilRes'
+            $ref: '#/definitions/responses.UserLoginRes'
       summary: login user
       tags:
       - user

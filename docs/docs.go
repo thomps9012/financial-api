@@ -51,13 +51,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.NilRes"
+                            "$ref": "#/definitions/responses.UserLoginRes"
                         }
                     },
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.NilRes"
+                            "$ref": "#/definitions/responses.UserLoginRes"
                         }
                     }
                 }
@@ -1852,6 +1852,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.LoginRes": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "type": "boolean"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.MileageInput": {
             "type": "object",
             "required": [
@@ -2308,10 +2328,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Check_Request"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2325,10 +2345,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Check_Request_Overview"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2345,10 +2365,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Check_Request_Overview"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2365,10 +2385,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Check_Request"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2399,10 +2419,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Grant"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2419,10 +2439,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Grant"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2436,10 +2456,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Mileage_Overview"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2456,10 +2476,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Mileage_Overview"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2473,10 +2493,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Mileage_Request"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2493,10 +2513,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Mileage_Request"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2510,10 +2530,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.PublicInfo"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2527,10 +2547,10 @@ const docTemplate = `{
                 "data": {
                     "type": "string"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2544,10 +2564,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Petty_Cash_Overview"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2564,10 +2584,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Petty_Cash_Overview"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2584,10 +2604,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Petty_Cash_Request"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2601,10 +2621,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Petty_Cash_Request"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2618,10 +2638,27 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.PublicInfo"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UserLoginRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.LoginRes"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -2638,10 +2675,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.PublicInfo"
                     }
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }
@@ -2655,10 +2692,10 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/models.Vehicle"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 },
-                "string": {
+                "status": {
                     "type": "string"
                 }
             }

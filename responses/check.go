@@ -10,25 +10,25 @@ import (
 type CheckOverviewsRes struct {
 	Status  string                          `json:"status"`
 	Code    int                             `json:"code"`
-	Message string                          `json:"string"`
+	Message string                          `json:"message"`
 	Data    []models.Check_Request_Overview `json:"data"`
 }
 type CheckOverviewRes struct {
 	Status  string                        `json:"status"`
 	Code    int                           `json:"code"`
-	Message string                        `json:"string"`
+	Message string                        `json:"message"`
 	Data    models.Check_Request_Overview `json:"data"`
 }
 type CheckDetailRes struct {
 	Status  string               `json:"status"`
 	Code    int                  `json:"code"`
-	Message string               `json:"string"`
+	Message string               `json:"message"`
 	Data    models.Check_Request `json:"data"`
 }
 type CheckRequestsRes struct {
 	Status  string                 `json:"status"`
 	Code    int                    `json:"code"`
-	Message string                 `json:"string"`
+	Message string                 `json:"message"`
 	Data    []models.Check_Request `json:"data"`
 }
 

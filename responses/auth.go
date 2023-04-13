@@ -2,30 +2,38 @@ package responses
 
 import (
 	"financial-api/methods"
+	"financial-api/models"
 )
 
 type NilRes struct {
 	Status  string `json:"status"`
 	Code    int    `json:"code"`
-	Message string `json:"string"`
+	Message string `json:"message"`
 	Data    string `json:"data"`
 }
 
-func NewUser(token string) NilRes {
-	return NilRes{
+type UserLoginRes struct {
+	Status  string          `json:"status"`
+	Code    int             `json:"code"`
+	Message string          `json:"message"`
+	Data    models.LoginRes `json:"data"`
+}
+
+func NewUser(login_data models.LoginRes) UserLoginRes {
+	return UserLoginRes{
 		Status:  "CREATED",
 		Code:    201,
 		Message: "New user successfully created @ " + methods.TimeNowFormat(),
-		Data:    token,
+		Data:    login_data,
 	}
 }
 
-func LoggedIn(token string) NilRes {
-	return NilRes{
+func LoggedIn(login_data models.LoginRes) UserLoginRes {
+	return UserLoginRes{
 		Status:  "OK",
 		Code:    200,
 		Message: "Successfully logged in @ " + methods.TimeNowFormat(),
-		Data:    token,
+		Data:    login_data,
 	}
 }
 

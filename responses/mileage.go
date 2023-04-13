@@ -12,25 +12,25 @@ import (
 type MileageOverviewRes struct {
 	Status  string                  `json:"status"`
 	Code    int                     `json:"code"`
-	Message string                  `json:"string"`
+	Message string                  `json:"message"`
 	Data    models.Mileage_Overview `json:"data"`
 }
 type MileageOverviewsRes struct {
 	Status  string                    `json:"status"`
 	Code    int                       `json:"code"`
-	Message string                    `json:"string"`
+	Message string                    `json:"message"`
 	Data    []models.Mileage_Overview `json:"data"`
 }
 type MileagesRes struct {
 	Status  string                   `json:"status"`
 	Code    int                      `json:"code"`
-	Message string                   `json:"string"`
+	Message string                   `json:"message"`
 	Data    []models.Mileage_Request `json:"data"`
 }
 type MileageRes struct {
 	Status  string                 `json:"status"`
 	Code    int                    `json:"code"`
-	Message string                 `json:"string"`
+	Message string                 `json:"message"`
 	Data    models.Mileage_Request `json:"data"`
 }
 

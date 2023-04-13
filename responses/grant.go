@@ -7,13 +7,13 @@ import (
 type GrantRes struct {
 	Status  string       `json:"status"`
 	Code    int          `json:"code"`
-	Message string       `json:"string"`
+	Message string       `json:"message"`
 	Data    models.Grant `json:"data"`
 }
 type GrantsRes struct {
 	Status  string         `json:"status"`
 	Code    int            `json:"code"`
-	Message string         `json:"string"`
+	Message string         `json:"message"`
 	Data    []models.Grant `json:"data"`
 }
 

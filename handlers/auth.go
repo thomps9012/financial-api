@@ -33,8 +33,8 @@ func SetCookies(c *fiber.Ctx, login_res models.LoginRes, complete chan bool) {
 // @tags user, no-cache, auth
 // @param login-info body models.UserLogin true "user's account information"
 // @produce json
-// @success 201 {object} responses.NilRes
-// @success 200 {object} responses.NilRes
+// @success 201 {object} responses.UserLoginRes
+// @success 200 {object} responses.UserLoginRes
 // @router /auth/login [post]
 func Login(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
@@ -67,7 +67,7 @@ func Login(c *fiber.Ctx) error {
 		go SetCookies(c, login_res, cookies_set)
 		complete := <-cookies_set
 		if complete {
-			return c.Status(fiber.StatusCreated).JSON(responses.NewUser(login_res.Token))
+			return c.Status(fiber.StatusCreated).JSON(responses.NewUser(login_res))
 		}
 	} else {
 		login_res, err := user.Login(*user_login)
@@ -77,7 +77,7 @@ func Login(c *fiber.Ctx) error {
 		go SetCookies(c, login_res, cookies_set)
 		complete := <-cookies_set
 		if complete {
-			return c.Status(fiber.StatusOK).JSON(responses.LoggedIn(login_res.Token))
+			return c.Status(fiber.StatusOK).JSON(responses.LoggedIn(login_res))
 		}
 	}
 	c.Response().Header.Add("no-cache", "true")

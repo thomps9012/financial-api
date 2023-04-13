@@ -43,3 +43,22 @@ export interface User_Public_Info {
   petty_cash_requests: Petty_Cash_Overview[];
   check_requests: Check_Request_Overview[];
 }
+
+export interface User_Name_Info {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+export interface User_Context_Info {
+  id: string;
+  admin: boolean;
+  permissions: string[];
+}
+
+export interface Axios_Credentials {
+  headers: {
+    Authorization: string;
+  };
+  withCredentials: boolean;
+}

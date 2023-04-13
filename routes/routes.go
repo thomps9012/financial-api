@@ -77,12 +77,12 @@ func Use(app *fiber.App) {
 	petty_cash.Get("/monthly", middleware.AdminRoute, handlers.MonthlyPettyCash)
 	petty_cash.Get("/detail", handlers.PettyCashDetail)
 
-	grant := api.Group("/grant", middleware.Protected())
+	grant := api.Group("/grant")
 	grant.Get("/", handlers.GetAllGrants)
 	grant.Get("/detail", handlers.GetOneGrant)
-	grant.Get("/check", middleware.AdminRoute, handlers.GrantCheckRequests)
-	grant.Get("/mileage", middleware.AdminRoute, handlers.GrantMileage)
-	grant.Get("/petty_cash", middleware.AdminRoute, handlers.GrantPettyCash)
+	grant.Get("/check", middleware.AdminRoute, middleware.Protected(), handlers.GrantCheckRequests)
+	grant.Get("/mileage", middleware.AdminRoute, middleware.Protected(), handlers.GrantMileage)
+	grant.Get("/petty_cash", middleware.AdminRoute, middleware.Protected(), handlers.GrantPettyCash)
 
 	errors := api.Group("/error")
 	errors.Post("/", handlers.LogError)

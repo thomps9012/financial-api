@@ -10,25 +10,25 @@ import (
 type PettyCashRes struct {
 	Status  string                    `json:"status"`
 	Code    int                       `json:"code"`
-	Message string                    `json:"string"`
+	Message string                    `json:"message"`
 	Data    models.Petty_Cash_Request `json:"data"`
 }
 type PettyCashRequestsRes struct {
 	Status  string                      `json:"status"`
 	Code    int                         `json:"code"`
-	Message string                      `json:"string"`
+	Message string                      `json:"message"`
 	Data    []models.Petty_Cash_Request `json:"data"`
 }
 type PettyCashOverviewRes struct {
 	Status  string                     `json:"status"`
 	Code    int                        `json:"code"`
-	Message string                     `json:"string"`
+	Message string                     `json:"message"`
 	Data    models.Petty_Cash_Overview `json:"data"`
 }
 type PettyCashOverviewsRes struct {
 	Status  string                       `json:"status"`
 	Code    int                          `json:"code"`
-	Message string                       `json:"string"`
+	Message string                       `json:"message"`
 	Data    []models.Petty_Cash_Overview `json:"data"`
 }
 

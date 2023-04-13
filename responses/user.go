@@ -7,13 +7,13 @@ import (
 type UsersInfoRes struct {
 	Status  string              `json:"status"`
 	Code    int                 `json:"code"`
-	Message string              `json:"string"`
+	Message string              `json:"message"`
 	Data    []models.PublicInfo `json:"data"`
 }
 type UserInfoRes struct {
 	Status  string            `json:"status"`
 	Code    int               `json:"code"`
-	Message string            `json:"string"`
+	Message string            `json:"message"`
 	Data    models.PublicInfo `json:"data"`
 }
 

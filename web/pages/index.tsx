@@ -1,9 +1,11 @@
+import { useAppContext } from "@/context/AppContext";
 import styles from "@/styles/Home.module.css";
 import Link from "next/link";
 
 export default function Landing() {
+  const { user_profile, incomplete_actions } = useAppContext();
   return (
-    <main className={styles.landing}>
+    <main >
       <br />
       <header
         style={{
@@ -13,60 +15,46 @@ export default function Landing() {
         }}
       >
         <h1>Financial Request Hub</h1>
-        <Link href={"/me/inbox"}>
-          {/* <a><p className='req-overview'>{notifications} New Action Items</p></a> */}
-          <a>
-            <p className="req-overview">0 New Action Items</p>
-          </a>
+        <Link href={"/profile/inbox"}>
+          <p className="req-overview">
+            {incomplete_actions.length} New Action Items
+          </p>
         </Link>
       </header>
       <div className={styles.container}>
         <Link href={"/mileage"}>
-          <a>
-            <h2>🚗 Mileage </h2>
-          </a>
+          <h2>🚗 Mileage </h2>
         </Link>
         <hr />
         <Link href={"/mileage/create"}>
-          <a>
-            <h3 style={{ fontWeight: 100 }}>New Request</h3>
-          </a>
+          <h3 style={{ fontWeight: 100 }}>New Request</h3>
         </Link>
         <br />
         <Link href={"/petty_cash"}>
-          <a>
-            <h2>💸 Petty Cash </h2>
-          </a>
+          <h2>💵 Petty Cash </h2>
         </Link>
         <hr />
         <Link href={"/petty_cash/create"}>
-          <a>
-            <h3 style={{ fontWeight: 100 }}>New Request</h3>
-          </a>
+          <h3 style={{ fontWeight: 100 }}>New Request</h3>
         </Link>
         <br />
         <Link href={"/check_request"}>
-          <a>
-            <h2>📑 Check Requests </h2>
-          </a>
+          <h2>🗃️ Check Requests </h2>
         </Link>
         <hr />
         <Link href={"/check_request/create"}>
-          <a>
-            <h3 style={{ fontWeight: 100 }}>New Request</h3>
-          </a>
+          <h3 style={{ fontWeight: 100 }}>New Request</h3>
         </Link>
         <br />
-        {/* {admin && <> */}
-        <h2>👨‍👦‍👦 Users </h2>
-        <hr />
-        <Link href={"/users"}>
-          <a>
-            <h3 style={{ fontWeight: 100 }}>View All</h3>
-          </a>
-        </Link>
-        {/* </> */}
-        {/* } */}
+        {user_profile.admin && (
+          <>
+            <h2>👨‍👦‍👦 Users </h2>
+            <hr />
+            <Link href={"/users"}>
+              <h3 style={{ fontWeight: 100 }}>View All</h3>
+            </Link>
+          </>
+        )}
       </div>
     </main>
   );

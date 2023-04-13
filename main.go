@@ -37,8 +37,10 @@ func Setup() *fiber.App {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.SendFile("/web/dist")
 	})
+	routes.Use(app)
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app",
+		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app, http://localhost:3000",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Requested-With",
 	}))
 	// ADD ON PRODUCTION
@@ -54,6 +56,5 @@ func Setup() *fiber.App {
 	app.Use(encryptcookie.New(encryptcookie.Config{
 		Key: config.ENV("COOKIE_SECRET"),
 	}))
-	routes.Use(app)
 	return app
 }
