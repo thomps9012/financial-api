@@ -3,9 +3,9 @@ import styles from "@/styles/Home.module.css";
 import Link from "next/link";
 
 export default function Landing() {
-  const { user_profile, incomplete_actions } = useAppContext();
+  const { user_profile } = useAppContext();
   return (
-    <main >
+    <main>
       <br />
       <header
         style={{
@@ -17,7 +17,7 @@ export default function Landing() {
         <h1>Financial Request Hub</h1>
         <Link href={"/profile/inbox"}>
           <p className="req-overview">
-            {incomplete_actions.length} New Action Items
+            {user_profile.incomplete_actions.length} New Action Items
           </p>
         </Link>
       </header>

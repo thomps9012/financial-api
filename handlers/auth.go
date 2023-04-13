@@ -7,22 +7,26 @@ import (
 	"financial-api/responses"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func SetCookies(c *fiber.Ctx, login_res models.LoginRes, complete chan bool) {
 	c.Cookie(&fiber.Cookie{
-		Name:  "admin",
-		Value: strconv.FormatBool(login_res.Admin),
+		Name:    "admin",
+		Value:   strconv.FormatBool(login_res.Admin),
+		Expires: time.Now().Add(time.Hour * 12),
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:  "permissions",
-		Value: strings.Join(login_res.Permissions, ", "),
+		Name:    "permissions",
+		Value:   strings.Join(login_res.Permissions, ", "),
+		Expires: time.Now().Add(time.Hour * 12),
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:  "user_id",
-		Value: login_res.UserID,
+		Name:    "user_id",
+		Value:   login_res.UserID,
+		Expires: time.Now().Add(time.Hour * 12),
 	})
 	complete <- true
 }

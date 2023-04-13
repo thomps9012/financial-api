@@ -15,20 +15,14 @@ export default function Navbar() {
       <div className={styles.mobileHeader}>
         {logged_in ? (
           <>
-            {/* <Link href="/profile">
+            <Link href="/profile">
               <p>
-                {session.user.image && (
-                  <span
-                    style={{ backgroundImage: `url('${session.user.image}')` }}
-                    className={styles.avatar}
-                  />
-                )}
                 <span className={styles.signedInText}>
                   <br />
-                  <strong>{session.user.name}</strong>
+                  <strong>{user_profile.name}</strong>
                 </span>
               </p>
-            </Link> */}
+            </Link>
             <p
               className={styles.menuOption}
               onClick={() => setOpenNav(!openNav)}
@@ -36,21 +30,6 @@ export default function Navbar() {
             >
               Nav
             </p>
-            {/* {logged_in && (
-              <div className="mobileSignOut">
-                <p
-                  href={`/api/auth/signout`}
-                  id="mobile-btn"
-                  className={styles.footerBtn}
-                  onClick={(e: any) => {
-                    e.preventDefault();
-                    signOut({ callbackUrl: "/" });
-                  }}
-                >
-                  Logout
-                </p>
-              </div>
-            )} */}
             <ul className={"navIcons-" + openNav}>
               <li className={styles.navIcon}>
                 <Link href="/">
@@ -163,22 +142,14 @@ export default function Navbar() {
         <div className={styles.navHeader}>
           {logged_in ? (
             <>
-              {/* <Link href="/me">
+              <Link href="/profile">
                 <p>
-                  {session.user.image && (
-                    <span
-                      style={{
-                        backgroundImage: `url('${session.user.image}')`,
-                      }}
-                      className={styles.avatar}
-                    />
-                  )}
                   <span className={styles.signedInText}>
                     <br />
-                    <strong>{session.user.name}</strong>
+                    <strong>{user_profile.name}</strong>
                   </span>
                 </p>
-              </Link> */}
+              </Link>
               <ul className={styles.navIcons}>
                 <li className={styles.navIcon}>
                   <Link href="/">
@@ -243,16 +214,6 @@ export default function Navbar() {
                   </a>
                 </li>
               </ul>
-              {/* <p
-                href={`/api/auth/signout`}
-                className={styles.buttonPrimary}
-                onClick={(e: any) => {
-                  e.preventDefault();
-                  signOut({ callbackUrl: "/" });
-                }}
-              >
-                Sign Out
-              </p> */}
             </>
           ) : (
             <ul className={styles.navIcons}>

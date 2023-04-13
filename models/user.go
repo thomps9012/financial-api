@@ -299,3 +299,20 @@ func (u *User) Deactivate() (PublicInfo, error) {
 	}
 	return *user_info, nil
 }
+func GetUserIncompleteActions(user_id string) ([]IncompleteAction, error) {
+	incomplete_actions, err := database.Use("incomplete_actions")
+	if err != nil {
+		return []IncompleteAction{{}}, err
+	}
+	actions := make([]IncompleteAction, 0)
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	cursor, err := incomplete_actions.Find(context.TODO(), filter)
+	if err != nil {
+		return []IncompleteAction{{}}, err
+	}
+	err = cursor.All(context.TODO(), &actions)
+	if err != nil {
+		return []IncompleteAction{{}}, err
+	}
+	return actions, nil
+}

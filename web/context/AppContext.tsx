@@ -3,11 +3,24 @@ import { Grant } from "@/types/grants";
 import {
   Axios_Credentials,
   Login_Input,
-  User_Context_Info,
   User_Name_Info,
+  User_Public_Info,
 } from "@/types/users";
-import { ReactNode, createContext, useContext, useState } from "react";
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import axios from "axios";
+import { Vehicle } from "@/types/users";
+import { Mileage_Overview } from "@/types/mileage";
+import { Petty_Cash_Overview } from "@/types/petty_cash";
+import { Check_Request_Overview } from "@/types/check_requests";
+import { useRouter } from "next/router";
 type Props = {
   children: ReactNode;
 };
@@ -15,10 +28,11 @@ type Props = {
 type App_Context_Type = {
   user_credentials: Axios_Credentials;
   logged_in: boolean;
-  user_profile: User_Context_Info;
+  user_profile: User_Public_Info;
   user_list: User_Name_Info[];
   grant_list: Grant[];
   incomplete_actions: Incomplete_Action[];
+  setActions: Dispatch<SetStateAction<Incomplete_Action[]>>;
   clearAction: (action_id: string) => void;
   login: (login_info: Login_Input) => void;
   logout: () => void;
@@ -34,12 +48,22 @@ const default_app_context: App_Context_Type = {
   logged_in: false,
   user_profile: {
     id: "",
+    email: "",
+    name: "",
+    last_login: new Date(),
+    vehicles: new Array<Vehicle>(),
+    is_active: false,
     admin: false,
     permissions: [""],
+    incomplete_actions: new Array<Incomplete_Action>(),
+    mileage_requests: new Array<Mileage_Overview>(),
+    petty_cash_requests: new Array<Petty_Cash_Overview>(),
+    check_requests: new Array<Check_Request_Overview>(),
   },
   user_list: [],
   grant_list: [],
   incomplete_actions: [],
+  setActions: () => {},
   clearAction: () => {},
   login: () => {},
   logout: () => {},
@@ -52,6 +76,10 @@ export function useAppContext() {
 }
 
 export function AppProvider({ children }: Props) {
+  const router = useRouter();
+  useEffect(() => {
+    setTimeout(logout_user, 1000 * 60 * 60 * 12);
+  }, [router.route]);
   const grants = [
     {
       id: "H79TI082369",
@@ -119,8 +147,17 @@ export function AppProvider({ children }: Props) {
   const [user_logged_in, setLoggedIn] = useState(false);
   const [user_info, setUserInfo] = useState({
     id: "",
+    email: "",
+    name: "",
+    last_login: new Date(),
+    vehicles: new Array<Vehicle>(),
+    is_active: false,
     admin: false,
     permissions: [""],
+    incomplete_actions: new Array<Incomplete_Action>(),
+    mileage_requests: new Array<Mileage_Overview>(),
+    petty_cash_requests: new Array<Petty_Cash_Overview>(),
+    check_requests: new Array<Check_Request_Overview>(),
   });
   const [incompleteActions, setIncompleteActions] = useState(
     new Array<Incomplete_Action>()
@@ -129,6 +166,20 @@ export function AppProvider({ children }: Props) {
     const new_state = incompleteActions.filter(({ id }) => id != action_id);
     setIncompleteActions(new_state);
   };
+  const setProfileInfo = async (auth_token: string) => {
+    try {
+      const { data } = await axios.get("/api/me", {
+        headers: {
+          Authorization: `Bearer ${auth_token}`,
+        },
+        withCredentials: true,
+      });
+      console.log(data.data);
+      setUserInfo(data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const login_user = async (user_info: Login_Input) => {
     try {
       const res = await axios.post("/api/auth/login", user_info);
@@ -136,11 +187,7 @@ export function AppProvider({ children }: Props) {
       if ((res && res.data?.data && res.status === 200) || res.status === 201) {
         setLoggedIn(true);
         setToken(res.data.data.token);
-        setUserInfo({
-          id: res.data.data.user_id,
-          admin: res.data.data.admin,
-          permissions: res.data.permissions,
-        });
+        await setProfileInfo(res.data.data.token);
       }
     } catch (error) {
       console.error(error);
@@ -149,14 +196,25 @@ export function AppProvider({ children }: Props) {
   const logout_user = async () => {
     try {
       const res = await axios.post("/api/auth/logout");
+      console.log(res);
       if (res.status === 200) {
         setLoggedIn(false);
         setToken("");
         setUserInfo({
           id: "",
+          email: "",
+          name: "",
+          last_login: new Date(),
+          vehicles: new Array<Vehicle>(),
+          is_active: false,
           admin: false,
           permissions: [""],
+          incomplete_actions: new Array<Incomplete_Action>(),
+          mileage_requests: new Array<Mileage_Overview>(),
+          petty_cash_requests: new Array<Petty_Cash_Overview>(),
+          check_requests: new Array<Check_Request_Overview>(),
         });
+        window.location.assign("/");
       }
     } catch (error) {
       console.error(error);
@@ -174,6 +232,7 @@ export function AppProvider({ children }: Props) {
     user_list: user_list,
     grant_list: grants,
     incomplete_actions: incompleteActions,
+    setActions: setIncompleteActions,
     clearAction: clearAction,
     login: login_user,
     logout: logout_user,

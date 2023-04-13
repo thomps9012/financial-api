@@ -25,21 +25,6 @@ func GetMe(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	my_mileage, err := models.GetUserMileage(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-	}
-	my_checks, err := models.GetUserCheckRequests(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-	}
-	my_petty_cash, err := models.GetUserPettyCash(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
-	}
-	my_info.Mileage_Requests = my_mileage
-	my_info.Check_Requests = my_checks
-	my_info.Petty_Cash_Requests = my_petty_cash
 	return c.Status(fiber.StatusOK).JSON(responses.MyInfo(my_info))
 }
 

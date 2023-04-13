@@ -1,11 +1,14 @@
 import { useAppContext } from "@/context/AppContext";
-
-export default function ProfilePage() {
+function ProfilePage() {
   const { user_profile } = useAppContext();
-  const { id } = user_profile;
+  const { name } = user_profile;
   return (
     <main>
-      <h1>Profile Page for {id}</h1>
+      <h1>Profile Page for {name}</h1>
+      <p>Info</p>
+      {JSON.stringify(user_profile, null, "\t")}
     </main>
   );
 }
+
+export default ProfilePage;

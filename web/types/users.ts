@@ -1,3 +1,4 @@
+import { Incomplete_Action } from "./actions";
 import { Check_Request_Overview } from "./check_requests";
 import { Mileage_Overview } from "./mileage";
 import { Petty_Cash_Overview } from "./petty_cash";
@@ -42,6 +43,7 @@ export interface User_Public_Info {
   mileage_requests: Mileage_Overview[];
   petty_cash_requests: Petty_Cash_Overview[];
   check_requests: Check_Request_Overview[];
+  incomplete_actions: Incomplete_Action[];
 }
 
 export interface User_Name_Info {
