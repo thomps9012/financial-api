@@ -24,6 +24,7 @@ import (
 func main() {
 	app := Setup()
 	log.Fatal(app.Listen(":" + config.ENV("PORT")))
+	log.Println("Starting application @ http://localhost:" + config.ENV("PORT"))
 }
 
 func Setup() *fiber.App {
@@ -32,7 +33,10 @@ func Setup() *fiber.App {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	app.Static("/", "web/dist")
+	app.Get("/", func(ctx *fiber.Ctx) error {
+		return ctx.SendFile("/web/dist")
+	})
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Requested-With",

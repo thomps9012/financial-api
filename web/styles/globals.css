@@ -1,0 +1,427 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
+* {
+  font-family: "Bebas Neue", cursive;
+}
+html,
+body {
+  font-family: "Bebas Neue", cursive;
+  padding: 0;
+  margin: 0;
+}
+.how_to_section_hidden {
+  display: none;
+}
+.how_to_section {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.how_to_section p {
+  font-size: xx-large;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    color: whitesmoke;
+    background-color: rgb(48, 48, 48);
+  }
+} */
+
+#inbox-link:hover {
+  cursor: pointer;
+}
+
+#vehicleInput {
+  display: none;
+}
+
+footer {
+  margin-bottom: 0;
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  /* border-top: 1px solid #eaeaea; */
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* add in conditional styling breakpoint for small phones */
+nav {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* add in conditional styling breakpoint for small phones */
+header {
+  padding: 0 2rem;
+}
+
+.mobileSignOut {
+  display: none;
+}
+
+@media only screen and (max-width: 720px) {
+  header,
+  nav {
+    display: none;
+  }
+
+  .mobileSignOut {
+    display: block;
+  }
+
+  select {
+    width: 85%;
+  }
+}
+
+#mobile-sign-out {
+  display: none;
+}
+
+@media only screen and (max-width: 512px) {
+  #mobile-sign-out {
+    display: block;
+  }
+}
+@media only screen and (max-width: 720px) {
+  .navIcons-true {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: absolute;
+    background-color: #fff;
+    left: 0%;
+    top: -10px;
+    height: 100vh;
+    z-index: 7;
+    transition: all var(--duration);
+  }
+}
+@media (prefers-color-scheme: dark) and (max-width: 720px) {
+  .navIcons-true {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: absolute;
+    color: whitesmoke;
+    background-color: rgb(48, 48, 48);
+    left: 0%;
+    top: -10px;
+    height: 100vh;
+    z-index: 7;
+    transition: all var(--duration);
+  }
+  .navIcons-false {
+    display: none;
+  }
+}
+
+/* different status stylings */
+.PENDING {
+  color: goldenrod;
+}
+
+.ARCHIVED {
+  color: #b2b0b0;
+}
+
+.MANAGER_APPROVED,
+.SUPERVISOR_APPROVED,
+.FINANCE_APPROVED,
+.ORGANIZATION_APPROVED,
+.EXECUTIVE_APPROVED {
+  color: rgb(134, 164, 10);
+}
+.REJECTED {
+  color: rgb(121, 10, 10);
+}
+
+.REJECTED_EDIT {
+  color: rosybrown;
+}
+
+.show {
+  font-weight: bold;
+}
+
+a:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#vehicleInput-shown {
+  display: inline-flex;
+  flex-direction: column;
+}
+#hidden {
+  background-color: white;
+  border: 0px;
+  width: max-content;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  padding-top: 20px;
+}
+.remove {
+  color: red;
+  font-weight: 1000;
+  position: relative;
+  top: 30px;
+  left: 110px;
+  z-index: 1;
+}
+
+.hr {
+  padding: 5px;
+  margin: 5px;
+  border-bottom: 5px solid cadetblue;
+  opacity: 50%;
+  width: 100%;
+}
+
+.hr-red {
+  padding: 5px;
+  margin: 5px;
+  border-bottom: 5px solid rgb(160, 95, 95);
+  opacity: 50%;
+  width: 100%;
+}
+
+button {
+  font-weight: bold;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1.4rem;
+  z-index: 10;
+  text-decoration: none;
+  padding: 0.7rem 1.4rem;
+  margin: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input,
+select {
+  font-size: large;
+  height: 45px;
+  padding: 10px;
+}
+
+textarea {
+  font-size: large;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  padding: 10px;
+}
+
+label {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: large;
+}
+
+button:hover,
+button:focus,
+button:active {
+  color: #0070f3;
+  border-color: #0070f3;
+}
+
+.purchase-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-area {
+  cursor: pointer;
+  border: 5px dashed cadetblue;
+  opacity: 50%;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  padding: 10ch;
+}
+
+.image-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.image-item {
+  margin: 15px;
+  padding: 10px;
+  height: 200px;
+}
+
+.table-cell {
+  padding: 20px;
+  text-align: center;
+  font-size: large;
+}
+
+#table-row:hover {
+  color: #0070f3;
+  cursor: pointer;
+}
+
+.record-link:hover {
+  text-decoration: underline;
+  color: #0070f3;
+}
+
+.loader {
+  --s: 17vh;
+
+  --_d: calc(0.353 * var(--s));
+  height: var(--s);
+  aspect-ratio: 3;
+  display: flex;
+}
+.loader:before,
+.loader:after {
+  content: "";
+  clip-path: polygon(
+    var(--_d) 0,
+    100% 0,
+    100% calc(100% - var(--_d)),
+    calc(100% - var(--_d)) 100%,
+    0 100%,
+    0 var(--_d)
+  );
+  background: conic-gradient(
+    from -90deg at calc(100% - var(--_d)) var(--_d),
+    #fff 135deg,
+    #666 0 270deg,
+    #aaa 0
+  );
+}
+.loader:before {
+  background-color: cadetblue;
+  background-blend-mode: multiply;
+  margin-right: calc(var(--_d) / -2);
+  animation: load 2.5s infinite linear;
+}
+.loader:after {
+  margin-left: calc(var(--_d) / -2);
+  opacity: 0.4;
+  flex: 1;
+}
+
+@keyframes load {
+  0%,
+  5% {
+    width: 0%;
+  }
+  95%,
+  100% {
+    width: 100%;
+  }
+}
+
+.loader-body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  place-content: center;
+  background: white;
+}
+
+.check-box {
+  height: 25px;
+  width: 25px;
+  margin-top: 7px;
+  margin-right: 10px;
+  color: cadetblue;
+}
+
+.check-box-label {
+  font-size: 27px;
+  color: gray;
+}
+
+#inbox-remove {
+  color: red;
+}
+
+.table-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.req-description {
+  font-size: 35px;
+}
+
+.archive-btn {
+  color: cadetblue;
+  font-size: 35px;
+  font-weight: 100;
+}
+
+.archive-btn:hover,
+.reject-btn:hover,
+.approve-btn:hover {
+  text-decoration: underline;
+}
+
+.reject-btn {
+  color: rgb(160, 95, 95);
+  font-size: 35px;
+  font-weight: 100;
+}
+
+.approve-btn {
+  color: rgb(103, 160, 95);
+  font-size: 35px;
+  font-weight: 100;
+}
+
+.button-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.button-row > h1,
+.button-row > a {
+  margin: 15px;
+}
+
+.req-overview {
+  font-size: 25px;
+}
+
+#vehicles,
+#hide-btn,
+#hidden-btn {
+  display: none;
+}
+
+#vehicles-shown,
+#show-btn,
+#shown-btn {
+  display: block;
+}
