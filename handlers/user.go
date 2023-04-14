@@ -17,6 +17,7 @@ import (
 // @success 200 {object} responses.UsersInfoRes
 // @router /user [get]
 func GetAllUsers(c *fiber.Ctx) error {
+	// update this query
 	all_users, err := models.FindAllUsers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))

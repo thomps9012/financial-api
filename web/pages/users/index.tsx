@@ -1,14 +1,24 @@
 import UnAuthorized from "@/components/unAuthorized";
 import { useAppContext } from "@/context/AppContext";
+import { User_Name_Info } from "@/types/users";
 import Link from "next/link";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import axios from "axios";
 export default function UserManagement() {
-  const { user_profile, user_list } = useAppContext();
+  const { user_profile } = useAppContext();
+  const [user_list, setUserList] = useState(new Array<User_Name_Info>());
   const [filteredUsers, setFilteredUsers] = useState(user_list);
+  useEffect(() => {
+    user_profile.admin && fetchUsers();
+  }, []);
 
   if (!user_profile.admin) {
     return <UnAuthorized />;
+  }
+  async function fetchUsers() {
+    const { data } = await axios.get("/api/users");
+    const user_data = data.data;
+    setUserList(user_data);
   }
   const showHide = (e: any) => {
     e.preventDefault();

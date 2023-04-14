@@ -1,8 +1,19 @@
 import { useAppContext } from "@/context/AppContext";
 import { User_Name_Info } from "@/types/users";
 import UnAuthorized from "./unAuthorized";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function UserSelect({ reportType }: { reportType: string }) {
+  const [user_list, setUserList] = useState(new Array<User_Name_Info>());
+  useEffect(() => {
+    user_profile.admin && fetchUsers();
+  }, []);
+  async function fetchUsers() {
+    const { data } = await axios.get("/api/users");
+    const user_data = data.data;
+    setUserList(user_data);
+  }
   let handleSubmit = (e: any) => {
     e.preventDefault();
     switch (reportType.trim().toLowerCase().split(" ").join("_")) {
@@ -16,7 +27,7 @@ export default function UserSelect({ reportType }: { reportType: string }) {
         break;
     }
   };
-  const { user_list, user_profile } = useAppContext();
+  const { user_profile } = useAppContext();
   if (!user_profile.admin) {
     return <UnAuthorized />;
   }

@@ -107,10 +107,10 @@ export default function Check_Request_Form({
         />
       )}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <a onClick={addPurchase} className="archive-btn">
+        <a onClick={addPurchase} className="archive-btn" id="add_purchase">
           Add Purchase
         </a>
-        <a onClick={removePurchase} className="reject-btn">
+        <a onClick={removePurchase} className="reject-btn" id="remove_purchase">
           Remove Last
         </a>
       </div>

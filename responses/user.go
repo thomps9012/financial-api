@@ -16,9 +16,15 @@ type UserInfoRes struct {
 	Message string            `json:"message"`
 	Data    models.PublicInfo `json:"data"`
 }
+type UsersNameRes struct {
+	Status  string                `json:"status"`
+	Code    int                   `json:"code"`
+	Message string                `json:"message"`
+	Data    []models.UserNameInfo `json:"data"`
+}
 
-func AllUsers(user_info []models.PublicInfo) UsersInfoRes {
-	return UsersInfoRes{
+func AllUsers(user_info []models.UserNameInfo) UsersNameRes {
+	return UsersNameRes{
 		Status:  "OK",
 		Code:    200,
 		Message: "All user data",

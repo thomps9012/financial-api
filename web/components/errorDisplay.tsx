@@ -20,8 +20,12 @@ export default function ErrorDisplay({
     >
       <h1 className="REJECTED">Error!</h1>
       <div className="hr-red" />
-      <h3 className="REJECTED_EDIT">{message}</h3>
-      <h3 className="REJECTED_EDIT">Occurred on {path}</h3>
+      <h3 className="REJECTED_EDIT" id="error_message">
+        {message}
+      </h3>
+      <h3 className="REJECTED_EDIT" id="error_path">
+        Occurred on {path}
+      </h3>
       <div className="hr-red" />
       {/* add in report api call */}
       <h3>

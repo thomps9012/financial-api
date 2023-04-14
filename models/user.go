@@ -36,6 +36,12 @@ type User struct {
 	Permissions []string  `json:"permissions" bson:"permissions"`
 }
 
+type UserNameInfo struct {
+	ID        string `json:"id" bson:"_id"`
+	Name      string `json:"name" bson:"name"`
+	Is_Active bool   `json:"is_active" bson:"is_active"`
+}
+
 type PublicInfo struct {
 	ID                  string                   `json:"id" bson:"_id"`
 	Email               string                   `json:"email" bson:"email"`
@@ -263,7 +269,23 @@ func (u *User) RemoveVehicle(vehicle_id string) (Vehicle, error) {
 	}
 	return *old_vehicle, nil
 }
-func FindAllUsers() ([]PublicInfo, error) {
+func FindAllUsers() ([]UserNameInfo, error) {
+	users, err := database.Use("users")
+	if err != nil {
+		return []UserNameInfo{}, err
+	}
+	data := make([]UserNameInfo, 0)
+	cursor, err := users.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		return []UserNameInfo{}, err
+	}
+	err = cursor.All(context.TODO(), &data)
+	if err != nil {
+		return []UserNameInfo{}, err
+	}
+	return data, nil
+}
+func GetAllUsersPublicInfo() ([]PublicInfo, error) {
 	users, err := database.Use("users")
 	if err != nil {
 		return []PublicInfo{}, err

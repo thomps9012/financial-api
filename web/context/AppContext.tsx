@@ -1,9 +1,7 @@
 import { Incomplete_Action } from "@/types/actions";
-import { Grant } from "@/types/grants";
 import {
   Axios_Credentials,
   Login_Input,
-  User_Name_Info,
   User_Public_Info,
 } from "@/types/users";
 import {
@@ -29,8 +27,6 @@ type App_Context_Type = {
   user_credentials: Axios_Credentials;
   logged_in: boolean;
   user_profile: User_Public_Info;
-  user_list: User_Name_Info[];
-  grant_list: Grant[];
   incomplete_actions: Incomplete_Action[];
   setActions: Dispatch<SetStateAction<Incomplete_Action[]>>;
   clearAction: (action_id: string) => void;
@@ -60,8 +56,6 @@ const default_app_context: App_Context_Type = {
     petty_cash_requests: new Array<Petty_Cash_Overview>(),
     check_requests: new Array<Check_Request_Overview>(),
   },
-  user_list: [],
-  grant_list: [],
   incomplete_actions: [],
   setActions: () => {},
   clearAction: () => {},
@@ -80,69 +74,7 @@ export function AppProvider({ children }: Props) {
   useEffect(() => {
     setTimeout(logout_user, 1000 * 60 * 60 * 12);
   }, [router.route]);
-  const grants = [
-    {
-      id: "H79TI082369",
-      name: "BCORR",
-    },
-    {
-      id: "SOR_HOUSING",
-      name: "SOR Recovery Housing",
-    },
-    {
-      id: "SOR_PEER",
-      name: "SOR Peer",
-    },
-    {
-      id: "SOR_LORAIN",
-      name: "SOR Lorain 2.0",
-    },
-    {
-      id: "H79TI085495",
-      name: "RAP AID (Recover from Addition to Prevent Aids)",
-    },
-    {
-      id: "2020-JY-FX-0014",
-      name: "JSBT (OJJDP) - Jumpstart For A Better Tomorrow",
-    },
-    {
-      id: "H79SP082264",
-      name: "HIV Navigator",
-    },
-    {
-      id: "H79SP082475",
-      name: "SPF (HOPE 1)",
-    },
-    {
-      id: "SOR_TWR",
-      name: "SOR 2.0 - Together We Rise",
-    },
-    {
-      id: "H79TI083370",
-      name: "BSW (Bridge to Success Workforce)",
-    },
-    {
-      id: "H79SM085150",
-      name: "CCBHC",
-    },
-    {
-      id: "H79TI083662",
-      name: "IOP New Syrenity Intensive outpatient Program",
-    },
-    {
-      id: "TANF",
-      name: "TANF",
-    },
-    {
-      id: "H79SP081048",
-      name: "STOP Grant",
-    },
-    {
-      id: "H79TI085410",
-      name: "N MAT (NORA Medication-Assisted Treatment Program)",
-    },
-  ];
-  const user_list = [{ id: "", name: "", active: false }];
+
   const [user_token, setToken] = useState("");
   const [user_logged_in, setLoggedIn] = useState(false);
   const [user_info, setUserInfo] = useState({
@@ -229,14 +161,11 @@ export function AppProvider({ children }: Props) {
       withCredentials: true,
     },
     logged_in: user_logged_in,
-    user_list: user_list,
-    grant_list: grants,
     incomplete_actions: incompleteActions,
     setActions: setIncompleteActions,
     clearAction: clearAction,
     login: login_user,
     logout: logout_user,
   };
-
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -1,3 +1,5 @@
+import titleCase from "@/utils/titleCase";
+
 export default function CategorySelect({
   state,
   setState,
@@ -27,13 +29,17 @@ export default function CategorySelect({
   return (
     <>
       <h3>Request Category</h3>
-      <select name={state} onChange={handleChange} defaultValue={state}>
+      <select
+        name={state}
+        onChange={handleChange}
+        defaultValue={state.category}
+      >
         <option value="" disabled hidden>
           Select Category...
         </option>
         {Categories.map((category) => (
           <option value={category} key={category}>
-            {category.toLowerCase().split("_").join(" ")}
+            {titleCase(category.toLowerCase().split("_").join(" "))}
           </option>
         ))}
       </select>

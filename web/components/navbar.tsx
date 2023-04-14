@@ -1,12 +1,9 @@
-// import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import styles from "./header.module.css";
 import { useAppContext } from "@/context/AppContext";
-import axios from "axios";
 
 export default function Navbar() {
-  // const { data: session } = useSession();
   const { login, logout } = useAppContext();
   const [openNav, setOpenNav] = useState(false);
   const { user_profile, logged_in } = useAppContext();
