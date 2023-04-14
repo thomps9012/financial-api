@@ -2,10 +2,10 @@ import { useAppContext } from "@/context/AppContext";
 
 export default function ProfilePettyCashPage() {
   const { user_profile } = useAppContext();
-  const { id } = user_profile;
+  const { name } = user_profile;
   return (
     <main>
-      <h1>Petty Cash Page for {id}</h1>
+      <h1>Petty Cash Page for {name}</h1>
     </main>
   );
 }

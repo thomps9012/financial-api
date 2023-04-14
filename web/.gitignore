@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+/components/**.cy.tsx
+/cypress
 
 # next.js
 /.next/
@@ -14,6 +16,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store

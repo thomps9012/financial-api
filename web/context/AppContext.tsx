@@ -19,6 +19,7 @@ import { Mileage_Overview } from "@/types/mileage";
 import { Petty_Cash_Overview } from "@/types/petty_cash";
 import { Check_Request_Overview } from "@/types/check_requests";
 import { useRouter } from "next/router";
+import { setCookie, deleteCookie } from "cookies-next";
 type Props = {
   children: ReactNode;
 };
@@ -106,8 +107,13 @@ export function AppProvider({ children }: Props) {
         },
         withCredentials: true,
       });
-      console.log(data.data);
       setUserInfo(data.data);
+      setCookie("auth_credentials", {
+        headers: {
+          Authorization: `Bearer ${auth_token}`,
+        },
+        withCredentials: true,
+      });
     } catch (error) {
       console.error(error);
     }
@@ -146,6 +152,7 @@ export function AppProvider({ children }: Props) {
           petty_cash_requests: new Array<Petty_Cash_Overview>(),
           check_requests: new Array<Check_Request_Overview>(),
         });
+        deleteCookie("auth_credentials");
         window.location.assign("/");
       }
     } catch (error) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import CategorySelect from "./categorySelect";
 import GrantSelect from "./grantSelect";
@@ -24,6 +24,42 @@ export default function MileageForm({
     tolls: 0.0,
     parking: 0.0,
   });
+  useEffect(() => {
+    const fetchRequestInfo = async (request_id: string) => {
+      const { data } = await axios.get("/mileage/detail", {
+        ...user_credentials,
+        data: {
+          mileage_id: request_id,
+        },
+      });
+      const {
+        grant_id,
+        date,
+        category,
+        starting_location,
+        destination,
+        trip_purpose,
+        start_odometer,
+        end_odometer,
+        tolls,
+        parking,
+      } = data.data;
+      setMileageRequestInput({
+        grant_id,
+        date,
+        category,
+        starting_location,
+        destination,
+        trip_purpose,
+        start_odometer,
+        end_odometer,
+        tolls,
+        parking,
+      });
+    };
+    !new_request && request_id && fetchRequestInfo(request_id);
+  }, [new_request, request_id, user_credentials]);
+
   const handleChange = (e: any) => {
     e.preventDefault();
     const { name, value } = e.target;

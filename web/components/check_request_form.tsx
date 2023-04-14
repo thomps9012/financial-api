@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CategorySelect from "./categorySelect";
 import GrantSelect from "./grantSelect";
 import ReceiptUpload from "./receiptUpload";
 import VendorInput from "./vendorInput";
 import PurchaseInput from "./purchaseInput";
+import { useAppContext } from "@/context/AppContext";
+import axios from "axios";
 export default function Check_Request_Form({
   new_request,
   request_id,
@@ -11,6 +13,7 @@ export default function Check_Request_Form({
   new_request: boolean;
   request_id?: string;
 }) {
+  const { user_credentials } = useAppContext();
   const [checkRequestInfo, setCheckRequestInfo] = useState({
     grant_id: "",
     date: new Date().toISOString(),
@@ -25,6 +28,49 @@ export default function Check_Request_Form({
     address_line_one: "",
     address_line_two: "",
   });
+  useEffect(() => {
+    const fetchRequestInfo = async (request_id: string) => {
+      const { data } = await axios.get("/check/detail", {
+        ...user_credentials,
+        data: {
+          check_request_id: request_id,
+        },
+      });
+      const {
+        grant_id,
+        vendor,
+        date,
+        category,
+        description,
+        credit_card,
+        purchases,
+      } = data.data;
+      setVendor(vendor);
+      setCheckRequestInfo({
+        grant_id,
+        date,
+        category,
+        description,
+        credit_card,
+      });
+      setRows(purchases.length);
+      const purchase_inputs = document.getElementsByClassName("purchase-row");
+      let i = 0;
+      for (const purchase of purchases) {
+        const purchase_input_fields = purchase_inputs[i];
+        const { grant_line_item, description, amount } = purchase;
+        purchase_input_fields.children[1].setAttribute(
+          "value",
+          grant_line_item
+        );
+        purchase_input_fields.children[3].setAttribute("value", description);
+        purchase_input_fields.children[5].setAttribute("value", amount);
+        i++;
+      }
+    };
+    !new_request && request_id && fetchRequestInfo(request_id);
+  }, [new_request, request_id, user_credentials]);
+
   const handleChange = (e: any) => {
     e.preventDefault();
     const { name, value } = e.target;

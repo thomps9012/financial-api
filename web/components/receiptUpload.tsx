@@ -2,6 +2,7 @@ import ImageUploading, {
   ImageListType,
   ImageType,
 } from "react-images-uploading";
+// install types 
 import Image from "next/image";
 import { useState } from "react";
 let imageState: ImageType[];

@@ -5,20 +5,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";
 export default function UserManagement() {
-  const { user_profile } = useAppContext();
+  const { user_profile, user_credentials } = useAppContext();
   const [user_list, setUserList] = useState(new Array<User_Name_Info>());
   const [filteredUsers, setFilteredUsers] = useState(user_list);
   useEffect(() => {
+    async function fetchUsers() {
+      const { data } = await axios.get("/api/users", { ...user_credentials });
+      const user_data = data.data;
+      setUserList(user_data);
+    }
     user_profile.admin && fetchUsers();
-  }, []);
+  }, [user_profile, user_credentials]);
 
   if (!user_profile.admin) {
     return <UnAuthorized />;
-  }
-  async function fetchUsers() {
-    const { data } = await axios.get("/api/users");
-    const user_data = data.data;
-    setUserList(user_data);
   }
   const showHide = (e: any) => {
     e.preventDefault();

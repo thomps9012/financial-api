@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CategorySelect from "./categorySelect";
 import GrantSelect from "./grantSelect";
 import ReceiptUpload from "./receiptUpload";
+import axios from "axios";
+import { useAppContext } from "@/context/AppContext";
 
 export default function PettyCashFrom({
   new_request,
@@ -10,6 +12,7 @@ export default function PettyCashFrom({
   new_request: boolean;
   request_id?: string;
 }) {
+  const { user_credentials } = useAppContext();
   const [pettyCashInput, setPettyCashInput] = useState({
     grant_id: "",
     category: "",
@@ -17,7 +20,29 @@ export default function PettyCashFrom({
     description: "",
     amount: 0.0,
   });
+  useEffect(() => {
+    const fetchRequestInfo = async (request_id: string) => {
+      const { data } = await axios.get("/petty_cash/detail", {
+        ...user_credentials,
+        data: {
+          petty_cash_id: request_id,
+        },
+      });
+      const { grant_id, category, date, description, amount, receipts } =
+        data.data;
+      setPettyCashInput({
+        grant_id,
+        category,
+        date,
+        description,
+        amount,
+      });
+      setReceipts(receipts);
+    };
+    !new_request && request_id && fetchRequestInfo(request_id);
+  }, [new_request, request_id, user_credentials]);
   const [receipts, setReceipts] = useState(new Array<String>());
+
   const handleChange = (e: any) => {
     e.preventDefault();
     const { name, value } = e.target;
