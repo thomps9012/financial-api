@@ -3,7 +3,7 @@ import { User_Name_Info } from "@/types/users";
 import UnAuthorized from "./unAuthorized";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+// possibly add in a set state callback here
 export default function UserSelect({ reportType }: { reportType: string }) {
   const [user_list, setUserList] = useState(new Array<User_Name_Info>());
   const { user_credentials, user_profile } = useAppContext();
