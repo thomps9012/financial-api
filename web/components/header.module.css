@@ -1,13 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
-
-.navHeader {
-  position: relative;
-  top: 0;
-  opacity: 1;
-  overflow: hidden;
-  border-radius: 0 0 0.6rem 0.6rem;
-  padding: 0.6rem 1rem 0rem;
-  transition: all 0.2s ease-in;
+@media screen and (max-width: 1155px) {
+  .navHeader {
+    display: none;
+  }
 }
 
 .signedInText {
@@ -80,7 +74,6 @@
   .menuOption {
     all: initial;
     font-size: 35px;
-    font-family: "Bebas Neue", cursive;
     position: absolute;
     right: 0;
     top: 60px;
@@ -89,22 +82,15 @@
     all: initial;
     font-size: 35px;
     color: rgb(160, 95, 95);
-    font-family: "Bebas Neue", cursive;
   }
 }
 
-@media only screen and (max-width: 720px) {
+@media only screen and (max-width: 1155px) {
   .mobileHeader {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     margin: 10px;
-  }
-
-  .navIcon {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-right: 10px;
   }
 
   .menuOption {
@@ -124,21 +110,7 @@
 
 .navSpan {
   margin: 10px;
-  font-size: 25px;
-}
-
-@media only screen and (max-width: 1307px) {
-  .navIcons {
-    font-size: 25px;
-  }
-  .navSpan {
-    font-size: 15px;
-  }
-}
-@media only screen and (max-width: 1103px) {
-  .navSpan {
-    display: none;
-  }
+  font-size: 20px;
 }
 
 .navItems {
@@ -150,11 +122,12 @@
 }
 
 .navIcons {
-  font-size: large;
-  margin-left: 7rem;
-  padding-left: 100px;
+  font-size: 25px;
   list-style: none;
   display: flex;
+}
+.navIcons li {
+  margin-left: 20px;
 }
 
 .navItem {
@@ -165,8 +138,13 @@
 
 .navIcon {
   display: inline-block;
-  margin-left: 0.25rem;
-  font-size: x-large;
+  font-size: large;
+}
+
+.login {
+  display: "flex";
+  justify-content: end;
+  margin-right: 20px;
 }
 
 #hidden {

@@ -1,4 +1,5 @@
 import { useAppContext } from "@/context/AppContext";
+
 export default function AccessDenied() {
   const { login } = useAppContext();
   return (
@@ -11,11 +12,16 @@ export default function AccessDenied() {
         flexWrap: "wrap",
       }}
     >
-      <h1>Access Denied</h1>
+      <h1 style={{ textAlign: "center" }} className="REJECTED">
+        Access Denied
+      </h1>
       <div className="hr-red" />
-      <h1>You are Attempting to Visit a Protected Website</h1>
+      <h2 style={{ textAlign: "center" }}>
+        You are Attempting to Visit a Protected Website
+      </h2>
+      <div className="hr-red" />
       <br />
-      <div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
         <a
           onClick={(e: any) => {
             e.preventDefault();

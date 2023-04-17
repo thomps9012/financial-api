@@ -14,48 +14,91 @@ export default function Landing() {
           flexWrap: "wrap",
         }}
       >
-        <h1>Financial Request Hub</h1>
-        <Link href={"/profile/inbox"}>
-          <p className="req-overview">
-            {user_profile.incomplete_actions.length} New Action Items
-          </p>
-        </Link>
+        <h1>NORA Financial Requests</h1>
       </header>
-      <div className={styles.container}>
+      <section className={styles.home_page}>
         <Link href={"/mileage"}>
-          <h2>🚗 Mileage </h2>
+          <h2>Mileage 🚗</h2>
         </Link>
         <hr />
         <Link href={"/mileage/create"}>
-          <h3 style={{ fontWeight: 100 }}>New Request</h3>
+          <h3 style={{ fontWeight: 100 }}>Create Request</h3>
         </Link>
+        <Link href={"/profile/mileage"}>
+          <h3 style={{ fontWeight: 100 }}>Your Mileage</h3>
+        </Link>
+        {/* {user_profile.admin && ( */}
+        <>
+          <Link href={"/mileage/reports/grant"}>
+            <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
+          </Link>
+          <Link href={"/mileage/reports/user"}>
+            <h3 style={{ fontWeight: 100 }}>User Report</h3>
+          </Link>
+          <Link href={"/mileage/reports/monthly"}>
+            <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
+          </Link>
+        </>
+        {/* )} */}
         <br />
         <Link href={"/petty_cash"}>
-          <h2>💵 Petty Cash </h2>
+          <h2>Petty Cash 💵</h2>
         </Link>
         <hr />
         <Link href={"/petty_cash/create"}>
-          <h3 style={{ fontWeight: 100 }}>New Request</h3>
+          <h3 style={{ fontWeight: 100 }}>Create Request</h3>
         </Link>
+        <Link href={"/profile/petty_cash"}>
+          <h3 style={{ fontWeight: 100 }}>Your Petty Cash</h3>
+        </Link>
+        {/* {user_profile.admin && ( */}
+        <>
+          <Link href={"/petty_cash/reports/grant"}>
+            <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
+          </Link>
+          <Link href={"/petty_cash/reports/user"}>
+            <h3 style={{ fontWeight: 100 }}>User Report</h3>
+          </Link>
+          <Link href={"/petty_cash/reports/monthly"}>
+            <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
+          </Link>
+        </>
+        {/* )} */}
         <br />
         <Link href={"/check_request"}>
-          <h2>🗃️ Check Requests </h2>
+          <h2>Check Requests 🗃️</h2>
         </Link>
         <hr />
         <Link href={"/check_request/create"}>
-          <h3 style={{ fontWeight: 100 }}>New Request</h3>
+          <h3 style={{ fontWeight: 100 }}>Create Request</h3>
         </Link>
-        <br />
-        {user_profile.admin && (
-          <>
-            <h2>👨‍👦‍👦 Users </h2>
-            <hr />
-            <Link href={"/users"}>
-              <h3 style={{ fontWeight: 100 }}>View All</h3>
-            </Link>
-          </>
-        )}
-      </div>
+        <Link href={"/profile/check_requests"}>
+          <h3 style={{ fontWeight: 100 }}>Your Check Requests</h3>
+        </Link>
+        {/* {user_profile.admin && ( */}
+        <>
+          <Link href={"/check_request/reports/grant"}>
+            <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
+          </Link>
+          <Link href={"/check_request/reports/user"}>
+            <h3 style={{ fontWeight: 100 }}>User Report</h3>
+          </Link>
+          <Link href={"/check_request/reports/monthly"}>
+            <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
+          </Link>
+        </>
+        {/* )} */}
+        {/* {user_profile.admin && ( */}
+        <>
+          <br />
+          <h2>Admin Options 🔐</h2>
+          <hr />
+          <Link href={"/users"}>
+            <h3 style={{ fontWeight: 100 }}>View Users</h3>
+          </Link>
+        </>
+        {/* )} */}
+      </section>
     </main>
   );
 }

@@ -9,32 +9,42 @@ export default function Navbar() {
   const { user_profile, logged_in } = useAppContext();
   return (
     <>
-      <div className={styles.mobileHeader}>
+      <nav className={styles.mobileHeader}>
         {logged_in ? (
           <>
-            <Link href="/profile">
-              <p>
-                <span className={styles.signedInText}>
-                  <br />
-                  <strong>{user_profile.name}</strong>
-                </span>
-              </p>
-            </Link>
-            <p
+            <h1
               className={styles.menuOption}
-              onClick={() => setOpenNav(!openNav)}
-              style={{ fontSize: "35px" }}
+              onClick={() => setOpenNav(true)}
+              style={{ fontSize: "25px" }}
             >
-              Nav
-            </p>
+              Open Nav
+            </h1>
             <ul className={"navIcons-" + openNav}>
+              <li className={styles.navIcon}>
+                <a
+                  style={{ position: "absolute", right: 10 }}
+                  onClick={() => setOpenNav(false)}
+                >
+                  Hide Menu ❌
+                </a>
+              </li>
+              <li className={styles.navIcon}>
+                <Link href="/profile">
+                  <p
+                    className={styles.navIcon}
+                    onClick={() => setOpenNav(false)}
+                  >
+                    {user_profile.name} Profile
+                  </p>
+                </Link>
+              </li>
               <li className={styles.navIcon}>
                 <Link href="/">
                   <p
                     className={styles.navIcon}
-                    onClick={(e) => setOpenNav(false)}
+                    onClick={() => setOpenNav(false)}
                   >
-                    🏡 Home
+                    🏡 Homepage
                   </p>
                 </Link>
               </li>
@@ -42,9 +52,9 @@ export default function Navbar() {
                 <Link href="/profile/inbox">
                   <p
                     className={styles.navIcon}
-                    onClick={(e) => setOpenNav(false)}
+                    onClick={() => setOpenNav(false)}
                   >
-                    📭 Inbox
+                    📭 Incomplete Actions
                   </p>
                 </Link>
               </li>
@@ -52,9 +62,9 @@ export default function Navbar() {
                 <Link href="/mileage">
                   <p
                     className={styles.navIcon}
-                    onClick={(e) => setOpenNav(false)}
+                    onClick={() => setOpenNav(false)}
                   >
-                    🚗 Mileage
+                    🚗 Mileage Requests
                   </p>
                 </Link>
               </li>
@@ -62,9 +72,9 @@ export default function Navbar() {
                 <Link href="/petty_cash">
                   <p
                     className={styles.navIcon}
-                    onClick={(e) => setOpenNav(false)}
+                    onClick={() => setOpenNav(false)}
                   >
-                    💵 Petty Cash
+                    💵 Petty Cash Requests
                   </p>
                 </Link>
               </li>
@@ -72,19 +82,9 @@ export default function Navbar() {
                 <Link href="/check_request">
                   <p
                     className={styles.navIcon}
-                    onClick={(e) => setOpenNav(false)}
+                    onClick={() => setOpenNav(false)}
                   >
-                    🗃️ Check Request
-                  </p>
-                </Link>
-              </li>
-              <li className={styles.navIcon}>
-                <Link href="/how_to">
-                  <p
-                    className={styles.navIcon}
-                    onClick={(e) => setOpenNav(false)}
-                  >
-                    🆘 Help / How To
+                    🗃️ Check Requests
                   </p>
                 </Link>
               </li>
@@ -93,17 +93,27 @@ export default function Navbar() {
                   <Link href="/users">
                     <p
                       className={styles.navIcon}
-                      onClick={(e) => setOpenNav(false)}
+                      onClick={() => setOpenNav(false)}
                     >
                       👨‍👦‍👦 Users
                     </p>
                   </Link>
                 </li>
               )}
-
+              <li className={styles.navIcon}>
+                <Link href="/how_to">
+                  <p
+                    className={styles.navIcon}
+                    onClick={() => setOpenNav(false)}
+                  >
+                    🆘 Help & How To
+                  </p>
+                </Link>
+              </li>
+            </ul>
+            <ul className={styles.login}>
               <li className={styles.navIcon}>
                 <a
-                  className={styles.navIcon}
                   onClick={(e: any) => {
                     e.preventDefault();
                     logout();
@@ -115,10 +125,9 @@ export default function Navbar() {
             </ul>
           </>
         ) : (
-          <ul className={"navIcons-" + openNav}>
+          <ul className={styles.login}>
             <li className={styles.navIcon}>
               <a
-                className={styles.navIcon}
                 onClick={(e: any) => {
                   e.preventDefault();
                   const data = {
@@ -134,106 +143,82 @@ export default function Navbar() {
             </li>
           </ul>
         )}
-      </div>
-      <header>
-        <div className={styles.navHeader}>
-          {logged_in ? (
-            <>
-              <Link href="/profile">
-                <p>
-                  <span className={styles.signedInText}>
-                    <br />
-                    <strong>{user_profile.name}</strong>
-                  </span>
-                </p>
-              </Link>
-              <ul className={styles.navIcons}>
-                <li className={styles.navIcon}>
-                  <Link href="/">
-                    <p className={styles.navIcon}>
-                      🏡<span className={styles.navSpan}>Home</span>
-                    </p>
-                  </Link>
-                </li>
-                <li className={styles.navIcon}>
-                  <Link href="/profile/inbox">
-                    <p className={styles.navIcon}>
-                      📭<span className={styles.navSpan}>Inbox</span>
-                    </p>
-                  </Link>
-                </li>
-                <li className={styles.navIcon}>
-                  <Link href="/mileage">
-                    <p className={styles.navIcon}>
-                      🚗<span className={styles.navSpan}>Mileage</span>
-                    </p>
-                  </Link>
-                </li>
-                <li className={styles.navIcon}>
-                  <Link href="/petty_cash">
-                    <p className={styles.navIcon}>
-                      💵<span className={styles.navSpan}>Petty Cash</span>
-                    </p>
-                  </Link>
-                </li>
-                <li className={styles.navIcon}>
-                  <Link href="/check_request">
-                    <p className={styles.navIcon}>
-                      🗃️<span className={styles.navSpan}>Check Request</span>
-                    </p>
-                  </Link>
-                </li>
-                <li className={styles.navIcon}>
-                  <Link href="/how_to">
-                    <p className={styles.navIcon}>
-                      🆘<span className={styles.navSpan}>Help / How To</span>
-                    </p>
-                  </Link>
-                </li>
-                {user_profile.admin && (
-                  <li className={styles.navIcon}>
-                    <Link href="/users">
-                      <p className={styles.navIcon}>
-                        👨‍👦‍👦<span className={styles.navSpan}>Users</span>
-                      </p>
-                    </Link>
-                  </li>
-                )}
-                <li className={styles.navIcon}>
-                  <a
-                    className={styles.navIcon}
-                    onClick={(e: any) => {
-                      e.preventDefault();
-                      logout();
-                    }}
-                  >
-                    Sign Out 🚀
-                  </a>
-                </li>
-              </ul>
-            </>
-          ) : (
+      </nav>
+      <nav className={styles.navHeader}>
+        {logged_in ? (
+          <>
             <ul className={styles.navIcons}>
+              <li className={styles.navIcon}>
+                <Link href="/">
+                  <p className={styles.navIcon}>Home</p>
+                </Link>
+              </li>
+              <li className={styles.navIcon}>
+                <Link href="/profile">
+                  <p className={styles.navIcon}>{user_profile.name} Profile</p>
+                </Link>
+              </li>
+              <li className={styles.navIcon}>
+                <Link href="/mileage">
+                  <p className={styles.navIcon}>Mileage Requests</p>
+                </Link>
+              </li>
+              <li className={styles.navIcon}>
+                <Link href="/petty_cash">
+                  <p className={styles.navIcon}>Petty Cash Requests</p>
+                </Link>
+              </li>
+              <li className={styles.navIcon}>
+                <Link href="/check_request">
+                  <p className={styles.navIcon}>Check Requests</p>
+                </Link>
+              </li>
+              {user_profile.admin && (
+                <li className={styles.navIcon}>
+                  <Link href="/users">
+                    <p className={styles.navIcon}>Users</p>
+                  </Link>
+                </li>
+              )}
+              <li className={styles.navIcon}>
+                <Link href="/how_to">
+                  <p className={styles.navIcon}>Help & How To</p>
+                </Link>
+              </li>
               <li className={styles.navIcon}>
                 <a
                   className={styles.navIcon}
+                  style={{ right: 20, top: 40, position: "absolute" }}
                   onClick={(e: any) => {
                     e.preventDefault();
-                    const data = {
-                      id: "109157735191825776845",
-                      name: "TEST FINANCE",
-                      email: "test@example.com",
-                    };
-                    login(data);
+                    logout();
                   }}
                 >
-                  🚀 Sign In
+                  Sign Out 🚀
                 </a>
               </li>
             </ul>
-          )}
-        </div>
-      </header>
+          </>
+        ) : (
+          <ul className={styles.login}>
+            <li className={styles.navIcon}>
+              <a
+                onClick={(e: any) => {
+                  e.preventDefault();
+                  const data = {
+                    id: "109157735191825776845",
+                    name: "TEST FINANCE",
+                    email: "test@example.com",
+                  };
+                  login(data);
+                }}
+              >
+                🚀 Sign In
+              </a>
+            </li>
+          </ul>
+        )}
+      </nav>
     </>
   );
 }

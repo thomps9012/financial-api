@@ -1,10 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 * {
-  font-family: "Bebas Neue", cursive;
+  font-family: "Quicksand", sans-serif;
+}
+h1 {
+  font-family: "Jost", sans-serif;
 }
 html,
 body {
-  font-family: "Bebas Neue", cursive;
   padding: 0;
   margin: 0;
 }
@@ -30,7 +31,7 @@ a {
 }
 main {
   min-height: 50vh;
-  padding: 1rem;
+  /* padding: 1rem; */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -84,11 +85,6 @@ header {
 }
 
 @media only screen and (max-width: 720px) {
-  header,
-  nav {
-    display: none;
-  }
-
   .mobileSignOut {
     display: block;
   }
@@ -98,48 +94,35 @@ header {
   }
 }
 
+
+
 #mobile-sign-out {
   display: none;
 }
 
-@media only screen and (max-width: 512px) {
+@media only screen and (max-width: 1155px) {
   #mobile-sign-out {
     display: block;
   }
 }
-@media only screen and (max-width: 720px) {
+@media only screen and (max-width: 1155px) {
   .navIcons-true {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    width: 100%;
+    height: 100%;
     position: absolute;
     background-color: #fff;
     left: 0%;
-    top: -10px;
-    height: 100vh;
-    z-index: 7;
+    z-index: 50;
     transition: all var(--duration);
-  }
-}
-@media (prefers-color-scheme: dark) and (max-width: 720px) {
-  .navIcons-true {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    position: absolute;
-    color: whitesmoke;
-    background-color: rgb(48, 48, 48);
-    left: 0%;
-    top: -10px;
-    height: 100vh;
-    z-index: 7;
-    transition: all var(--duration);
-  }
-  .navIcons-false {
-    display: none;
   }
 }
 
+.navIcons-false {
+  display: none;
+}
 /* different status stylings */
 .PENDING {
   color: goldenrod;
@@ -170,7 +153,7 @@ header {
 
 a:hover {
   cursor: pointer;
-  text-decoration: underline;
+  filter: opacity(60%);
 }
 
 #vehicleInput-shown {
@@ -237,7 +220,6 @@ select {
 
 textarea {
   font-size: large;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
   padding: 10px;
 }
 
