@@ -2,21 +2,14 @@ import UnAuthorized from "@/components/unAuthorized";
 import { useAppContext } from "@/context/AppContext";
 import { User_Name_Info } from "@/types/users";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-export default function UserManagement() {
-  const { user_profile, user_credentials } = useAppContext();
-  const [user_list, setUserList] = useState(new Array<User_Name_Info>());
-  const [filteredUsers, setFilteredUsers] = useState(user_list);
-  useEffect(() => {
-    async function fetchUsers() {
-      const { data } = await axios.get("/api/users", { ...user_credentials });
-      const user_data = data.data;
-      setUserList(user_data);
-    }
-    user_profile.admin && fetchUsers();
-  }, [user_profile, user_credentials]);
+import { getCookie } from "cookies-next";
+import { GetServerSidePropsContext } from "next";
 
+function UserManagement({ user_list }: { user_list: User_Name_Info[] }) {
+  const { user_profile } = useAppContext();
+  const [filteredUsers, setFilteredUsers] = useState(user_list);
   if (!user_profile.admin) {
     return <UnAuthorized />;
   }
@@ -78,3 +71,22 @@ export default function UserManagement() {
     </main>
   );
 }
+
+UserManagement.getInitialProps = async (ctx: GetServerSidePropsContext) => {
+  const credentials = getCookie("auth_credentials", {
+    req: ctx.req,
+    res: ctx.res,
+  });
+  if (!credentials) {
+    return {
+      user_list: [],
+    };
+  }
+  const user_credentials = JSON.parse(credentials as string);
+  const { data } = await axios.get("/api/users", { ...user_credentials });
+  return {
+    user_list: data.data,
+  };
+};
+
+export default UserManagement;

@@ -1,10 +1,12 @@
+import Check_Request_Form from "@/components/check_request_form";
 import { GetServerSidePropsContext } from "next";
-import styles from "../../../styles/Home.module.css";
 
 function EditCheckRequest({ request_id }: { request_id: string }) {
   return (
     <main>
       <h1>Check Request Edit Page for {request_id}</h1>
+      <div className="hr" />
+      <Check_Request_Form new_request={false} request_id={request_id} />
     </main>
   );
 }

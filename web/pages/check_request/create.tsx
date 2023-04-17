@@ -4,6 +4,7 @@ export default function NewCheckRequest() {
   return (
     <main>
       <h1>New Check Request</h1>
+      <div className="hr" />
       <Check_Request_Form new_request={true} />
     </main>
   );

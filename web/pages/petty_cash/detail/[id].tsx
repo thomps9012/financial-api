@@ -2,6 +2,7 @@ import { Petty_Cash_Request } from "@/types/petty_cash";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import { GetServerSidePropsContext } from "next";
+import Link from "next/link";
 
 function PettyCashRequestDetails({
   request_id,
@@ -13,6 +14,7 @@ function PettyCashRequestDetails({
   return (
     <main>
       <h1>Details for Petty Cash Request {request_id}</h1>
+      <Link href={`/petty_cash/edit/${request_id}`}>Edit Request</Link>
       <p>{JSON.stringify(request, null, 2)}</p>
     </main>
   );
@@ -26,23 +28,22 @@ PettyCashRequestDetails.getInitialProps = async (
     req: ctx.req,
     res: ctx.res,
   });
-  if (credentials) {
-    const user_credentials = JSON.parse(credentials as string);
-    const { data } = await axios.get("/petty_cash/detail", {
-      ...user_credentials,
-      data: {
-        petty_cash_id: id,
-      },
-    });
-    return {
-      request_id: id,
-      request: data.data,
-    };
-  } else {
+  if (!credentials) {
     return {
       request_id: "",
       request: {},
     };
   }
+  const user_credentials = JSON.parse(credentials as string);
+  const { data } = await axios.get("/petty_cash/detail", {
+    ...user_credentials,
+    data: {
+      petty_cash_id: id,
+    },
+  });
+  return {
+    request_id: id,
+    request: data.data,
+  };
 };
 export default PettyCashRequestDetails;

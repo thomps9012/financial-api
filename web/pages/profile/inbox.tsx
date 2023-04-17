@@ -1,8 +1,9 @@
 import { useAppContext } from "@/context/AppContext";
 
-export default function ProfileInbox() {
-  const { user_profile } = useAppContext();
+function ProfileInbox() {
+  const { user_profile, clearAction } = useAppContext();
   const { name, incomplete_actions } = user_profile;
+  const clearNotification = (action_id: string) => {};
   return (
     <main>
       <h1>Inbox Page for {name}</h1>
@@ -10,3 +11,5 @@ export default function ProfileInbox() {
     </main>
   );
 }
+
+export default ProfileInbox;

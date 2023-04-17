@@ -40,7 +40,6 @@ export default function HelpHowTo() {
             alt="How to Create Mileage"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -62,7 +61,6 @@ export default function HelpHowTo() {
             alt="How to Edit Mileage"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -85,7 +83,6 @@ export default function HelpHowTo() {
             alt="How to Archive Mileage"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -104,7 +101,6 @@ export default function HelpHowTo() {
             alt="How to Create Check Request"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <div className={styles.instructions}>
@@ -125,7 +121,6 @@ export default function HelpHowTo() {
             alt="How to Edit Check Request"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -147,7 +142,6 @@ export default function HelpHowTo() {
             alt="How to Archive Check Request"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -166,7 +160,6 @@ export default function HelpHowTo() {
             alt="How to Create Petty Cash"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -186,7 +179,6 @@ export default function HelpHowTo() {
             alt="How to Edit Petty Cash"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
@@ -207,7 +199,6 @@ export default function HelpHowTo() {
             alt="How to Archive Petty Cash"
             height={500}
             width={800}
-            layout="fixed"
           />
         </div>
         <article className={styles.instructions}>
