@@ -33,7 +33,7 @@ export default function ErrorDisplay({
       setErrorData(data.data);
     }
     reportError(error, message, path);
-  }, []);
+  }, [user_credentials, path, error, message, user_profile]);
   return (
     <div
       style={{
@@ -52,7 +52,7 @@ export default function ErrorDisplay({
       <div className="hr-red" />
       <h3>Your error has been logged and will be resolved promptly</h3>
       <h3>
-        If you'd like to take a screenshot of this screen and email it to App
+        If you would like to take a screenshot of this screen and email it to App
         Support{" "}
         <a className="PENDING" href="mailto:app_support@norainc.org">
           app_support@norainc.org

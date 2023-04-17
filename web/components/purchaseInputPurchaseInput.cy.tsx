@@ -18,13 +18,17 @@ const update_purchase = {
 describe("<PurchaseInput /> Blank Input", () => {
   it("renders a blank purchase", () => {
     // see: https://on.cypress.io/mounting-react
-    cy.mount(<PurchaseInput purchase={blank_purchase} />);
+    cy.mount(
+      <PurchaseInput validatePurchase={() => {}} purchase={blank_purchase} />
+    );
     cy.get("[name=description]").should("have.value", "");
     cy.get("[name=amount]").should("have.value", 0);
     cy.get("[name=grant_line_item]").should("have.value", "");
   });
   it("renders a blank purchase and updates accordingly", () => {
-    cy.mount(<PurchaseInput purchase={blank_purchase} />);
+    cy.mount(
+      <PurchaseInput validatePurchase={() => {}} purchase={blank_purchase} />
+    );
     cy.get("[name=description]").should("have.value", "");
     cy.get("[name=amount]").should("have.value", 0);
     cy.get("[name=grant_line_item]").should("have.value", "");
@@ -46,7 +50,7 @@ describe("<PurchaseInput /> Blank Input", () => {
 describe("<PurchaseInput /> Prefilled Input", () => {
   it("renders a prefilled purchase", () => {
     // see: https://on.cypress.io/mounting-react
-    cy.mount(<PurchaseInput purchase={test_purchase} />);
+    cy.mount(<PurchaseInput validatePurchase={() => {}} purchase={test_purchase} />);
     cy.get("[name=description]").should(
       "have.value",
       test_purchase.description
@@ -58,7 +62,7 @@ describe("<PurchaseInput /> Prefilled Input", () => {
     );
   });
   it("renders a prefilled purchase and updates accordingly", () => {
-    cy.mount(<PurchaseInput purchase={test_purchase} />);
+    cy.mount(<PurchaseInput validatePurchase={() => {}} purchase={test_purchase} />);
     cy.get("[name=description]").should(
       "have.value",
       test_purchase.description
