@@ -2,7 +2,9 @@ import { Grant } from "../types/grants";
 export default function GrantSelect({
   state,
   setState,
+  valid
 }: {
+  valid: boolean;
   state: any;
   setState: any;
 }) {
@@ -29,7 +31,7 @@ export default function GrantSelect({
     },
     {
       id: "2020-JY-FX-0014",
-      name: "JSBT (OJJDP) - Jumpstart For A Better Tomorrow",
+      name: "JSBT (OJJDP) - Jump Start For A Better Tomorrow",
     },
     {
       id: "H79SP082264",
@@ -53,7 +55,7 @@ export default function GrantSelect({
     },
     {
       id: "H79TI083662",
-      name: "IOP New Syrenity Intensive outpatient Program",
+      name: "IOP New Serenity Intensive Outpatient Program",
     },
     {
       id: "TANF",
@@ -75,8 +77,9 @@ export default function GrantSelect({
   };
   return (
     <>
-      <h3>Grant</h3>
+      <h4>Grant</h4>
       <select
+        id="grant_id"
         name={state}
         onChange={handleChange}
         defaultValue={state.grant_id}

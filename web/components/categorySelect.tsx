@@ -1,13 +1,13 @@
-import titleCase from "@/utils/titleCase";
-
 export default function CategorySelect({
   state,
   setState,
+  valid,
 }: {
+  valid: boolean;
   state: any;
   setState: any;
 }) {
-  const Categories = [
+  const categories = [
     "IOP",
     "INTAKE",
     "PEERS",
@@ -28,18 +28,19 @@ export default function CategorySelect({
   };
   return (
     <>
-      <h3>Request Category</h3>
+      <h4>Category</h4>
       <select
         name={state}
+        id="category"
         onChange={handleChange}
         defaultValue={state.category}
       >
         <option value="" disabled hidden>
           Select Category...
         </option>
-        {Categories.map((category) => (
+        {categories.map((category) => (
           <option value={category} key={category}>
-            {titleCase(category.toLowerCase().split("_").join(" "))}
+            {category.split("_").join(" ")}
           </option>
         ))}
       </select>

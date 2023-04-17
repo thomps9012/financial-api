@@ -57,8 +57,48 @@ export default function MileageForm({
         parking,
       });
     };
+    for (const field of Object.keys(mileageRequestInput)) {
+      console.log(field);
+      const input = document.getElementById(field) as
+        | HTMLSelectElement
+        | HTMLInputElement;
+      console.log(input);
+      console.log(input?.value);
+      if (
+        input?.value != "" &&
+        input?.value != null &&
+        input?.value != undefined
+      ) {
+        document.getElementById(`invalid-${field}`)?.classList.add("hidden");
+        document.getElementById(field)?.classList.remove("invalid-input");
+      } else {
+        document.getElementById(field)?.classList.add("invalid-input");
+        document.getElementById(`invalid-${field}`)?.classList.remove("hidden");
+      }
+      if (field === "start_odometer" || field === "end_odometer") {
+        if (
+          mileageRequestInput.start_odometer > mileageRequestInput.end_odometer
+        ) {
+          document.getElementById(field)?.classList.add("invalid-input");
+          document
+            .getElementById("invalid-odometer-1")
+            ?.classList.remove("hidden");
+          document
+            .getElementById("invalid-odometer-2")
+            ?.classList.remove("hidden");
+        } else {
+          document.getElementById(field)?.classList.remove("invalid-input");
+          document
+            .getElementById("invalid-odometer-1")
+            ?.classList.add("hidden");
+          document
+            .getElementById("invalid-odometer-2")
+            ?.classList.add("hidden");
+        }
+      }
+    }
     !new_request && request_id && fetchRequestInfo(request_id);
-  }, [new_request, request_id, user_credentials]);
+  }, [new_request, request_id, user_credentials, mileageRequestInput]);
 
   const handleChange = (e: any) => {
     e.preventDefault();
@@ -120,63 +160,115 @@ export default function MileageForm({
 
   return (
     <form id="mileage-form">
-      <GrantSelect
-        state={mileageRequestInput}
-        setState={setMileageRequestInput}
-      />
       <CategorySelect
         state={mileageRequestInput}
         setState={setMileageRequestInput}
+        valid={true}
       />
+      <span id="invalid-category" className="REJECTED field-span">
+        <br />
+        Category is Required
+      </span>
+      <GrantSelect
+        state={mileageRequestInput}
+        setState={setMileageRequestInput}
+        valid={true}
+      />
+      <span id="invalid-grant_id" className="REJECTED field-span">
+        <br />
+        Grant is Required
+      </span>
       <h4>Trip Date</h4>
-      <input type="datetime-local" name="date" onChange={handleChange} />
+      <input
+        type="datetime-local"
+        name="date"
+        id="date"
+        onChange={handleChange}
+        className="invalid-input"
+      />
+      <span id="invalid-date" className="REJECTED field-span">
+        <br />
+        Trip Date is Required
+      </span>
       <h4>Starting Location</h4>
       <input
         name="starting_location"
         defaultValue={mileageRequestInput.starting_location}
-        id="start"
+        id="starting_location"
+        className="invalid-input"
         maxLength={50}
         type="text"
         onChange={handleChange}
       />
       <br />
+      <span id="invalid-starting_location" className="REJECTED field-span">
+        Starting Location is Required
+      </span>
       <span>{mileageRequestInput.starting_location.length}/50 characters</span>
       <h4>Destination</h4>
       <input
         name="destination"
-        id="end"
+        id="destination"
+        className="invalid-input"
         defaultValue={mileageRequestInput.destination}
         maxLength={50}
         type="text"
         onChange={handleChange}
       />
+      <br />
+      <span id="invalid-destination" className="REJECTED field-span">
+        Trip Destination is Required
+      </span>
       <span>{mileageRequestInput.destination.length}/50 characters</span>
       <h4>Trip Purpose</h4>
       <textarea
         rows={5}
         maxLength={75}
+        id="trip_purpose"
         name="trip_purpose"
+        className="invalid-input"
         defaultValue={mileageRequestInput.trip_purpose}
         onChange={handleChange}
       />
-      <span>{mileageRequestInput.trip_purpose.length}/75 characters</span>
       <br />
+      <span id="invalid-trip_purpose" className="REJECTED field-span">
+        Trip Purpose is Required
+      </span>
+      <span>{mileageRequestInput.trip_purpose.length}/75 characters</span>
       <h4>Start Odometer</h4>
       <input
+        id="start_odometer"
         name="start_odometer"
         defaultValue={mileageRequestInput.start_odometer}
-        max={mileageRequestInput.end_odometer - 1}
         type="number"
+        className="invalid-input"
         onChange={handleChange}
       />
+      <span id="invalid-odometer-1" className="REJECTED field-span">
+        <br />
+        Current Odometer Reading is Impossible
+      </span>
+      <span id="invalid-start_odometer" className="REJECTED field-span">
+        <br />
+        Start Odometer is Required
+      </span>
       <h4>End Odometer</h4>
       <input
+        id="end_odometer"
         name="end_odometer"
         defaultValue={mileageRequestInput.end_odometer}
         type="number"
-        min={mileageRequestInput.start_odometer + 1}
+        className="invalid-input"
         onChange={handleChange}
       />
+      <span id="invalid-odometer-2" className="REJECTED field-span">
+        <br />
+        Current Odometer Reading is Impossible
+      </span>
+      <span id="invalid-end_odometer" className="REJECTED field-span">
+        <br />
+        End Odometer is Required
+      </span>
       <h4>Tolls</h4>
       <input
         name="tolls"
@@ -192,8 +284,10 @@ export default function MileageForm({
         onChange={handleChange}
       />
       <br />
+      <br />
+      <br />
       <a onClick={handleSubmit} className="archive-btn">
-        Submit Request
+        Create Request
       </a>
       <br />
     </form>
