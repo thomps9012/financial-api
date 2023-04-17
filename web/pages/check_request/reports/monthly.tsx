@@ -6,7 +6,7 @@ export default function MonthlyCheckRequests() {
   const [requests, setRequests] = useState(new Array<Check_Request_Overview>());
   return (
     <main>
-      <h1>Monthly Check Request</h1>
+      <h1>Check Requests from</h1>
       <MonthlyReportSelect reportType="Check" setReport={setRequests} />
     </main>
   );

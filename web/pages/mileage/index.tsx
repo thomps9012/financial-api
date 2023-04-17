@@ -4,11 +4,11 @@ import Link from "next/link";
 export default function MileageOverview() {
   const { user_profile } = useAppContext();
   return (
-    <main>
+    <main className="request-landing">
       <h1>Mileage Requests</h1>
       <div className="hr" />
       <Link id="new" href="/mileage/create">
-        <p>Create New</p>
+        <h2>Create New</h2>
       </Link>
       <Link href={"/profile/mileage"}>
         <h2>Your Active Requests</h2>
@@ -16,7 +16,7 @@ export default function MileageOverview() {
       {user_profile.admin && (
         <>
           <Link href="/mileage/reports/user">
-            <h2>User Requests</h2>
+            <h2>Requests by User</h2>
           </Link>
           <Link href="/mileage/reports/grant">
             <h2>Requests by Grant</h2>

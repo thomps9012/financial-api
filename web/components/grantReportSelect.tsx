@@ -75,8 +75,7 @@ export default function GrantReportSelect({
   ];
   return (
     <form>
-      <h3>Grant {reportType} Report</h3>
-      <select>
+      <select defaultValue={""}>
         <option value="" disabled hidden>
           Select Grant...
         </option>
@@ -90,7 +89,8 @@ export default function GrantReportSelect({
           );
         })}
       </select>
-      <a className="archive-btn" onClick={handleSubmit}>
+      <br />
+      <a className="archive-btn" onClick={handleSubmit} style={{textAlign: 'right'}}>
         Generate Report
       </a>
     </form>

@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function PettyCashOverview() {
   const { user_profile } = useAppContext();
   return (
-    <main>
+    <main className="request-landing">
       <h1>Petty Cash</h1>
       <div className="hr" />
       <Link href="/petty_cash/create">
@@ -16,7 +16,7 @@ export default function PettyCashOverview() {
       {user_profile.admin && (
         <>
           <Link href="/petty_cash/reports/user">
-            <h2>User Requests</h2>
+            <h2>Requests by User</h2>
           </Link>
           <Link href="/petty_cash/reports/grant">
             <h2>Requests by Grant</h2>

@@ -27,11 +27,10 @@ export default function MonthlyReportSelect({
     };
   };
   return (
-    <form>
-      <label htmlFor="month_select">
-        {reportType} Report (month and year):
-      </label>
+    <form style={{ textAlign: "right" }}>
       <input type="month" id="month_select" name="month_select" />
+      <label htmlFor="month_select">(month and year)</label>
+      <br />
       <a onClick={handleSubmit} className="archive-btn">
         {" "}
         Generate Report{" "}

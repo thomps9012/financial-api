@@ -9,20 +9,18 @@ export default function UnAuthorized() {
         display: "flex",
         flexDirection: "column",
         flexWrap: "wrap",
+        textAlign: 'center'
       }}
     >
-      <h1>Unauthorized</h1>
+      <Link href="/" className="archive-btn">
+        Back to Safety
+      </Link>
+      <br />
       <div className="hr-red" />
-      <h1>
+      <h1 className="reject-btn">
         You are Attempting to Visit an Administrative Section of the Finance
         Request Portal
       </h1>
-      <br />
-      <div>
-        <Link href="/" className="archive-btn">
-          Back to Safety
-        </Link>
-      </div>
     </main>
   );
 }

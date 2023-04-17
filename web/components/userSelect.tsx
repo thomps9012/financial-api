@@ -35,8 +35,7 @@ export default function UserSelect({ reportType }: { reportType: string }) {
   }
   return (
     <form>
-      <h3>User {reportType} Report</h3>
-      <select>
+      <select defaultValue={""}>
         <option value="" disabled hidden>
           Select User...
         </option>
@@ -49,7 +48,8 @@ export default function UserSelect({ reportType }: { reportType: string }) {
           );
         })}
       </select>
-      <a className="archive-btn" onClick={handleSubmit}>
+      <br />
+      <a className="archive-btn" onClick={handleSubmit} style={{textAlign: 'right'}}>
         Generate Report
       </a>
     </form>

@@ -27,19 +27,19 @@ export default function Landing() {
         <Link href={"/profile/mileage"}>
           <h3 style={{ fontWeight: 100 }}>Your Mileage</h3>
         </Link>
-        {/* {user_profile.admin && ( */}
-        <>
-          <Link href={"/mileage/reports/grant"}>
-            <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
-          </Link>
-          <Link href={"/mileage/reports/user"}>
-            <h3 style={{ fontWeight: 100 }}>User Report</h3>
-          </Link>
-          <Link href={"/mileage/reports/monthly"}>
-            <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
-          </Link>
-        </>
-        {/* )} */}
+        {user_profile.admin && (
+          <>
+            <Link href={"/mileage/reports/grant"}>
+              <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
+            </Link>
+            <Link href={"/mileage/reports/user"}>
+              <h3 style={{ fontWeight: 100 }}>User Report</h3>
+            </Link>
+            <Link href={"/mileage/reports/monthly"}>
+              <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
+            </Link>
+          </>
+        )}
         <br />
         <Link href={"/petty_cash"}>
           <h2>Petty Cash 💵</h2>
@@ -51,19 +51,19 @@ export default function Landing() {
         <Link href={"/profile/petty_cash"}>
           <h3 style={{ fontWeight: 100 }}>Your Petty Cash</h3>
         </Link>
-        {/* {user_profile.admin && ( */}
-        <>
-          <Link href={"/petty_cash/reports/grant"}>
-            <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
-          </Link>
-          <Link href={"/petty_cash/reports/user"}>
-            <h3 style={{ fontWeight: 100 }}>User Report</h3>
-          </Link>
-          <Link href={"/petty_cash/reports/monthly"}>
-            <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
-          </Link>
-        </>
-        {/* )} */}
+        {user_profile.admin && (
+          <>
+            <Link href={"/petty_cash/reports/grant"}>
+              <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
+            </Link>
+            <Link href={"/petty_cash/reports/user"}>
+              <h3 style={{ fontWeight: 100 }}>User Report</h3>
+            </Link>
+            <Link href={"/petty_cash/reports/monthly"}>
+              <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
+            </Link>
+          </>
+        )}
         <br />
         <Link href={"/check_request"}>
           <h2>Check Requests 🗃️</h2>
@@ -75,29 +75,29 @@ export default function Landing() {
         <Link href={"/profile/check_requests"}>
           <h3 style={{ fontWeight: 100 }}>Your Check Requests</h3>
         </Link>
-        {/* {user_profile.admin && ( */}
-        <>
-          <Link href={"/check_request/reports/grant"}>
-            <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
-          </Link>
-          <Link href={"/check_request/reports/user"}>
-            <h3 style={{ fontWeight: 100 }}>User Report</h3>
-          </Link>
-          <Link href={"/check_request/reports/monthly"}>
-            <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
-          </Link>
-        </>
-        {/* )} */}
-        {/* {user_profile.admin && ( */}
-        <>
-          <br />
-          <h2>Admin Options 🔐</h2>
-          <hr />
-          <Link href={"/users"}>
-            <h3 style={{ fontWeight: 100 }}>View Users</h3>
-          </Link>
-        </>
-        {/* )} */}
+        {user_profile.admin && (
+          <>
+            <Link href={"/check_request/reports/grant"}>
+              <h3 style={{ fontWeight: 100 }}>Grant Report</h3>
+            </Link>
+            <Link href={"/check_request/reports/user"}>
+              <h3 style={{ fontWeight: 100 }}>User Report</h3>
+            </Link>
+            <Link href={"/check_request/reports/monthly"}>
+              <h3 style={{ fontWeight: 100 }}>Monthly Report</h3>
+            </Link>
+          </>
+        )}
+        {user_profile.admin && (
+          <>
+            <br />
+            <h2>Admin 🔐</h2>
+            <hr />
+            <Link href={"/users"}>
+              <h3 style={{ fontWeight: 100 }}>View Users</h3>
+            </Link>
+          </>
+        )}
       </section>
     </main>
   );

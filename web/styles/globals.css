@@ -48,7 +48,9 @@ main {
     background-color: rgb(48, 48, 48);
   }
 } */
-
+.request-landing h2 {
+  font-weight: 400;
+}
 #inbox-link:hover {
   cursor: pointer;
 }

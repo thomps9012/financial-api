@@ -4,11 +4,11 @@ import Link from "next/link";
 export default function CheckRequestOverview() {
   const { user_profile } = useAppContext();
   return (
-    <main>
+    <main className="request-landing">
       <h1>Check Requests</h1>
       <div className="hr" />
       <Link id="new" href="/check_request/create">
-        <p>Create New</p>
+        <h2>Create New</h2>
       </Link>
       <Link href={"/profile/check_request"}>
         <h2>Your Active Requests</h2>
@@ -16,7 +16,7 @@ export default function CheckRequestOverview() {
       {user_profile.admin && (
         <>
           <Link href="/check_request/reports/user">
-            <h2>User Requests</h2>
+            <h2>Requests by User</h2>
           </Link>
           <Link href="/check_request/reports/grant">
             <h2>Requests by Grant</h2>
