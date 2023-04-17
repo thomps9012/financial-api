@@ -16,7 +16,7 @@ export default function PettyCashFrom({
   const [pettyCashInput, setPettyCashInput] = useState({
     grant_id: "",
     category: "",
-    date: "",
+    date: new Date().toISOString(),
     description: "",
     amount: 0.0,
   });
@@ -39,8 +39,39 @@ export default function PettyCashFrom({
       });
       setReceipts(receipts);
     };
+    for (const field of Object.keys(pettyCashInput)) {
+      const input = document.getElementById(field) as
+        | HTMLSelectElement
+        | HTMLInputElement;
+      if (
+        input?.value != "" &&
+        input?.value != null &&
+        input?.value != undefined
+      ) {
+        document.getElementById(`invalid-${field}`)?.classList.add("hidden");
+        document.getElementById(field)?.classList.remove("invalid-input");
+      } else {
+        document.getElementById(field)?.classList.add("invalid-input");
+        document.getElementById(`invalid-${field}`)?.classList.remove("hidden");
+      }
+      if (field === "amount") {
+        if (
+          parseInt(input.value) === 0 ||
+          input.value === undefined ||
+          input.value === ""
+        ) {
+          document.getElementById(field)?.classList.add("invalid-input");
+          document
+            .getElementById(`invalid-${field}`)
+            ?.classList.remove("hidden");
+        } else {
+          document.getElementById(`invalid-${field}`)?.classList.add("hidden");
+          document.getElementById(field)?.classList.remove("invalid-input");
+        }
+      }
+    }
     !new_request && request_id && fetchRequestInfo(request_id);
-  }, [new_request, request_id, user_credentials]);
+  }, [new_request, request_id, user_credentials, pettyCashInput]);
   const [receipts, setReceipts] = useState(new Array<String>());
 
   const handleChange = (e: any) => {
@@ -71,31 +102,54 @@ export default function PettyCashFrom({
   };
   return (
     <form id="petty-cash-form">
-      <GrantSelect state={pettyCashInput} setState={setPettyCashInput} />
       <CategorySelect state={pettyCashInput} setState={setPettyCashInput} />
-      <h4>Amount</h4>
+      <span id="invalid-category" className="REJECTED field-span">
+        <br />
+        Category is Required
+      </span>
+      <GrantSelect state={pettyCashInput} setState={setPettyCashInput} />
+      <span id="invalid-grant_id" className="REJECTED field-span">
+        <br />
+        Grant is Required
+      </span>
+      <h4>Request Amount</h4>
       <input
         type="number"
+        id="amount"
+        className="invalid-input"
         name="amount"
         defaultValue={pettyCashInput.amount}
         onChange={handleChange}
       />
+      <span id="invalid-amount" className="REJECTED field-span">
+        <br />A Valid Amount is Required
+      </span>
       <h4>Date</h4>
       <input
         type="date"
         name="date"
-        defaultValue={pettyCashInput.date}
+        id="date"
+        className="invalid-input"
         onChange={handleChange}
       />
+      <span id="invalid-date" className="REJECTED field-span">
+        <br />
+        Request Date is Required
+      </span>
       <h4>Description</h4>
       <textarea
         rows={5}
         maxLength={75}
         name="description"
+        id="description"
+        className="invalid-input"
         defaultValue={pettyCashInput.description}
         onChange={handleChange}
       />
       <br />
+      <span id="invalid-description" className="REJECTED field-span">
+        Request Description is Required
+      </span>
       <span>{pettyCashInput.description.length}/75 characters</span>
       <br />
       <h3>Receipts</h3>
