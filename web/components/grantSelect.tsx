@@ -2,9 +2,7 @@ import { Grant } from "../types/grants";
 export default function GrantSelect({
   state,
   setState,
-  valid
 }: {
-  valid: boolean;
   state: any;
   setState: any;
 }) {

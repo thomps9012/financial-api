@@ -2,7 +2,7 @@ import ImageUploading, {
   ImageListType,
   ImageType,
 } from "react-images-uploading";
-// install types 
+// install types
 import Image from "next/image";
 import { useState } from "react";
 let imageState: ImageType[];
@@ -76,9 +76,7 @@ export default function ReceiptUpload({ receipts, setReceipts }: any) {
             onClick={onImageUpload}
             className="upload-area"
             style={
-              isDragging
-                ? { background: "cadetblue", opacity: "50%" }
-                : undefined
+              isDragging ? { background: "gray", opacity: "50%" } : undefined
             }
             {...dragProps}
           >
@@ -88,20 +86,12 @@ export default function ReceiptUpload({ receipts, setReceipts }: any) {
           </div>
           <br />
           {imageList.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
+            <span
+              className="description-span"
+              style={{ color: "rgb(160, 95, 95)", textAlign: "center", display: 'flex', justifyContent: 'end' }}
             >
-              <a onClick={onImageRemoveAll} className="reject-btn">
-                Remove All Receipts
-              </a>
-              <p style={{ color: "rgb(160, 95, 95)" }} className="req-overview">
-                or Click an Image to Remove It
-              </p>
-            </div>
+              Click an Image to Remove
+            </span>
           )}
           <div className="image-container">
             {imageList.map((image, index) => (
@@ -117,9 +107,27 @@ export default function ReceiptUpload({ receipts, setReceipts }: any) {
               </div>
             ))}
           </div>
-          <p style={{ textAlign: "right" }}>
+          <h3 style={{ textAlign: "right" }}>
             {receipts.length} Attached Receipt{receipts.length != 1 && "s"}
-          </p>
+          </h3>
+
+          {imageList.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                textAlign: "right",
+              }}
+            >
+              <a
+                onClick={onImageRemoveAll}
+                className="reject-btn"
+                style={{ fontSize: 20 }}
+              >
+                Delete All Receipts
+              </a>
+            </div>
+          )}
         </div>
       )}
     </ImageUploading>

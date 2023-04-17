@@ -106,7 +106,11 @@ header {
 .invalid-input {
   animation: invalidHighlight linear 3s infinite;
 }
-
+.description-span {
+  font-size: 17px;
+  font-weight: 400;
+  padding-top: 10px;
+}
 .field-span {
   text-align: right;
   animation: fadeInOut linear 3s infinite;
@@ -275,14 +279,14 @@ button:active {
   border-color: #0070f3;
 }
 
-.purchase-row {
+.purchase-row, .vendor-input {
   display: flex;
   flex-direction: column;
 }
 
 .upload-area {
   cursor: pointer;
-  border: 5px dashed cadetblue;
+  border: 2px dashed cadetblue;
   opacity: 50%;
   display: flex;
   text-align: center;

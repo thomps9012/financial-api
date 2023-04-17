@@ -68,9 +68,80 @@ export default function Check_Request_Form({
         i++;
       }
     };
-    !new_request && request_id && fetchRequestInfo(request_id);
-  }, [new_request, request_id, user_credentials]);
+    for (const field of Object.keys(checkRequestInfo)) {
+      const input = document.getElementById(field) as
+        | HTMLInputElement
+        | HTMLSelectElement;
+      if (
+        input?.value != "" &&
+        input?.value != null &&
+        input?.value != undefined
+      ) {
+        document.getElementById(`invalid-${field}`)?.classList.add("hidden");
+        document.getElementById(field)?.classList.remove("invalid-input");
+      } else {
+        document.getElementById(field)?.classList.add("invalid-input");
+        document.getElementById(`invalid-${field}`)?.classList.remove("hidden");
+      }
+    }
+    for (const field of Object.keys(vendor)) {
+      const input = document.getElementById(
+        "vendor-" + field
+      ) as HTMLInputElement;
+      if (
+        input?.value != "" &&
+        input?.value != null &&
+        input?.value != undefined
+      ) {
+        document
+          .getElementById(`invalid-vendor-${field}`)
+          ?.classList.add("hidden");
+        document
+          .getElementById("vendor-" + field)
+          ?.classList.remove("invalid-input");
+      } else {
+        document
+          .getElementById("vendor-" + field)
+          ?.classList.add("invalid-input");
+        document
+          .getElementById(`invalid-vendor-${field}`)
+          ?.classList.remove("hidden");
+      }
+    }
 
+    !new_request && request_id && fetchRequestInfo(request_id);
+  }, [new_request, request_id, user_credentials, vendor, checkRequestInfo]);
+  const validatePurchases = () => {
+    const purchaseRows = document.getElementsByClassName("purchase-row");
+    for (let i = 0; i < purchaseRows.length; i++) {
+      const elements = purchaseRows[i].children;
+      if ((elements[1] as HTMLInputElement).value === "") {
+        elements[1].classList.add("invalid-input");
+        elements[2].classList.remove("hidden");
+      } else {
+        elements[1].classList.remove("invalid-input");
+        elements[2].classList.add("hidden");
+      }
+      if ((elements[4] as HTMLInputElement).value === "") {
+        elements[4].classList.add("invalid-input");
+        elements[5].classList.remove("hidden");
+      } else {
+        elements[4].classList.remove("invalid-input");
+        elements[5].classList.add("hidden");
+      }
+      if (
+        parseInt((elements[7] as HTMLInputElement).value) === 0 ||
+        (elements[7] as HTMLInputElement).value === "" ||
+        (elements[7] as HTMLInputElement).value === undefined
+      ) {
+        elements[7].classList.add("invalid-input");
+        elements[8].classList.remove("hidden");
+      } else {
+        elements[7].classList.remove("invalid-input");
+        elements[8].classList.add("hidden");
+      }
+    }
+  };
   const handleChange = (e: any) => {
     e.preventDefault();
     const { name, value } = e.target;
@@ -110,54 +181,98 @@ export default function Check_Request_Form({
     }
   };
   return (
-    <form>
-      <GrantSelect state={checkRequestInfo} setState={setCheckRequestInfo} />
+    <form id="check-request-form">
       <CategorySelect state={checkRequestInfo} setState={setCheckRequestInfo} />
-      <h3>Date</h3>
-      <input type="date" name="date" onChange={handleChange} />
+      <span id="invalid-category" className="REJECTED field-span">
+        <br />
+        Category is Required
+      </span>
+      <GrantSelect state={checkRequestInfo} setState={setCheckRequestInfo} />
+      <span id="invalid-grant_id" className="REJECTED field-span">
+        <br />
+        Grant is Required
+      </span>
+      <h3>Purchase Date</h3>
+      <input type="date" name="date" id="date" onChange={handleChange} />
+      <span id="invalid-date" className="REJECTED field-span">
+        <br />
+        Purchase Date is Required
+      </span>
       <h3>Description</h3>
       <textarea
         rows={5}
         maxLength={75}
         name="description"
+        id="description"
         defaultValue={checkRequestInfo.description}
         onChange={handleChange}
       />
+      <br />
+      <span id="invalid-description" className="REJECTED field-span">
+        Description is Required
+      </span>
       <span>{checkRequestInfo.description.length}/75 characters</span>
-      <br />
       <VendorInput state={vendor} setState={setVendor} />
-      <h2>Purchases</h2>
-      <span className="description">Limit 5 Purchases per Request</span>
-      <br />
+      <h2
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        Purchase List{" "}
+        <span className="description-span">Limit 5 Purchases per Request</span>
+      </h2>
       <PurchaseInput
+        validatePurchase={validatePurchases}
         purchase={{ grant_line_item: "", description: "", amount: 0.0 }}
       />
       {rowCount >= 2 && (
         <PurchaseInput
+          validatePurchase={validatePurchases}
           purchase={{ grant_line_item: "", description: "", amount: 0.0 }}
         />
       )}
       {rowCount >= 3 && (
         <PurchaseInput
+          validatePurchase={validatePurchases}
           purchase={{ grant_line_item: "", description: "", amount: 0.0 }}
         />
       )}
       {rowCount >= 4 && (
         <PurchaseInput
+          validatePurchase={validatePurchases}
           purchase={{ grant_line_item: "", description: "", amount: 0.0 }}
         />
       )}
       {rowCount >= 5 && (
         <PurchaseInput
+          validatePurchase={validatePurchases}
           purchase={{ grant_line_item: "", description: "", amount: 0.0 }}
         />
       )}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <a onClick={addPurchase} className="archive-btn" id="add_purchase">
-          Add Purchase
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-around",
+          marginBottom: 10,
+        }}
+      >
+        <a
+          onClick={addPurchase}
+          className="archive-btn"
+          id="add_purchase"
+          style={{ fontSize: 20 }}
+        >
+          + Purchase
         </a>
-        <a onClick={removePurchase} className="reject-btn" id="remove_purchase">
-          Remove Last
+        <a
+          onClick={removePurchase}
+          className="reject-btn"
+          id="remove_purchase"
+          style={{ fontSize: 20 }}
+        >
+          - Purchase
         </a>
       </div>
       <h3>Company Credit Card Used?</h3>
@@ -169,14 +284,22 @@ export default function Check_Request_Form({
         <option value="" disabled hidden>
           Select Credit Card..
         </option>
-        <option value="N/A">No</option>
-        <option value="1234">Card Ending in 1234</option>
-        <option value="5678">Card Ending in 5678</option>
+        <option value="N/A">None</option>
+        <option value="0380">5/3 Card Ending in 0380</option>
+        <option value="6366">5/3 Card Ending in 6366</option>
       </select>
-      <h3>Receipts</h3>
-      <span className="description">
-        Limit 5 Receipts in PNG or JPEG Format
-      </span>
+      <h2
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        Receipts{" "}
+        <span className="description-span">
+          Limit 5 Receipts in PNG or JPEG Format
+        </span>
+      </h2>
       <ReceiptUpload receipts={receipts} setReceipts={setReceipts} />
       <br />
       <a className="archive-btn" onClick={submitRequest}>

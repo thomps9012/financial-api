@@ -1,9 +1,7 @@
 export default function CategorySelect({
   state,
   setState,
-  valid,
 }: {
-  valid: boolean;
   state: any;
   setState: any;
 }) {

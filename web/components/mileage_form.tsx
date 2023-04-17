@@ -58,12 +58,9 @@ export default function MileageForm({
       });
     };
     for (const field of Object.keys(mileageRequestInput)) {
-      console.log(field);
       const input = document.getElementById(field) as
         | HTMLSelectElement
         | HTMLInputElement;
-      console.log(input);
-      console.log(input?.value);
       if (
         input?.value != "" &&
         input?.value != null &&
@@ -163,7 +160,6 @@ export default function MileageForm({
       <CategorySelect
         state={mileageRequestInput}
         setState={setMileageRequestInput}
-        valid={true}
       />
       <span id="invalid-category" className="REJECTED field-span">
         <br />
@@ -172,7 +168,6 @@ export default function MileageForm({
       <GrantSelect
         state={mileageRequestInput}
         setState={setMileageRequestInput}
-        valid={true}
       />
       <span id="invalid-grant_id" className="REJECTED field-span">
         <br />
