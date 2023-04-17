@@ -650,249 +650,172 @@ definitions:
     type: object
   responses.CheckDetailRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Check_Request'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.CheckOverviewRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Check_Request_Overview'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.CheckOverviewsRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Check_Request_Overview'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.CheckRequestsRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Check_Request'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.ErrorLogRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.ErrorLogOverview'
-      status:
-        type: string
       string:
         type: string
     type: object
   responses.GrantRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Grant'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.GrantsRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Grant'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.MileageOverviewRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Mileage_Overview'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.MileageOverviewsRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Mileage_Overview'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.MileageRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Mileage_Request'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.MileagesRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Mileage_Request'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.MyInfoRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.PublicInfo'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.NilRes:
     properties:
-      code:
-        type: integer
       data:
         type: string
       message:
-        type: string
-      status:
         type: string
     type: object
   responses.PettyCashOverviewRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Petty_Cash_Overview'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.PettyCashOverviewsRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Petty_Cash_Overview'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.PettyCashRequestsRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.Petty_Cash_Request'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.PettyCashRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Petty_Cash_Request'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.UserInfoRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.PublicInfo'
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.UserLoginRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.LoginRes'
       message:
         type: string
-      status:
+    type: object
+  responses.UserNameRes:
+    properties:
+      data:
+        type: string
+      message:
         type: string
     type: object
   responses.UsersInfoRes:
     properties:
-      code:
-        type: integer
       data:
         items:
           $ref: '#/definitions/models.PublicInfo'
         type: array
       message:
         type: string
-      status:
-        type: string
     type: object
   responses.VehicleRes:
     properties:
-      code:
-        type: integer
       data:
         $ref: '#/definitions/models.Vehicle'
       message:
-        type: string
-      status:
         type: string
     type: object
 info:

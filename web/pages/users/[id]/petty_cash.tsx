@@ -1,3 +1,5 @@
+import UnAuthorized from "@/components/unAuthorized";
+import { useAppContext } from "@/context/AppContext";
 import { Petty_Cash_Overview } from "@/types/petty_cash";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -10,6 +12,10 @@ function UserPettyCashPage({
   user_id: string;
   requests: Petty_Cash_Overview[];
 }) {
+  const { user_profile } = useAppContext();
+  if (!user_profile.admin) {
+    return <UnAuthorized />;
+  }
   return (
     <main>
       <h1>PettyCash page for {user_id}</h1>

@@ -44,6 +44,7 @@ func Use(app *fiber.App) {
 	user := api.Group("/user", middleware.Protected(), middleware.AdminRoute)
 	user.Get("/", handlers.GetAllUsers)
 	user.Get("/detail", handlers.GetOneUser)
+	user.Get("/name", handlers.GetUserName)
 	user.Delete("/deactivate", handlers.DeactivateUser)
 	user.Get("/mileage", handlers.UserMileage)
 	user.Get("/check", handlers.UserCheckRequests)

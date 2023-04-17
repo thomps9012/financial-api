@@ -2322,16 +2322,10 @@ const docTemplate = `{
         "responses.CheckDetailRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Check_Request"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2339,16 +2333,10 @@ const docTemplate = `{
         "responses.CheckOverviewRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Check_Request_Overview"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2356,9 +2344,6 @@ const docTemplate = `{
         "responses.CheckOverviewsRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2367,18 +2352,12 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.CheckRequestsRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2387,23 +2366,14 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.ErrorLogRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.ErrorLogOverview"
-                },
-                "status": {
-                    "type": "string"
                 },
                 "string": {
                     "type": "string"
@@ -2413,16 +2383,10 @@ const docTemplate = `{
         "responses.GrantRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Grant"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2430,9 +2394,6 @@ const docTemplate = `{
         "responses.GrantsRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2441,25 +2402,16 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.MileageOverviewRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Mileage_Overview"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2467,9 +2419,6 @@ const docTemplate = `{
         "responses.MileageOverviewsRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2478,25 +2427,16 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.MileageRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Mileage_Request"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2504,9 +2444,6 @@ const docTemplate = `{
         "responses.MileagesRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2515,25 +2452,16 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.MyInfoRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.PublicInfo"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2541,16 +2469,10 @@ const docTemplate = `{
         "responses.NilRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "string"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2558,16 +2480,10 @@ const docTemplate = `{
         "responses.PettyCashOverviewRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Petty_Cash_Overview"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2575,9 +2491,6 @@ const docTemplate = `{
         "responses.PettyCashOverviewsRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2586,18 +2499,12 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.PettyCashRequestsRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2606,25 +2513,16 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.PettyCashRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Petty_Cash_Request"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2632,16 +2530,10 @@ const docTemplate = `{
         "responses.UserInfoRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.PublicInfo"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -2649,16 +2541,21 @@ const docTemplate = `{
         "responses.UserLoginRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.LoginRes"
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.UserNameRes": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
                 },
-                "status": {
+                "message": {
                     "type": "string"
                 }
             }
@@ -2666,9 +2563,6 @@ const docTemplate = `{
         "responses.UsersInfoRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "type": "array",
                     "items": {
@@ -2677,25 +2571,16 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
         "responses.VehicleRes": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "data": {
                     "$ref": "#/definitions/models.Vehicle"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }

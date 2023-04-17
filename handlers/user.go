@@ -61,6 +61,41 @@ func GetOneUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(responses.OneUser(user_info))
 }
 
+// @id get-user-name
+// @summary retrieves a user's name
+// @description returns a given user's name based on their account ID
+// param user_info body UserIDBody true "specific user id"
+// @tags user
+// @produce json
+// @success 200 {object} responses.UserNameRes
+func GetUserName(c *fiber.Ctx) error {
+	var mr *methods.MalformedRequest
+	user_id_body := new(UserIDBody)
+	err := methods.DecodeJSONBody(c, user_id_body)
+	if err != nil {
+		if errors.As(err, &mr) {
+			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		}
+	} else {
+		c.BodyParser(user_id_body)
+	}
+	errors := methods.ValidateStruct(*user_id_body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
+	user_name, err := models.FindUserName(user_id_body.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	info := models.UserNameInfo{
+		ID:   user_id_body.UserID,
+		Name: user_name,
+	}
+	return c.Status(200).JSON(responses.UserName(info))
+}
+
 // @id delete-user
 // @summary deactivates a user
 // @description deactivates a user's account and all of their associated requests
