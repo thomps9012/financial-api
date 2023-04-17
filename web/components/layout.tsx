@@ -31,10 +31,11 @@ export default function Layout({ children }: Props) {
   //           href="https://fonts.gstatic.com"
   //           crossOrigin=""
   //         />
-  //         <link
-  //           href="https://fonts.googleapis.com/css2?family=Cabin&family=Catamaran&family=Jost&family=Overpass&family=Quicksand&family=Raleway&family=Tajawal&family=Urbanist&display=swap"
-  //           rel="stylesheet"
-  //         ></link>
+  //         <link rel="icon" href="/nora_favicon.png" />
+  //          <link
+  //        href="https://fonts.googleapis.com/css2?family=Jost&family=Quicksand&display=swap"
+  //        rel="stylesheet"
+  //      ></link>
   //       </Head>
   //       <AccessDenied />;
   //       <Footer />
@@ -53,8 +54,9 @@ export default function Layout({ children }: Props) {
           href="https://fonts.gstatic.com"
           crossOrigin=""
         />
+        <link rel="icon" href="/nora_favicon.png" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cabin&family=Catamaran&family=Jost&family=Overpass&family=Quicksand&family=Raleway&family=Tajawal&family=Urbanist&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Jost&family=Quicksand&display=swap"
           rel="stylesheet"
         ></link>
       </Head>
