@@ -92,15 +92,15 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	for _, request := range requests {
-		current_user_id := request.Current_User
-		user_name, err := FindUserName(current_user_id)
-		if err != nil {
-			request.Current_User = "N/A"
-		} else {
-			request.Current_User = user_name
-		}
-	}
+	// for _, request := range requests {
+	// 	current_user_id := request.Current_User
+	// 	user_name, err := FindUserName(current_user_id)
+	// 	if err != nil {
+	// 		request.Current_User = "N/A"
+	// 	} else {
+	// 		request.Current_User = user_name
+	// 	}
+	// }
 	return requests, nil
 }
 func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
@@ -120,15 +120,15 @@ func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
 	if err != nil {
 		return []Mileage_Request{}, err
 	}
-	for _, request := range requests {
-		current_user_id := request.Current_User
-		user_name, err := FindUserName(current_user_id)
-		if err != nil {
-			request.Current_User = "N/A"
-		} else {
-			request.Current_User = user_name
-		}
-	}
+	// for _, request := range requests {
+	// 	current_user_id := request.Current_User
+	// 	user_name, err := FindUserName(current_user_id)
+	// 	if err != nil {
+	// 		request.Current_User = "N/A"
+	// 	} else {
+	// 		request.Current_User = user_name
+	// 	}
+	// }
 	return requests, nil
 }
 func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) {
@@ -375,8 +375,8 @@ func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
 		return []Mileage_Overview{}, err
 	}
 	response := make([]Mileage_Overview, 0)
-	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
-	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.UTC)
+	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
 	filter := bson.D{{Key: "date", Value: bson.D{{Key: "$lte", Value: end_date}, {Key: "$gte", Value: start_date}}}}
 	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "reimbursement", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
@@ -388,14 +388,15 @@ func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	for _, request := range response {
-		current_user_id := request.Current_User
-		user_name, err := FindUserName(current_user_id)
-		if err != nil {
-			request.Current_User = "N/A"
-		} else {
-			request.Current_User = user_name
-		}
-	}
+	// replace with aggregate function for greater flexibility
+	// for _, request := range response {
+	// 	current_user_id := request.Current_User
+	// 	user_name, err := FindUserName(current_user_id)
+	// 	if err != nil {
+	// 		request.Current_User = "N/A"
+	// 	} else {
+	// 		request.Current_User = user_name
+	// 	}
+	// }
 	return response, nil
 }

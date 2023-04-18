@@ -94,15 +94,15 @@ func GetUserCheckRequests(user_id string) ([]Check_Request_Overview, error) {
 	if err != nil {
 		return []Check_Request_Overview{}, err
 	}
-	for _, request := range requests {
-		current_user_id := request.Current_User
-		user_name, err := FindUserName(current_user_id)
-		if err != nil {
-			request.Current_User = "N/A"
-		} else {
-			request.Current_User = user_name
-		}
-	}
+	// for _, request := range requests {
+	// 	current_user_id := request.Current_User
+	// 	user_name, err := FindUserName(current_user_id)
+	// 	if err != nil {
+	// 		request.Current_User = "N/A"
+	// 	} else {
+	// 		request.Current_User = user_name
+	// 	}
+	// }
 	return requests, nil
 }
 func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
@@ -122,15 +122,15 @@ func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
 	if err != nil {
 		return []Check_Request{}, err
 	}
-	for _, request := range requests {
-		current_user_id := request.Current_User
-		user_name, err := FindUserName(current_user_id)
-		if err != nil {
-			request.Current_User = "N/A"
-		} else {
-			request.Current_User = user_name
-		}
-	}
+	// for _, request := range requests {
+	// 	current_user_id := request.Current_User
+	// 	user_name, err := FindUserName(current_user_id)
+	// 	if err != nil {
+	// 		request.Current_User = "N/A"
+	// 	} else {
+	// 		request.Current_User = user_name
+	// 	}
+	// }
 	return requests, nil
 }
 func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_Overview, error) {
@@ -402,14 +402,14 @@ func MonthlyCheckRequests(month int, year int) ([]Check_Request_Overview, error)
 	if err != nil {
 		return []Check_Request_Overview{}, err
 	}
-	for _, request := range response {
-		current_user_id := request.Current_User
-		user_name, err := FindUserName(current_user_id)
-		if err != nil {
-			request.Current_User = "N/A"
-		} else {
-			request.Current_User = user_name
-		}
-	}
+	// for _, request := range response {
+	// 	current_user_id := request.Current_User
+	// 	user_name, err := FindUserName(current_user_id)
+	// 	if err != nil {
+	// 		request.Current_User = "N/A"
+	// 	} else {
+	// 		request.Current_User = user_name
+	// 	}
+	// }
 	return response, nil
 }
