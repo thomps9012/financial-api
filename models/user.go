@@ -58,9 +58,9 @@ type PublicInfo struct {
 }
 
 type Vehicle struct {
-	ID          string `json:"id" bson:"_id"`
-	Name        string `json:"name" bson:"name"`
-	Description string `json:"description" bson:"description"`
+	ID          string `json:"id" bson:"_id" validate:"required"`
+	Name        string `json:"name" bson:"name" validate:"required"`
+	Description string `json:"description" bson:"description" validate:"required"`
 }
 
 type VehicleInput struct {
@@ -182,9 +182,9 @@ func GetPublicInfo(user_id string) (PublicInfo, error) {
 	}
 	user_info := make([]PublicInfo, 0)
 	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: user_id}}}}
-	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
+	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
 	check_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "check_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "check_requests"}}}}
-	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
+	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
 	incomplete_action_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "incomplete_actions"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "incomplete_actions"}}}}
 	pipeline := mongo.Pipeline{filter, mileage_stage, check_stage, petty_cash_stage, incomplete_action_stage}
 	cursor, err := users.Aggregate(context.TODO(), pipeline)
@@ -236,9 +236,10 @@ func (u *User) EditVehicle(new_vehicle Vehicle) (Vehicle, error) {
 	if err != nil {
 		return Vehicle{}, err
 	}
-	filter := bson.D{{Key: "_id", Value: u.ID}}
+	filter := bson.D{{Key: "_id", Value: u.ID}, {Key: "vehicles._id", Value: new_vehicle.ID}}
 	projection := bson.D{{Key: "vehicles", Value: 1}}
-	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "vehicles", Value: bson.D{{Key: "_id", Value: new_vehicle.ID}}}}}, {Key: "$push", Value: bson.D{{Key: "vehicles", Value: new_vehicle}}}}
+
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "vehicles.$.name", Value: new_vehicle.Name}, {Key: "vehicles.$.description", Value: new_vehicle.Description}}}}
 	opts := options.FindOneAndUpdate().SetProjection(projection).SetReturnDocument(options.After)
 	err = users.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&u)
 	if err != nil {
@@ -290,9 +291,9 @@ func GetAllUsersPublicInfo() ([]PublicInfo, error) {
 	if err != nil {
 		return []PublicInfo{}, err
 	}
-	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
+	mileage_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "mileage_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "mileage_requests"}}}}
 	check_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "check_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "check_requests"}}}}
-	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
+	petty_cash_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "petty_cash_requests"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "petty_cash_requests"}}}}
 	incomplete_action_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "incomplete_actions"}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "user_id"}, {Key: "as", Value: "incomplete_actions"}}}}
 	pipeline := mongo.Pipeline{mileage_stage, check_stage, petty_cash_stage, incomplete_action_stage}
 	cursor, err := users.Aggregate(context.TODO(), pipeline)
