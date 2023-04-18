@@ -35,12 +35,27 @@ MileageRequestDetail.getInitialProps = async (
     };
   }
   const user_credentials = JSON.parse(credentials as string);
-  const { data } = await axios.get("/mileage/detail", {
+  const { data, status, statusText } = await axios.get("/api/mileage/detail", {
     ...user_credentials,
     data: {
       mileage_id: id,
     },
   });
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...user_credentials,
+      data: {
+        user_id: user_credentials.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /mileage/detail",
+        error_message: statusText,
+      },
+    });
+    return {
+      request_id: "",
+      request: {},
+    };
+  }
   return {
     request_id: id,
     request: data.data,

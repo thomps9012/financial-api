@@ -83,7 +83,23 @@ UserManagement.getInitialProps = async (ctx: GetServerSidePropsContext) => {
     };
   }
   const user_credentials = JSON.parse(credentials as string);
-  const { data } = await axios.get("/api/users", { ...user_credentials });
+  const { data, status, statusText } = await axios.get("/api/users", {
+    ...user_credentials,
+  });
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...user_credentials,
+      data: {
+        user_id: user_credentials.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /users",
+        error_message: statusText,
+      },
+    });
+    return {
+      user_list: [],
+    };
+  }
   return {
     user_list: data.data,
   };

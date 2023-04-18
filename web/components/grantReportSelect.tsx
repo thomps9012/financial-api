@@ -1,5 +1,8 @@
 import { useAppContext } from "@/context/AppContext";
 import { Grant } from "@/types/grants";
+import axios from "axios";
+import { useState } from "react";
+import ErrorDisplay from "./errorDisplay";
 
 export default function GrantReportSelect({
   reportType,
@@ -8,8 +11,34 @@ export default function GrantReportSelect({
   reportType: string;
   setReport: any;
 }) {
-  const handleSubmit = (e: any) => {
+  const { user_credentials } = useAppContext();
+  const [grant_id, setGrantID] = useState("");
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
+    if (grant_id === "") {
+      document.getElementById("invalid-grant_id")?.classList.remove("hidden");
+      return;
+    }
+    document.getElementById("invalid-grant_id")?.classList.add("hidden");
+    const { data, status, statusText } = await axios.get(
+      "/api/grant/" + reportType,
+      {
+        ...user_credentials,
+        data: {
+          id: grant_id,
+        },
+      }
+    );
+    if (status != 200 || 201) {
+      return (
+        <ErrorDisplay
+          message={statusText}
+          path={`GET /grant/${reportType}`}
+          error={data}
+        />
+      );
+    }
+    setReport(data.data);
   };
   const grants = [
     {
@@ -75,7 +104,10 @@ export default function GrantReportSelect({
   ];
   return (
     <form>
-      <select defaultValue={""}>
+      <select
+        defaultValue={""}
+        onChange={(e: any) => setGrantID(e.target.value)}
+      >
         <option value="" disabled hidden>
           Select Grant...
         </option>
@@ -89,8 +121,16 @@ export default function GrantReportSelect({
           );
         })}
       </select>
+      <span id="invalid-grant_id" className="REJECTED field-span hidden">
+        <br />
+        Grant is Required
+      </span>
       <br />
-      <a className="archive-btn" onClick={handleSubmit} style={{textAlign: 'right'}}>
+      <a
+        className="archive-btn"
+        onClick={handleSubmit}
+        style={{ textAlign: "right" }}
+      >
         Generate Report
       </a>
     </form>

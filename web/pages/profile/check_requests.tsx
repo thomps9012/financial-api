@@ -23,18 +23,32 @@ ProfileCheckPage.getInitialProps = async (ctx: GetServerSidePropsContext) => {
     req: ctx.req,
     res: ctx.res,
   });
-  if (credentials) {
-    const { data } = await axios.get(
-      "/me/check",
-      JSON.parse(credentials as string)
-    );
+  if (!credentials) {
     return {
-      petty_cash_requests: data.data,
-    };
-  } else {
-    return {
-      petty_cash_requests: [],
+      check_requests: [],
     };
   }
+  const user_credentials = JSON.parse(credentials as string);
+  const { data, status, statusText } = await axios.get(
+    "/api/me/check",
+    ...user_credentials
+  );
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...user_credentials,
+      data: {
+        user_id: user_credentials.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /me/check",
+        error_message: statusText,
+      },
+    });
+    return {
+      check_requests: [],
+    };
+  }
+  return {
+    check_requests: data.data,
+  };
 };
 export default ProfileCheckPage;

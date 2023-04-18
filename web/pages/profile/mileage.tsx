@@ -23,18 +23,32 @@ ProfileMileagePage.getInitialProps = async (ctx: GetServerSidePropsContext) => {
     req: ctx.req,
     res: ctx.res,
   });
-  if (credentials) {
-    const { data } = await axios.get(
-      "/me/mileage",
-      JSON.parse(credentials as string)
-    );
+  if (!credentials) {
     return {
-      petty_cash_requests: data.data,
-    };
-  } else {
-    return {
-      petty_cash_requests: [],
+      mileage_requests: [],
     };
   }
+  const user_credentials = JSON.parse(credentials as string);
+  const { data, status, statusText } = await axios.get(
+    "/api/me/mileage",
+    ...user_credentials
+  );
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...user_credentials,
+      data: {
+        user_id: user_credentials.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /me/mileage",
+        error_message: statusText,
+      },
+    });
+    return {
+      mileage_requests: [],
+    };
+  }
+  return {
+    mileage_requests: data.data,
+  };
 };
 export default ProfileMileagePage;

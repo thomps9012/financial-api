@@ -20,6 +20,7 @@ import { Petty_Cash_Overview } from "@/types/petty_cash";
 import { Check_Request_Overview } from "@/types/check_requests";
 import { useRouter } from "next/router";
 import { setCookie, deleteCookie } from "cookies-next";
+import ErrorDisplay from "@/components/errorDisplay";
 type Props = {
   children: ReactNode;
 };
@@ -100,64 +101,70 @@ export function AppProvider({ children }: Props) {
     setIncompleteActions(new_state);
   };
   const setProfileInfo = async (auth_token: string) => {
-    try {
-      const { data } = await axios.get("/api/me", {
-        headers: {
-          Authorization: `Bearer ${auth_token}`,
-        },
-        withCredentials: true,
-      });
-      setUserInfo(data.data);
-      setCookie("auth_credentials", {
-        headers: {
-          Authorization: `Bearer ${auth_token}`,
-        },
-        withCredentials: true,
-      });
-    } catch (error) {
-      console.error(error);
+    const { data, status, statusText } = await axios.get("/api/me", {
+      headers: {
+        Authorization: `Bearer ${auth_token}`,
+      },
+      withCredentials: true,
+    });
+    if (status != 200 || 201) {
+      return <ErrorDisplay message={statusText} error={data} path="GET /me" />;
     }
+    setUserInfo(data.data);
+    setCookie("auth_credentials", {
+      headers: {
+        Authorization: `Bearer ${auth_token}`,
+      },
+      withCredentials: true,
+    });
   };
   const login_user = async (user_info: Login_Input) => {
-    try {
-      const res = await axios.post("/api/auth/login", user_info);
-      console.log(res);
-      if ((res && res.data?.data && res.status === 200) || res.status === 201) {
-        setLoggedIn(true);
-        setToken(res.data.data.token);
-        await setProfileInfo(res.data.data.token);
-      }
-    } catch (error) {
-      console.error(error);
+    const { data, status, statusText } = await axios.post(
+      "/api/auth/login",
+      user_info
+    );
+    if (status != 200 || 201) {
+      return (
+        <ErrorDisplay
+          message={statusText}
+          error={data}
+          path="POST /auth/login"
+        />
+      );
     }
+    setLoggedIn(true);
+    setToken(data.data.token);
+    await setProfileInfo(data.data.token);
   };
   const logout_user = async () => {
-    try {
-      const res = await axios.post("/api/auth/logout");
-      console.log(res);
-      if (res.status === 200) {
-        setLoggedIn(false);
-        setToken("");
-        setUserInfo({
-          id: "",
-          email: "",
-          name: "",
-          last_login: new Date(),
-          vehicles: new Array<Vehicle>(),
-          is_active: false,
-          admin: false,
-          permissions: [""],
-          incomplete_actions: new Array<Incomplete_Action>(),
-          mileage_requests: new Array<Mileage_Overview>(),
-          petty_cash_requests: new Array<Petty_Cash_Overview>(),
-          check_requests: new Array<Check_Request_Overview>(),
-        });
-        deleteCookie("auth_credentials");
-        window.location.assign("/");
-      }
-    } catch (error) {
-      console.error(error);
+    const { data, status, statusText } = await axios.post("/api/auth/logout");
+    if (status != 200 || 201) {
+      return (
+        <ErrorDisplay
+          path="POST /auth/logout"
+          message={statusText}
+          error={data}
+        />
+      );
     }
+    setLoggedIn(false);
+    setToken("");
+    setUserInfo({
+      id: "",
+      email: "",
+      name: "",
+      last_login: new Date(),
+      vehicles: new Array<Vehicle>(),
+      is_active: false,
+      admin: false,
+      permissions: [""],
+      incomplete_actions: new Array<Incomplete_Action>(),
+      mileage_requests: new Array<Mileage_Overview>(),
+      petty_cash_requests: new Array<Petty_Cash_Overview>(),
+      check_requests: new Array<Check_Request_Overview>(),
+    });
+    deleteCookie("auth_credentials");
+    window.location.assign("/");
   };
   const value = {
     user_profile: user_info,

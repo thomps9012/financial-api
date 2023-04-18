@@ -35,12 +35,30 @@ PettyCashRequestDetails.getInitialProps = async (
     };
   }
   const user_credentials = JSON.parse(credentials as string);
-  const { data } = await axios.get("/petty_cash/detail", {
-    ...user_credentials,
-    data: {
-      petty_cash_id: id,
-    },
-  });
+  const { data, status, statusText } = await axios.get(
+    "/api/petty_cash/detail",
+    {
+      ...user_credentials,
+      data: {
+        petty_cash_id: id,
+      },
+    }
+  );
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...user_credentials,
+      data: {
+        user_id: user_credentials.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /petty_cash/detail",
+        error_message: statusText,
+      },
+    });
+    return {
+      request_id: "",
+      request: {},
+    };
+  }
   return {
     request_id: id,
     request: data.data,

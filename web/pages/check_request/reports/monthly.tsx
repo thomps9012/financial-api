@@ -7,7 +7,8 @@ export default function MonthlyCheckRequests() {
   return (
     <main>
       <h1>Check Requests from</h1>
-      <MonthlyReportSelect reportType="Check" setReport={setRequests} />
+      <MonthlyReportSelect reportType="check" setReport={setRequests} />
+      <p>{JSON.stringify(requests, null, 2)}</p>
     </main>
   );
 }

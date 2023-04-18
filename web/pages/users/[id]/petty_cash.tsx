@@ -44,18 +44,54 @@ UserPettyCashPage.getInitialProps = async (ctx: GetServerSidePropsContext) => {
     };
   }
   const auth = JSON.parse(credentials as string);
-  const { data } = await axios.get("/user/petty_cash", {
+  const { data, status, statusText } = await axios.get("/api/user/petty_cash", {
     ...auth,
     data: {
       user_id: id,
     },
   });
-  const { data: user_data } = await axios.get("/user/name", {
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...auth,
+      data: {
+        error: data,
+        user_id: auth.headers.Authorization.split(" ")[1],
+        error_path: "GET /user/petty_cash",
+        error_message: statusText,
+      },
+    });
+    return {
+      user_id: "",
+      user_name: "",
+      requests: [],
+    };
+  }
+  const {
+    data: user_data,
+    status: user_status,
+    statusText: user_statusText,
+  } = await axios.get("/api/user/name", {
     ...auth,
     data: {
       user_id: id,
     },
   });
+  if (user_status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...auth,
+      data: {
+        error: user_data,
+        user_id: auth.headers.Authorization.split(" ")[1],
+        error_path: "GET /user/petty_cash",
+        error_message: user_statusText,
+      },
+    });
+    return {
+      user_id: "",
+      user_name: "",
+      requests: [],
+    };
+  }
   return {
     user_id: id,
     user_name: user_data.data,

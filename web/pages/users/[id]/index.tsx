@@ -4,43 +4,6 @@ import { getCookie } from "cookies-next";
 import { GetServerSidePropsContext } from "next";
 import Link from "next/link";
 
-// export async function getStaticPaths(ctx: GetServerSidePropsContext) {
-//   const credentials = getCookie("auth_credentials", {
-//     req: ctx.req,
-//     res: ctx.res,
-//   });
-//   const user_credentials = JSON.parse(credentials as string);
-//   const { data } = await axios.get("/api/users", {
-//     ...user_credentials,
-//   });
-//   const paths = data.data.map(({ id }: { id: string }) => ({
-//     params: { id },
-//   }));
-//   return { paths, fallback: false };
-// }
-
-// export async function getStaticProps(ctx: GetServerSidePropsContext) {
-//   const { id } = ctx.query;
-//   const credentials = getCookie("auth_credentials", {
-//     req: ctx.req,
-//     res: ctx.res,
-//   });
-//   if (!credentials || credentials === "") {
-//     return {
-//       public_info: {},
-//     };
-//   }
-//   const auth = JSON.parse(credentials as string);
-//   const { data } = await axios.get("/user/detail", {
-//     ...auth,
-//     data: {
-//       user_id: id,
-//     },
-//   });
-//   return {
-//     public_info: data.data,
-//   };
-// }
 function UserOverviewPage({ public_info }: { public_info: User_Public_Info }) {
   return (
     <main>
@@ -65,12 +28,26 @@ UserOverviewPage.getInitialProps = async (ctx: GetServerSidePropsContext) => {
     };
   }
   const auth = JSON.parse(credentials as string);
-  const { data } = await axios.get("/user/detail", {
+  const { data, status, statusText } = await axios.get("/api/user/detail", {
     ...auth,
     data: {
       user_id: id,
     },
   });
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...auth,
+      data: {
+        user_id: auth.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /user/check",
+        error_message: statusText,
+      },
+    });
+    return {
+      public_info: {},
+    };
+  }
   return {
     public_info: data.data,
   };

@@ -6,6 +6,7 @@ import VendorInput from "./vendorInput";
 import PurchaseInput from "./purchaseInput";
 import { useAppContext } from "@/context/AppContext";
 import axios from "axios";
+import ErrorDisplay from "./errorDisplay";
 export default function Check_Request_Form({
   new_request,
   request_id,
@@ -30,12 +31,21 @@ export default function Check_Request_Form({
   });
   useEffect(() => {
     const fetchRequestInfo = async (request_id: string) => {
-      const { data } = await axios.get("/check/detail", {
+      const { data, status, statusText } = await axios.get("/api/check/detail", {
         ...user_credentials,
         data: {
           check_request_id: request_id,
         },
       });
+      if (status != 200 || 201) {
+        return (
+          <ErrorDisplay
+            message={statusText}
+            path="GET /check/detail"
+            error={data}
+          />
+        );
+      }
       const {
         grant_id,
         vendor,

@@ -12,8 +12,9 @@ export default function MonthlyPettyCash() {
   }
   return (
     <main>
-      <h1>Monthly Petty Cash Request</h1>
-      <MonthlyReportSelect reportType="Petty Cash" setReport={setRequests} />
+      <h1>Petty Cash Requests from</h1>
+      <MonthlyReportSelect reportType="petty_cash" setReport={setRequests} />
+      <p>{JSON.stringify(requests, null, 2)}</p>
     </main>
   );
 }

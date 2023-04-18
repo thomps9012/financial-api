@@ -4,6 +4,7 @@ import CategorySelect from "./categorySelect";
 import GrantSelect from "./grantSelect";
 import { useAppContext } from "@/context/AppContext";
 import { Axios_Credentials } from "@/types/users";
+import ErrorDisplay from "./errorDisplay";
 export default function MileageForm({
   new_request,
   request_id,
@@ -26,12 +27,24 @@ export default function MileageForm({
   });
   useEffect(() => {
     const fetchRequestInfo = async (request_id: string) => {
-      const { data } = await axios.get("/mileage/detail", {
-        ...user_credentials,
-        data: {
-          mileage_id: request_id,
-        },
-      });
+      const { data, status, statusText } = await axios.get(
+        "/api/mileage/detail",
+        {
+          ...user_credentials,
+          data: {
+            mileage_id: request_id,
+          },
+        }
+      );
+      if (status != 200 || 201) {
+        return (
+          <ErrorDisplay
+            message={statusText}
+            path="GET /mileage/detail"
+            error={data}
+          />
+        );
+      }
       const {
         grant_id,
         date,

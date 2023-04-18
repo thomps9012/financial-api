@@ -4,6 +4,7 @@ import GrantSelect from "./grantSelect";
 import ReceiptUpload from "./receiptUpload";
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
+import ErrorDisplay from "./errorDisplay";
 
 export default function PettyCashFrom({
   new_request,
@@ -22,12 +23,24 @@ export default function PettyCashFrom({
   });
   useEffect(() => {
     const fetchRequestInfo = async (request_id: string) => {
-      const { data } = await axios.get("/petty_cash/detail", {
-        ...user_credentials,
-        data: {
-          petty_cash_id: request_id,
-        },
-      });
+      const { data, status, statusText } = await axios.get(
+        "/api/petty_cash/detail",
+        {
+          ...user_credentials,
+          data: {
+            petty_cash_id: request_id,
+          },
+        }
+      );
+      if (status != 200 || 201) {
+        return (
+          <ErrorDisplay
+            message={statusText}
+            path="GET /petty_cash/detail"
+            error={data}
+          />
+        );
+      }
       const { grant_id, category, date, description, amount, receipts } =
         data.data;
       setPettyCashInput({

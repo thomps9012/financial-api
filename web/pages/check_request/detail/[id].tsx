@@ -43,12 +43,27 @@ CheckRequestDetail.getInitialProps = async (ctx: GetServerSidePropsContext) => {
     };
   }
   const user_credentials = JSON.parse(auth as string);
-  const { data } = await axios.get("/check/detail", {
+  const { data, status, statusText } = await axios.get("/api/check/detail", {
     ...user_credentials,
     data: {
       check_request_id: id,
     },
   });
+  if (status != 200 || 201) {
+    await axios.post("/api/error", {
+      ...user_credentials,
+      data: {
+        user_id: user_credentials.headers.Authorization.split(" ")[1],
+        error: data,
+        error_path: "GET /check/detail",
+        error_message: statusText,
+      },
+    });
+    return {
+      request_id: "",
+      request: {},
+    };
+  }
   return {
     request_id: id,
     request: data.data,

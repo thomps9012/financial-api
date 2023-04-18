@@ -12,8 +12,9 @@ export default function GrantPettyCash() {
   }
   return (
     <main>
-      <h1>Grant Petty Cash Request</h1>
-      <GrantReportSelect reportType="Petty Cash" setReport={setRequests} />
+      <h1>Petty Cash Requests by Grant</h1>
+      <GrantReportSelect reportType="petty_cash" setReport={setRequests} />
+      <p>{JSON.stringify(requests, null, 2)}</p>
     </main>
   );
 }

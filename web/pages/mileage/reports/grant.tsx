@@ -12,8 +12,9 @@ export default function GrantMileageRequest() {
   }
   return (
     <main>
-      <h1>Grant Mileage Request</h1>
-      <GrantReportSelect reportType="Mileage" setReport={setRequests} />
+      <h1>Mileage Requests by Grant</h1>
+      <GrantReportSelect reportType="mileage" setReport={setRequests} />
+      <p>{JSON.stringify(requests, null, 2)}</p>
     </main>
   );
 }

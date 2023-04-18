@@ -13,7 +13,8 @@ export default function GrantCheckRequest() {
   return (
     <main>
       <h1>Check Requests by Grant</h1>
-      <GrantReportSelect reportType="Check" setReport={setRequests} />
+      <GrantReportSelect reportType="check" setReport={setRequests} />
+      <p>{JSON.stringify(requests, null, 2)}</p>
     </main>
   );
 }
