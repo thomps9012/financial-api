@@ -87,6 +87,7 @@ func GetUserPettyCash(user_id string) ([]Petty_Cash_Overview, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return requests, nil
 }
 func GetUserPettyCashDetail(user_id string) ([]Petty_Cash_Request, error) {
@@ -115,6 +116,7 @@ func GetUserPettyCashDetail(user_id string) ([]Petty_Cash_Request, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return requests, nil
 }
 func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, error) {
@@ -147,6 +149,7 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
+	database.CloseDB()
 	return Petty_Cash_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,
@@ -184,6 +187,7 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		if err != nil {
 			return Petty_Cash_Overview{}, err
 		}
+		database.CloseDB()
 		return Petty_Cash_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -209,6 +213,7 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		if err != nil {
 			return Petty_Cash_Overview{}, err
 		}
+		database.CloseDB()
 		return Petty_Cash_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -219,6 +224,7 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 			Is_Active:      res.Is_Active,
 		}, nil
 	}
+	database.CloseDB()
 	return Petty_Cash_Overview{}, errors.New("this request is currently being processed by the finance team")
 }
 func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) (Petty_Cash_Request, error) {
@@ -244,6 +250,7 @@ func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user st
 	if err != nil {
 		return Petty_Cash_Request{}, err
 	}
+	database.CloseDB()
 	return *request, nil
 }
 func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
@@ -272,6 +279,7 @@ func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
 	} else {
 		request_info.Current_User = user_name
 	}
+	database.CloseDB()
 	return *request_info, nil
 }
 func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
@@ -285,6 +293,7 @@ func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
 	if err != nil {
 		return Petty_Cash_Request{}, err
 	}
+	database.CloseDB()
 	return *request_detail, nil
 }
 func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error) {
@@ -318,6 +327,7 @@ func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 		return Petty_Cash_Overview{}, err
 	}
 	response.Current_User = new_action.NewUser.Name
+	database.CloseDB()
 	return *response, nil
 }
 func (c *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error) {
@@ -352,6 +362,7 @@ func (c *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error)
 		return Petty_Cash_Overview{}, err
 	}
 	response.Current_User = current_user_name
+	database.CloseDB()
 	return *response, nil
 }
 func MonthlyPettyCash(month int, year int) ([]Petty_Cash_Overview, error) {
@@ -382,5 +393,6 @@ func MonthlyPettyCash(month int, year int) ([]Petty_Cash_Overview, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return response, nil
 }

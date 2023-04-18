@@ -101,6 +101,7 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return requests, nil
 }
 func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
@@ -129,6 +130,7 @@ func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return requests, nil
 }
 func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) {
@@ -168,6 +170,7 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
+	database.CloseDB()
 	return Mileage_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,
@@ -205,6 +208,7 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 		if err != nil {
 			return Mileage_Overview{}, err
 		}
+		database.CloseDB()
 		return Mileage_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -230,6 +234,7 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 		if err != nil {
 			return Mileage_Overview{}, err
 		}
+		database.CloseDB()
 		return Mileage_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -240,6 +245,7 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 			Is_Active:      res.Is_Active,
 		}, nil
 	}
+	database.CloseDB()
 	return Mileage_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
 }
 func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user string) (Mileage_Request, error) {
@@ -267,6 +273,7 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	if err != nil {
 		return Mileage_Request{}, err
 	}
+	database.CloseDB()
 	return *mileage_req, nil
 }
 func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
@@ -287,6 +294,7 @@ func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
 	} else {
 		request_info.Current_User = user_name
 	}
+	database.CloseDB()
 	return *request_info, nil
 }
 func MileageDetail(mileage_id string) (Mileage_Request, error) {
@@ -300,6 +308,7 @@ func MileageDetail(mileage_id string) (Mileage_Request, error) {
 	if err != nil {
 		return Mileage_Request{}, err
 	}
+	database.CloseDB()
 	return *request_detail, nil
 }
 func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
@@ -332,6 +341,7 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
+	database.CloseDB()
 	response.Current_User = new_action.NewUser.Name
 	return *response, nil
 }
@@ -367,6 +377,7 @@ func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 		return Mileage_Overview{}, err
 	}
 	response.Current_User = current_user_name
+	database.CloseDB()
 	return *response, nil
 }
 func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
@@ -398,5 +409,6 @@ func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return response, nil
 }

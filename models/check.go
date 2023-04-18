@@ -103,6 +103,7 @@ func GetUserCheckRequests(user_id string) ([]Check_Request_Overview, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return requests, nil
 }
 func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
@@ -131,6 +132,7 @@ func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return requests, nil
 }
 func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_Overview, error) {
@@ -170,6 +172,7 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
+	database.CloseDB()
 	return Check_Request_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,
@@ -210,6 +213,7 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 		if err != nil {
 			return Check_Request_Overview{}, err
 		}
+		database.CloseDB()
 		return Check_Request_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -242,6 +246,7 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 				Date:    res.Date,
 			}, err
 		}
+		database.CloseDB()
 		return Check_Request_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -252,6 +257,7 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 			Is_Active:      res.Is_Active,
 		}, nil
 	}
+	database.CloseDB()
 	return Check_Request_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
 }
 func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user string) (Check_Request, error) {
@@ -281,6 +287,7 @@ func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user s
 	if err != nil {
 		return Check_Request{}, err
 	}
+	database.CloseDB()
 	return *check_req, nil
 }
 func DeleteCheckRequest(request_id string) (Check_Request_Overview, error) {
@@ -301,6 +308,7 @@ func DeleteCheckRequest(request_id string) (Check_Request_Overview, error) {
 	} else {
 		request_info.Current_User = user_name
 	}
+	database.CloseDB()
 	return *request_info, nil
 }
 func CheckRequestDetail(check_id string) (Check_Request, error) {
@@ -314,6 +322,7 @@ func CheckRequestDetail(check_id string) (Check_Request, error) {
 	if err != nil {
 		return Check_Request{}, err
 	}
+	database.CloseDB()
 	return *request_detail, nil
 }
 func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) {
@@ -347,6 +356,7 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 		return Check_Request_Overview{}, err
 	}
 	response.Current_User = new_action.NewUser.Name
+	database.CloseDB()
 	return *response, nil
 }
 func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
@@ -381,6 +391,7 @@ func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
 		return Check_Request_Overview{}, err
 	}
 	response.Current_User = current_user_name
+	database.CloseDB()
 	return *response, nil
 }
 func MonthlyCheckRequests(month int, year int) ([]Check_Request_Overview, error) {
@@ -411,5 +422,6 @@ func MonthlyCheckRequests(month int, year int) ([]Check_Request_Overview, error)
 	// 		request.Current_User = user_name
 	// 	}
 	// }
+	database.CloseDB()
 	return response, nil
 }
