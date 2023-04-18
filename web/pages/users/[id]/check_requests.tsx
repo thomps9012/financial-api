@@ -1,3 +1,6 @@
+import ServerSideError from "@/components/serverSideError";
+import UnAuthorized from "@/components/unAuthorized";
+import { useAppContext } from "@/context/AppContext";
 import { Check_Request_Overview } from "@/types/check_requests";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -13,6 +16,13 @@ function UserCheckPage({
   user_name: string;
   requests: Check_Request_Overview[];
 }) {
+  const { user_profile } = useAppContext();
+  if (!user_profile.admin) {
+    return <UnAuthorized />;
+  }
+  if (user_id === "") {
+    return <ServerSideError request_info="User Check Requests" />;
+  }
   return (
     <main>
       <h1>Check Requests for {user_name}</h1>

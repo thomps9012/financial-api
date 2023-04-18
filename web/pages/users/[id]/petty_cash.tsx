@@ -1,3 +1,4 @@
+import ServerSideError from "@/components/serverSideError";
 import UnAuthorized from "@/components/unAuthorized";
 import { useAppContext } from "@/context/AppContext";
 import { Petty_Cash_Overview } from "@/types/petty_cash";
@@ -18,6 +19,9 @@ function UserPettyCashPage({
   const { user_profile } = useAppContext();
   if (!user_profile.admin) {
     return <UnAuthorized />;
+  }
+  if (user_id === "") {
+    return <ServerSideError request_info="User Petty Cash" />;
   }
   return (
     <main>

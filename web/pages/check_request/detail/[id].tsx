@@ -4,6 +4,7 @@ import { GetServerSidePropsContext } from "next";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { Check_Request } from "@/types/check_requests";
+import ServerSideError from "@/components/serverSideError";
 
 function CheckRequestDetail({
   request_id,
@@ -12,6 +13,9 @@ function CheckRequestDetail({
   request_id: string;
   request: Check_Request;
 }) {
+  if (request_id === "") {
+    return <ServerSideError request_info="Check Request Record Detail" />;
+  }
   const approveRequest = async (e: any) => {
     const selected_permission = (
       document.getElementById("selected_permission") as HTMLSelectElement

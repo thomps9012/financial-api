@@ -35,7 +35,7 @@ export default function ErrorDisplay({
     reportError(error, message, path);
   }, [user_credentials, path, error, message, user_profile]);
   return (
-    <div
+    <main
       style={{
         margin: 100,
         padding: 20,
@@ -63,6 +63,6 @@ export default function ErrorDisplay({
       <a className="archive-btn" onClick={() => router.push("/")}>
         Return Home
       </a>
-    </div>
+    </main>
   );
 }

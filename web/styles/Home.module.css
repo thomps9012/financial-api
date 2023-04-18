@@ -148,3 +148,7 @@
     flex-direction: column;
   }
 }
+
+.home_page h3 {
+  font-weight: 100;
+}

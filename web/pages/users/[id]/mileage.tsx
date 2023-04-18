@@ -1,3 +1,6 @@
+import ServerSideError from "@/components/serverSideError";
+import UnAuthorized from "@/components/unAuthorized";
+import { useAppContext } from "@/context/AppContext";
 import { Mileage_Overview } from "@/types/mileage";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -13,6 +16,13 @@ function UserMileagePage({
   user_name: string;
   requests: Mileage_Overview[];
 }) {
+  const { user_profile } = useAppContext();
+  if (!user_profile.admin) {
+    return <UnAuthorized />;
+  }
+  if (user_id === "") {
+    return <ServerSideError request_info="User Mileage" />;
+  }
   return (
     <main>
       <h1>Mileage for {user_name}</h1>

@@ -1,3 +1,6 @@
+import ServerSideError from "@/components/serverSideError";
+import UnAuthorized from "@/components/unAuthorized";
+import { useAppContext } from "@/context/AppContext";
 import { User_Public_Info } from "@/types/users";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -5,6 +8,13 @@ import { GetServerSidePropsContext } from "next";
 import Link from "next/link";
 
 function UserOverviewPage({ public_info }: { public_info: User_Public_Info }) {
+  const { user_profile } = useAppContext();
+  if (!user_profile.admin) {
+    return <UnAuthorized />;
+  }
+  if (public_info.id === "") {
+    return <ServerSideError request_info="User Public Information" />;
+  }
   return (
     <main>
       <h1>Overview page for {public_info?.name}</h1>

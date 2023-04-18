@@ -1,3 +1,4 @@
+import ServerSideError from "@/components/serverSideError";
 import { Petty_Cash_Request } from "@/types/petty_cash";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -11,6 +12,9 @@ function PettyCashRequestDetails({
   request_id: string;
   request: Petty_Cash_Request;
 }) {
+  if (request_id === "") {
+    return <ServerSideError request_info="Petty Cash Record Detail" />;
+  }
   return (
     <main>
       <h1>Details for Petty Cash Request {request_id}</h1>

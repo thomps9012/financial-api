@@ -1,3 +1,4 @@
+import ServerSideError from "@/components/serverSideError";
 import { Mileage_Request } from "@/types/mileage";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -11,6 +12,9 @@ function MileageRequestDetail({
   request: Mileage_Request;
   request_id: string;
 }) {
+  if (request_id === "") {
+    return <ServerSideError request_info="Mileage Record Detail" />;
+  }
   return (
     <main>
       <h1>Mileage Request Detail for {request_id}</h1>
