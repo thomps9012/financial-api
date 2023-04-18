@@ -26,12 +26,12 @@ ProfilePettyCashPage.getInitialProps = async (
     req: ctx.req,
     res: ctx.res,
   });
-  const user_credentials = JSON.parse(credentials as string);
   if (!credentials) {
     return {
       petty_cash_requests: [],
     };
   }
+  const user_credentials = JSON.parse(credentials as string);
   const { data, status, statusText } = await axios.get(
     "/api/me/petty_cash",
     ...user_credentials
