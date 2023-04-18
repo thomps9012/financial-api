@@ -5,6 +5,7 @@ import (
 	"financial-api/methods"
 	"financial-api/models"
 	"financial-api/responses"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -13,21 +14,20 @@ import (
 )
 
 func SetCookies(c *fiber.Ctx, login_res models.LoginRes, complete chan bool) {
-	c.Cookie(&fiber.Cookie{
-		Name:    "admin",
-		Value:   strconv.FormatBool(login_res.Admin),
-		Expires: time.Now().Add(time.Hour * 12),
-	})
-	c.Cookie(&fiber.Cookie{
-		Name:    "permissions",
-		Value:   strings.Join(login_res.Permissions, ", "),
-		Expires: time.Now().Add(time.Hour * 12),
-	})
-	c.Cookie(&fiber.Cookie{
-		Name:    "user_id",
-		Value:   login_res.UserID,
-		Expires: time.Now().Add(time.Hour * 12),
-	})
+	cookie := new(fiber.Cookie)
+	cookie.Name = "admin"
+	cookie.Value = strconv.FormatBool(login_res.Admin)
+	cookie.Expires = time.Now().Add(time.Hour * 12)
+	c.Cookie(cookie)
+	cookie.Name = "permissions"
+	cookie.Value = strings.Join(login_res.Permissions, ", ")
+	cookie.Expires = time.Now().Add(time.Hour * 12)
+	c.Cookie(cookie)
+	cookie.Name = "user_id"
+	cookie.Value = login_res.UserID
+	cookie.Expires = time.Now().Add(time.Hour * 12)
+	c.Cookie(cookie)
+	fmt.Println(login_res.UserID)
 	complete <- true
 }
 
@@ -70,6 +70,7 @@ func Login(c *fiber.Ctx) error {
 		}
 		go SetCookies(c, login_res, cookies_set)
 		complete := <-cookies_set
+		fmt.Println(c.Cookies("user_id"))
 		if complete {
 			return c.Status(fiber.StatusCreated).JSON(responses.NewUser(login_res))
 		}
@@ -80,6 +81,7 @@ func Login(c *fiber.Ctx) error {
 		}
 		go SetCookies(c, login_res, cookies_set)
 		complete := <-cookies_set
+		fmt.Println(c.Cookies("user_id"))
 		if complete {
 			return c.Status(fiber.StatusOK).JSON(responses.LoggedIn(login_res))
 		}

@@ -5,6 +5,7 @@ import (
 	"financial-api/methods"
 	"financial-api/models"
 	"financial-api/responses"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,6 +19,7 @@ import (
 // @router /me [get]
 func GetMe(c *fiber.Ctx) error {
 	user_id := c.Cookies("user_id")
+	fmt.Println(user_id)
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}

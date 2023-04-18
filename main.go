@@ -37,12 +37,15 @@ func Setup() *fiber.App {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.SendFile("/web/dist")
 	})
-	routes.Use(app)
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "https://thomps9012.github.io, https://finance-requests.vercel.app, http://localhost:3000",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Requested-With",
+		// AllowOrigins: "*",
+		AllowOrigins:     "https://thomps9012.github.io, https://finance-requests.vercel.app, http://localhost:3000, http://localhost:3001",
+		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization,X-Requested-With",
+		AllowMethods:     "GET,POST,PUT,DELETE",
+		AllowCredentials: true,
 	}))
+	routes.Use(app)
 	// ADD ON PRODUCTION
 	// app.Use(limiter.New())
 	app.Use(cache.New(cache.Config{
