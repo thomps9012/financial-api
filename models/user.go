@@ -84,7 +84,7 @@ func (ul *UserLogin) Exists() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	database.CloseDB()
+
 	return count > 0, nil
 }
 func isAdmin(user_email string) bool {
@@ -141,7 +141,7 @@ func (u *User) Create(user UserLogin) (LoginRes, error) {
 	if err != nil {
 		return LoginRes{}, err
 	}
-	database.CloseDB()
+
 	return LoginRes{
 		UserID:      u.ID,
 		Token:       token,
@@ -170,7 +170,7 @@ func (u *User) Login(user UserLogin) (LoginRes, error) {
 	if err != nil {
 		return LoginRes{}, err
 	}
-	database.CloseDB()
+
 	return LoginRes{
 		UserID:      u.ID,
 		Token:       token,
@@ -198,7 +198,7 @@ func GetPublicInfo(user_id string) (PublicInfo, error) {
 	if err != nil {
 		return PublicInfo{}, err
 	}
-	database.CloseDB()
+
 	return user_info[0], nil
 }
 func FindUserName(user_id string) (string, error) {
@@ -214,7 +214,7 @@ func FindUserName(user_id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	database.CloseDB()
+
 	return user.Name, nil
 }
 func (u *User) AddVehicle(name string, description string) (Vehicle, error) {
@@ -234,7 +234,7 @@ func (u *User) AddVehicle(name string, description string) (Vehicle, error) {
 	if err != nil {
 		return Vehicle{}, err
 	}
-	database.CloseDB()
+
 	return *new_vehicle, nil
 }
 func (u *User) EditVehicle(new_vehicle Vehicle) (Vehicle, error) {
@@ -251,7 +251,7 @@ func (u *User) EditVehicle(new_vehicle Vehicle) (Vehicle, error) {
 	if err != nil {
 		return Vehicle{}, err
 	}
-	database.CloseDB()
+
 	return new_vehicle, nil
 }
 func (u *User) RemoveVehicle(vehicle_id string) (Vehicle, error) {
@@ -275,7 +275,7 @@ func (u *User) RemoveVehicle(vehicle_id string) (Vehicle, error) {
 			old_vehicle.Description = vehicle.Description
 		}
 	}
-	database.CloseDB()
+
 	return *old_vehicle, nil
 }
 func FindAllUsers() ([]UserNameInfo, error) {
@@ -292,7 +292,7 @@ func FindAllUsers() ([]UserNameInfo, error) {
 	if err != nil {
 		return []UserNameInfo{}, err
 	}
-	database.CloseDB()
+
 	return data, nil
 }
 func GetAllUsersPublicInfo() ([]PublicInfo, error) {
@@ -314,7 +314,7 @@ func GetAllUsersPublicInfo() ([]PublicInfo, error) {
 	if err != nil {
 		return []PublicInfo{}, err
 	}
-	database.CloseDB()
+
 	return user_info, nil
 }
 func (u *User) Deactivate() (PublicInfo, error) {
@@ -330,7 +330,7 @@ func (u *User) Deactivate() (PublicInfo, error) {
 	if err != nil {
 		return PublicInfo{}, err
 	}
-	database.CloseDB()
+
 	return *user_info, nil
 }
 func GetUserIncompleteActions(user_id string) ([]IncompleteAction, error) {
@@ -348,6 +348,6 @@ func GetUserIncompleteActions(user_id string) ([]IncompleteAction, error) {
 	if err != nil {
 		return []IncompleteAction{{}}, err
 	}
-	database.CloseDB()
+
 	return actions, nil
 }

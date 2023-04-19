@@ -56,7 +56,7 @@ func CreateIncompleteAction(request_type string, request_id string, action Actio
 	if err != nil {
 		return err
 	}
-	database.CloseDB()
+
 	return nil
 }
 func FirstActions(user_id string) []Action {

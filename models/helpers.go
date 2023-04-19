@@ -126,7 +126,7 @@ func (el *ErrorLog) Save() (ErrorLogOverview, error) {
 	if err != nil {
 		return ErrorLogOverview{}, err
 	}
-	database.CloseDB()
+
 	return ErrorLogOverview{
 		ID:           el.ID,
 		ErrorMessage: el.ErrorMessage,

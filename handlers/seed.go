@@ -397,7 +397,7 @@ func SeedData(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	database.CloseDB()
+
 	return c.Status(http.StatusCreated).JSON(fiber.Map{
 		"grants":     g_res,
 		"users":      u_res,
@@ -455,7 +455,7 @@ func DeleteSeeds(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	database.CloseDB()
+
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"grants":     g_res,
 		"users":      u_res,

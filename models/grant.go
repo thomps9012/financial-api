@@ -26,7 +26,7 @@ func GetAllGrants() ([]Grant, error) {
 	if err != nil {
 		return []Grant{}, err
 	}
-	database.CloseDB()
+
 	return grants, nil
 }
 func (g *Grant) GetOneGrant() (Grant, error) {
@@ -40,7 +40,7 @@ func (g *Grant) GetOneGrant() (Grant, error) {
 	if err != nil {
 		return Grant{}, err
 	}
-	database.CloseDB()
+
 	return *grant, nil
 }
 func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
@@ -58,7 +58,7 @@ func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	database.CloseDB()
+
 	return data, nil
 }
 func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
@@ -76,7 +76,7 @@ func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}
-	database.CloseDB()
+
 	return data, nil
 }
 func (g *Grant) GetGrantCheckRequest() ([]Check_Request_Overview, error) {
@@ -94,6 +94,6 @@ func (g *Grant) GetGrantCheckRequest() ([]Check_Request_Overview, error) {
 	if err != nil {
 		return []Check_Request_Overview{}, err
 	}
-	database.CloseDB()
+
 	return data, nil
 }
