@@ -3,7 +3,6 @@ package middleware
 import (
 	"financial-api/config"
 	"financial-api/methods"
-	"fmt"
 	"strconv"
 
 	res "financial-api/responses"
@@ -40,12 +39,8 @@ func jwtError(c *fiber.Ctx, err error) error {
 
 func AdminRoute(c *fiber.Ctx) error {
 	admin_cookie := c.Cookies("admin")
-	fmt.Println(admin_cookie)
 	admin_status, err := strconv.ParseBool(admin_cookie)
-	fmt.Println(admin_status)
-	fmt.Println(err)
 	if err != nil && !admin_status {
-		fmt.Println("hit")
 		return c.Status(fiber.StatusForbidden).JSON(res.NotAdmin())
 	}
 	return c.Next()

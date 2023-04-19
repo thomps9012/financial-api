@@ -14,20 +14,21 @@ import (
 )
 
 func SetCookies(c *fiber.Ctx, login_res models.LoginRes, complete chan bool) {
-	cookie := new(fiber.Cookie)
-	cookie.Name = "admin"
-	cookie.Value = strconv.FormatBool(login_res.Admin)
-	cookie.Expires = time.Now().Add(time.Hour * 12)
-	c.Cookie(cookie)
-	cookie.Name = "permissions"
-	cookie.Value = strings.Join(login_res.Permissions, ", ")
-	cookie.Expires = time.Now().Add(time.Hour * 12)
-	c.Cookie(cookie)
-	cookie.Name = "user_id"
-	cookie.Value = login_res.UserID
-	cookie.Expires = time.Now().Add(time.Hour * 12)
-	c.Cookie(cookie)
-	fmt.Println(login_res.UserID)
+	admin_cookie := new(fiber.Cookie)
+	admin_cookie.Name = "admin"
+	admin_cookie.Value = strconv.FormatBool(login_res.Admin)
+	admin_cookie.Expires = time.Now().Add(time.Hour * 12)
+	c.Cookie(admin_cookie)
+	permissions_cookie := new(fiber.Cookie)
+	permissions_cookie.Name = "permissions"
+	permissions_cookie.Value = strings.Join(login_res.Permissions, ", ")
+	permissions_cookie.Expires = time.Now().Add(time.Hour * 12)
+	c.Cookie(permissions_cookie)
+	id_cookie := new(fiber.Cookie)
+	id_cookie.Name = "user_id"
+	id_cookie.Value = login_res.UserID
+	id_cookie.Expires = time.Now().Add(time.Hour * 12)
+	c.Cookie(id_cookie)
 	complete <- true
 }
 
@@ -70,7 +71,8 @@ func Login(c *fiber.Ctx) error {
 		}
 		go SetCookies(c, login_res, cookies_set)
 		complete := <-cookies_set
-		fmt.Println(c.Cookies("user_id"))
+		fmt.Println("create userID", c.Cookies("user_id"))
+		fmt.Println("create admin", c.Cookies("admin"))
 		if complete {
 			return c.Status(fiber.StatusCreated).JSON(responses.NewUser(login_res))
 		}
@@ -81,7 +83,9 @@ func Login(c *fiber.Ctx) error {
 		}
 		go SetCookies(c, login_res, cookies_set)
 		complete := <-cookies_set
-		fmt.Println(c.Cookies("user_id"))
+		fmt.Println("userID", c.Cookies("user_id"))
+		fmt.Println("admin", c.Cookies("admin"))
+		fmt.Println("permissions", c.Cookies("permissions"))
 		if complete {
 			return c.Status(fiber.StatusOK).JSON(responses.LoggedIn(login_res))
 		}
