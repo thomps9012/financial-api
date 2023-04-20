@@ -136,21 +136,40 @@ func NewUserHandler(category Category, current_status string, exec_review bool) 
 		Name: "Finance Requests",
 	}
 }
-func ApproveRequest(request_type string, user_id string, request_category Category, current_status string) (ApproveAction, error) {
-	switch NormalizeType(request_type) {
-	case "mileage":
+func ApproveMileageHandler(user_id string, current_status string) ApproveAction {
+	if current_status == "FINANCE_APPROVED" {
 		return ApproveAction{
 			Action: Action{
 				ID:         uuid.NewString(),
 				User:       user_id,
-				Status:     "FINANCE_APPROVED",
+				Status:     "ORGANIZATION_APPROVED",
 				Created_At: time.Now(),
 			},
 			NewUser: UserLogin{
-				ID:   "117117754499201658837",
-				Name: "Anita Bradley",
+				ID:   "null",
+				Name: "null",
 			},
-		}, nil
+		}
+	}
+	return ApproveAction{
+		Action: Action{
+			ID:         uuid.NewString(),
+			User:       user_id,
+			Status:     "FINANCE_APPROVED",
+			Created_At: time.Now(),
+		},
+		NewUser: UserLogin{
+			// swap to Stephanie's ID
+			ID:   "...id",
+			Name: "Stephanie Bryant",
+		},
+	}
+}
+func ApproveRequest(request_type string, user_id string, request_category Category, current_status string) ApproveAction {
+	switch NormalizeType(request_type) {
+	case "mileage":
+		action := ApproveMileageHandler(user_id, current_status)
+		return action
 	default:
 		new_user := NewUserHandler(request_category, current_status, false)
 		new_status := ApproveStatusHandler(request_category, current_status, false)
@@ -162,7 +181,7 @@ func ApproveRequest(request_type string, user_id string, request_category Catego
 				Created_At: time.Now(),
 			},
 			NewUser: new_user,
-		}, nil
+		}
 	}
 }
 func RejectRequest(request_creator string, current_user string) RejectAction {

@@ -311,10 +311,7 @@ func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 	if user_id != c.Current_User {
 		return Petty_Cash_Overview{}, errors.New("you are attempting to approve a request for which you are not authorized")
 	}
-	new_action, err := ApproveRequest("petty_cash", c.Current_User, c.Category, c.Current_Status)
-	if err != nil {
-		return Petty_Cash_Overview{}, err
-	}
+	new_action := ApproveRequest("petty_cash", c.Current_User, c.Category, c.Current_Status)
 	c.Action_History = append(c.Action_History, new_action.Action)
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	response := new(Petty_Cash_Overview)

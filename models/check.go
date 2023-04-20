@@ -338,10 +338,7 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 	if c.Current_User != user_id {
 		return Check_Request_Overview{}, errors.New("you're attempting to approve a request for which you are unauthorized")
 	}
-	new_action, err := ApproveRequest("check_request", c.Current_User, c.Category, c.Current_Status)
-	if err != nil {
-		return Check_Request_Overview{}, err
-	}
+	new_action := ApproveRequest("check_request", c.Current_User, c.Category, c.Current_Status)
 	c.Action_History = append(c.Action_History, new_action.Action)
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	response := new(Check_Request_Overview)
