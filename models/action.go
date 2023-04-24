@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Action struct {
@@ -57,6 +58,30 @@ func CreateIncompleteAction(request_type string, request_id string, action Actio
 		return err
 	}
 
+	return nil
+}
+func ClearIncompleteAction(request_type string, request_id string, action_taker string) error {
+	collection, err := database.Use("incomplete_actions")
+	if err != nil {
+		return err
+	}
+	filter := bson.D{{Key: "request_id", Value: request_id}, {Key: "request_type", Value: request_type}, {Key: "user_id", Value: action_taker}}
+	_, err = collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func ClearRequestAssociatedActions(request_id string) error {
+	collection, err := database.Use("incomplete_actions")
+	if err != nil {
+		return err
+	}
+	filter := bson.D{{Key: "request_id", Value: request_id}}
+	_, err = collection.DeleteMany(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func FirstActions(user_id string) []Action {

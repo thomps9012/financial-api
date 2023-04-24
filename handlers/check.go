@@ -152,6 +152,10 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	err = models.ClearRequestAssociatedActions(find_request_input.CheckID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeleteCheckRequest(data))
 }
@@ -191,6 +195,10 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	err = models.ClearIncompleteAction("check", request.ID, user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApproveCheckRequest(data))
 }
@@ -227,6 +235,10 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 	request := new(models.Check_Request)
 	request.ID = reject_info.RequestID
 	data, err := request.Reject(user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	err = models.ClearIncompleteAction("check", request.ID, user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}

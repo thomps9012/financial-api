@@ -156,6 +156,10 @@ func DeleteMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	err = models.ClearRequestAssociatedActions(find_mileage_input.MileageID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.DeleteMileage(data))
 }
@@ -195,6 +199,10 @@ func ApproveMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
+	err = models.ClearIncompleteAction("mileage", mileage.ID, user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.ApproveMileage(data))
 }
@@ -231,6 +239,10 @@ func RejectMileage(c *fiber.Ctx) error {
 	mileage := new(models.Mileage_Request)
 	mileage.ID = reject_info.RequestID
 	data, err := mileage.Reject(user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	err = models.ClearIncompleteAction("mileage", mileage.ID, user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
