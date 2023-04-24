@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -22,6 +23,24 @@ type Purchase struct {
 	Grant_Line_Item string  `json:"grant_line_item" bson:"grant_line_item" validate:"required"`
 	Description     string  `json:"description" bson:"description" validate:"required"`
 	Amount          float64 `json:"amount" bson:"amount" validate:"required"`
+}
+type CheckRequestDetailResponse struct {
+	ID             string         `json:"id" bson:"_id"`
+	Grant          []Grant        `json:"grant" bson:"grant"`
+	RequestCreator []UserNameInfo `json:"request_creator" bson:"request_creator"`
+	Date           time.Time      `json:"date" bson:"date"`
+	Category       Category       `json:"category" bson:"category"`
+	Vendor         Vendor         `json:"vendor" bson:"vendor"`
+	Description    string         `json:"description" bson:"description"`
+	Purchases      []Purchase     `json:"purchases" bson:"purchases"`
+	Receipts       []string       `json:"receipts" bson:"receipts"`
+	Order_Total    float64        `json:"order_total" bson:"order_total"`
+	Credit_Card    string         `json:"credit_card" bson:"credit_card"`
+	Created_At     time.Time      `json:"created_at" bson:"created_at"`
+	Action_History []Action       `json:"action_history" bson:"action_history"`
+	Current_User   []UserNameInfo `json:"current_user" bson:"current_user"`
+	Current_Status string         `json:"current_status" bson:"current_status"`
+	Is_Active      bool           `json:"is_active" bson:"is_active"`
 }
 type Check_Request struct {
 	ID                      string     `json:"id" bson:"_id"`
@@ -311,19 +330,34 @@ func DeleteCheckRequest(request_id string) (Check_Request_Overview, error) {
 
 	return *request_info, nil
 }
-func CheckRequestDetail(check_id string) (Check_Request, error) {
+func CheckRequestDetail(check_id string) (CheckRequestDetailResponse, error) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
-		return Check_Request{}, err
+		return CheckRequestDetailResponse{}, err
 	}
-	filter := bson.D{{Key: "_id", Value: check_id}}
-	request_detail := new(Check_Request)
-	err = collection.FindOne(context.TODO(), filter).Decode(&request_detail)
+	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: check_id}}}}
+	grant_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "grants"}, {Key: "localField", Value: "grant_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "grant"},
+		{Key: "pipeline", Value: bson.A{
+			bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
+	user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "user_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "request_creator"}, {Key: "pipeline", Value: bson.A{
+		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
+	current_user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "current_user"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "current_user"}, {Key: "pipeline", Value: bson.A{
+		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}, {Key: "is_active", Value: 1}}}}}}}}}
+	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage}
+	request_detail := make([]CheckRequestDetailResponse, 0)
+	cursor, err := collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		return Check_Request{}, err
+		return CheckRequestDetailResponse{}, err
 	}
-
-	return *request_detail, nil
+	err = cursor.All(context.TODO(), &request_detail)
+	if err != nil {
+		return CheckRequestDetailResponse{}, err
+	}
+	if len(request_detail) == 0 {
+		return CheckRequestDetailResponse{}, errors.New("no check request found with that id")
+	}
+	request_detail[0].Order_Total = ToFixed(request_detail[0].Order_Total, 2)
+	return request_detail[0], nil
 }
 func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) {
 	collection, err := database.Use("check_requests")

@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -27,6 +28,22 @@ type Petty_Cash_Request struct {
 	Current_Status          string    `json:"current_status" bson:"current_status"`
 	Last_User_Before_Reject string    `json:"last_user_before_reject" bson:"last_user_before_reject"`
 	Is_Active               bool      `json:"is_active" bson:"is_active"`
+}
+
+type PettyCashDetailResponse struct {
+	ID             string         `json:"id" bson:"_id"`
+	RequestCreator []UserNameInfo `json:"request_creator" bson:"request_creator"`
+	Grant          []Grant        `json:"grant" bson:"grant"`
+	Category       Category       `json:"category" bson:"category"`
+	Date           time.Time      `json:"date" bson:"date"`
+	Description    string         `json:"description" bson:"description"`
+	Amount         float64        `json:"amount" bson:"amount"`
+	Receipts       []string       `json:"receipts" bson:"receipts"`
+	Created_At     time.Time      `json:"created_at" bson:"created_at"`
+	Action_History []Action       `json:"action_history" bson:"action_history"`
+	Current_User   []UserNameInfo `json:"current_user" bson:"current_user"`
+	Current_Status string         `json:"current_status" bson:"current_status"`
+	Is_Active      bool           `json:"is_active" bson:"is_active"`
 }
 
 type Petty_Cash_Overview struct {
@@ -284,19 +301,34 @@ func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
 
 	return *request_info, nil
 }
-func PettyCashDetails(petty_cash_id string) (Petty_Cash_Request, error) {
+func PettyCashDetails(petty_cash_id string) (PettyCashDetailResponse, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return Petty_Cash_Request{}, err
+		return PettyCashDetailResponse{}, err
 	}
-	filter := bson.D{{Key: "_id", Value: petty_cash_id}}
-	request_detail := new(Petty_Cash_Request)
-	err = collection.FindOne(context.TODO(), filter).Decode(&request_detail)
+	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: petty_cash_id}}}}
+	grant_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "grants"}, {Key: "localField", Value: "grant_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "grant"},
+		{Key: "pipeline", Value: bson.A{
+			bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
+	user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "user_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "request_creator"}, {Key: "pipeline", Value: bson.A{
+		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
+	current_user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "current_user"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "current_user"}, {Key: "pipeline", Value: bson.A{
+		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}, {Key: "is_active", Value: 1}}}}}}}}}
+	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage}
+	request_detail := make([]PettyCashDetailResponse, 0)
+	cursor, err := collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		return Petty_Cash_Request{}, err
+		return PettyCashDetailResponse{}, err
 	}
-
-	return *request_detail, nil
+	err = cursor.All(context.TODO(), &request_detail)
+	if err != nil {
+		return PettyCashDetailResponse{}, err
+	}
+	if len(request_detail) == 0 {
+		return PettyCashDetailResponse{}, errors.New("no petty cash request with that id found")
+	}
+	request_detail[0].Amount = ToFixed(request_detail[0].Amount, 2)
+	return request_detail[0], nil
 }
 func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")

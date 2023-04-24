@@ -16,8 +16,8 @@ type CheckOverviewRes struct {
 	Data    models.Check_Request_Overview `json:"data"`
 }
 type CheckDetailRes struct {
-	Message string               `json:"message"`
-	Data    models.Check_Request `json:"data"`
+	Message string                            `json:"message"`
+	Data    models.CheckRequestDetailResponse `json:"data"`
 }
 type CheckRequestsRes struct {
 	Message string                 `json:"message"`
@@ -30,7 +30,7 @@ func NewCheckRequest(data models.Check_Request_Overview) CheckOverviewRes {
 		Data:    data,
 	}
 }
-func CheckRequestDetail(data models.Check_Request) CheckDetailRes {
+func CheckRequestDetail(data models.CheckRequestDetailResponse) CheckDetailRes {
 	return CheckDetailRes{
 		Message: "Check Request with ID: " + data.ID + " Found",
 		Data:    data,

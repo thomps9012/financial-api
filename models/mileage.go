@@ -36,26 +36,25 @@ type Mileage_Request struct {
 	Is_Active               bool      `json:"is_active" bson:"is_active"`
 }
 type MileageDetailResponse struct {
-	ID                      string         `json:"id" bson:"_id"`
-	Grant                   []Grant        `json:"grant" bson:"grant"`
-	RequestCreator          []UserNameInfo `json:"request_creator" bson:"request_creator"`
-	Date                    time.Time      `json:"date" bson:"date"`
-	Category                Category       `json:"category" bson:"category"`
-	Starting_Location       string         `json:"starting_location" bson:"starting_location"`
-	Destination             string         `json:"destination" bson:"destination"`
-	Trip_Purpose            string         `json:"trip_purpose" bson:"trip_purpose"`
-	Start_Odometer          int            `json:"start_odometer" bson:"start_odometer"`
-	End_Odometer            int            `json:"end_odometer" bson:"end_odometer"`
-	Tolls                   float64        `json:"tolls" bson:"tolls"`
-	Parking                 float64        `json:"parking" bson:"parking"`
-	Trip_Mileage            int            `json:"trip_mileage" bson:"trip_mileage"`
-	Reimbursement           float64        `json:"reimbursement" bson:"reimbursement"`
-	Created_At              time.Time      `json:"created_at" bson:"created_at"`
-	Action_History          []Action       `json:"action_history" bson:"action_history"`
-	Current_User            []UserNameInfo `json:"current_user" bson:"current_user"`
-	Current_Status          string         `json:"current_status" bson:"current_status"`
-	Last_User_Before_Reject string         `json:"last_user_before_reject" bson:"last_user_before_reject"`
-	Is_Active               bool           `json:"is_active" bson:"is_active"`
+	ID                string         `json:"id" bson:"_id"`
+	Grant             []Grant        `json:"grant" bson:"grant"`
+	RequestCreator    []UserNameInfo `json:"request_creator" bson:"request_creator"`
+	Date              time.Time      `json:"date" bson:"date"`
+	Category          Category       `json:"category" bson:"category"`
+	Starting_Location string         `json:"starting_location" bson:"starting_location"`
+	Destination       string         `json:"destination" bson:"destination"`
+	Trip_Purpose      string         `json:"trip_purpose" bson:"trip_purpose"`
+	Start_Odometer    int            `json:"start_odometer" bson:"start_odometer"`
+	End_Odometer      int            `json:"end_odometer" bson:"end_odometer"`
+	Tolls             float64        `json:"tolls" bson:"tolls"`
+	Parking           float64        `json:"parking" bson:"parking"`
+	Trip_Mileage      int            `json:"trip_mileage" bson:"trip_mileage"`
+	Reimbursement     float64        `json:"reimbursement" bson:"reimbursement"`
+	Created_At        time.Time      `json:"created_at" bson:"created_at"`
+	Action_History    []Action       `json:"action_history" bson:"action_history"`
+	Current_User      []UserNameInfo `json:"current_user" bson:"current_user"`
+	Current_Status    string         `json:"current_status" bson:"current_status"`
+	Is_Active         bool           `json:"is_active" bson:"is_active"`
 }
 type MileageInput struct {
 	Grant_ID          string    `json:"grant_id" bson:"grant_id" validate:"required"`

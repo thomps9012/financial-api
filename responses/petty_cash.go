@@ -8,8 +8,8 @@ import (
 )
 
 type PettyCashRes struct {
-	Message string                    `json:"message"`
-	Data    models.Petty_Cash_Request `json:"data"`
+	Message string                         `json:"message"`
+	Data    models.PettyCashDetailResponse `json:"data"`
 }
 type PettyCashRequestsRes struct {
 	Message string                      `json:"message"`
@@ -36,7 +36,7 @@ func MonthlyPettyCash(month int, year int, data []models.Petty_Cash_Overview) Pe
 		Data:    data,
 	}
 }
-func PettyCashDetail(data models.Petty_Cash_Request) PettyCashRes {
+func PettyCashDetail(data models.PettyCashDetailResponse) PettyCashRes {
 	return PettyCashRes{
 		Message: "Petty Cash Request with ID: " + data.ID + " Found",
 		Data:    data,
