@@ -26,14 +26,19 @@ type MileageRes struct {
 	Data    models.Mileage_Request `json:"data"`
 }
 
+type MileageDetailRes struct {
+	Message string                       `json:"message"`
+	Data    models.MileageDetailResponse `json:"data"`
+}
+
 func CreateMileage(mileage_info models.Mileage_Overview) MileageOverviewRes {
 	return MileageOverviewRes{
 		Message: "Mileage Request Successfully created @ " + methods.TimeNowFormat(),
 		Data:    mileage_info,
 	}
 }
-func MileageDetail(mileage_info models.Mileage_Request) MileageRes {
-	return MileageRes{
+func MileageDetail(mileage_info models.MileageDetailResponse) MileageDetailRes {
+	return MileageDetailRes{
 		Message: "Mileage Request with " + mileage_info.ID + " Found",
 		Data:    mileage_info,
 	}
