@@ -124,10 +124,23 @@ func ApproveStatusHandler(category Category, current_status string, exec_review 
 	return "MANAGER_APPROVED"
 }
 func NewUserHandler(category Category, current_status string, exec_review bool) UserLogin {
-	if exec_review || current_status == "FINANCE_APPROVED" {
+	if exec_review {
 		return UserLogin{
 			ID:   "117117754499201658837",
 			Name: "Anita Bradley",
+		}
+	}
+	if current_status == "ORGANIZATION_APPROVED" {
+		return UserLogin{
+			ID:   "null",
+			Name: "null",
+		}
+	}
+	if current_status == "FINANCE_APPROVED" {
+		return UserLogin{
+			// swap to Stephanie's ID
+			ID:   "...id",
+			Name: "Stephanie Bryant",
 		}
 	}
 	if current_status == "SUPERVISOR_APPROVED" {

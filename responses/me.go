@@ -34,7 +34,7 @@ func MyCheckRequests(requests []models.Check_Request) CheckRequestsRes {
 }
 func MyPettyCash(requests []models.Petty_Cash_Request) PettyCashRequestsRes {
 	return PettyCashRequestsRes{
-		Message: "You petty cash requests",
+		Message: "Your petty cash requests",
 		Data:    requests,
 	}
 }
