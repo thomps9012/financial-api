@@ -154,6 +154,29 @@ func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
 
 	return requests, nil
 }
+func (ci *CheckRequestInput) Exists(user_id string) (bool, error) {
+	check_req_coll, err := database.Use("check_requests")
+	if err != nil {
+		return false, err
+	}
+	date_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: ci.Date}}
+	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: ci.Grant_ID}, {Key: "date", Value: ci.Date}}
+	purchase_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "purchases", Value: ci.Purchases}, {Key: "date", Value: ci.Date}}
+	date_count, err := check_req_coll.CountDocuments(context.TODO(), date_filter)
+	if err != nil {
+		return false, err
+	}
+	grant_count, err := check_req_coll.CountDocuments(context.TODO(), grant_filter)
+	if err != nil {
+		return false, err
+	}
+	purchase_count, err := check_req_coll.CountDocuments(context.TODO(), purchase_filter)
+	if err != nil {
+		return false, err
+	}
+	return date_count+grant_count+purchase_count > 0, nil
+
+}
 func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_Overview, error) {
 	new_request := new(Check_Request)
 	new_request.ID = uuid.NewString()

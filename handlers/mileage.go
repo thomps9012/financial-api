@@ -38,6 +38,13 @@ func CreateMileage(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
+	exists, err := mileage_request.DuplicateRequest(user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	if exists {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.RequestExists("mileage"))
+	}
 	res, err := mileage_request.CreateMileage(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))

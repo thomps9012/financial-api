@@ -33,6 +33,13 @@ func NotAdmin() NilRes {
 	}
 }
 
+func RequestExists(request_type string) NilRes {
+	return NilRes{
+		Message: "You're attempting to create a duplicate " + request_type + " request. Please edit an existing one or make the appropriate changes.",
+		Data:    "null",
+	}
+}
+
 type MalformedBodyRes struct {
 	Message string                   `json:"string"`
 	Data    []*methods.ErrorResponse `json:"data"`

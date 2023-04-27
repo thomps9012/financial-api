@@ -155,6 +155,28 @@ func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
 
 	return requests, nil
 }
+func (mi *MileageInput) DuplicateRequest(user_id string) (bool, error) {
+	mileage_coll, err := database.Use("mileage_requests")
+	if err != nil {
+		return false, err
+	}
+	date_filter := bson.D{{Key: "date", Value: mi.Date}, {Key: "user_id", Value: user_id}}
+	odometer_filter := bson.D{{Key: "start_odometer", Value: mi.Start_Odometer}, {Key: "end_odometer", Value: mi.End_Odometer}, {Key: "user_id", Value: user_id}}
+	grant_category_filter := bson.D{{Key: "start_odometer", Value: mi.Start_Odometer}, {Key: "grant_id", Value: mi.Grant_ID}, {Key: "category", Value: mi.Category}, {Key: "user_id", Value: user_id}}
+	same_date, err := mileage_coll.CountDocuments(context.TODO(), date_filter)
+	if err != nil {
+		return false, err
+	}
+	same_category, err := mileage_coll.CountDocuments(context.TODO(), grant_category_filter)
+	if err != nil {
+		return false, err
+	}
+	same_odometer, err := mileage_coll.CountDocuments(context.TODO(), odometer_filter)
+	if err != nil {
+		return false, err
+	}
+	return same_date+same_category+same_odometer > 0, nil
+}
 func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) {
 	new_request := new(Mileage_Request)
 	new_request.ID = uuid.NewString()

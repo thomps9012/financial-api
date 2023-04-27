@@ -136,6 +136,28 @@ func GetUserPettyCashDetail(user_id string) ([]Petty_Cash_Request, error) {
 
 	return requests, nil
 }
+func (pi *PettyCashInput) Exists(user_id string) (bool, error) {
+	check_req_coll, err := database.Use("petty_cash_requests")
+	if err != nil {
+		return false, err
+	}
+	date_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: pi.Date}}
+	amount_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "amount", Value: pi.Amount}, {Key: "date", Value: pi.Date}}
+	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: pi.Grant_ID}, {Key: "date", Value: pi.Date}}
+	date_count, err := check_req_coll.CountDocuments(context.TODO(), date_filter)
+	if err != nil {
+		return false, err
+	}
+	amount_count, err := check_req_coll.CountDocuments(context.TODO(), amount_filter)
+	if err != nil {
+		return false, err
+	}
+	grant_count, err := check_req_coll.CountDocuments(context.TODO(), grant_filter)
+	if err != nil {
+		return false, err
+	}
+	return date_count+amount_count+grant_count > 0, nil
+}
 func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, error) {
 	new_request := new(Petty_Cash_Request)
 	new_request.ID = uuid.NewString()
