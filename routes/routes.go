@@ -81,9 +81,9 @@ func Use(app *fiber.App) {
 	grant := api.Group("/grant")
 	grant.Get("/", handlers.GetAllGrants)
 	grant.Post("/detail", handlers.GetOneGrant)
-	grant.Post("/check", middleware.AdminRoute, middleware.Protected(), handlers.GrantCheckRequests)
-	grant.Post("/mileage", middleware.AdminRoute, middleware.Protected(), handlers.GrantMileage)
-	grant.Post("/petty_cash", middleware.AdminRoute, middleware.Protected(), handlers.GrantPettyCash)
+	grant.Post("/check", middleware.Protected(), middleware.AdminRoute, handlers.GrantCheckRequests)
+	grant.Post("/mileage", middleware.Protected(), middleware.AdminRoute, handlers.GrantMileage)
+	grant.Post("/petty_cash", middleware.Protected(), middleware.AdminRoute, handlers.GrantPettyCash)
 
 	errors := api.Group("/error")
 	errors.Post("/", handlers.LogError)

@@ -40,6 +40,10 @@ func jwtError(c *fiber.Ctx, err error) error {
 func AdminRoute(c *fiber.Ctx) error {
 	admin_cookie := c.Cookies("admin")
 	admin_status, err := strconv.ParseBool(admin_cookie)
+	println(admin_cookie)
+	if admin_cookie == "false" {
+		return c.Status(fiber.StatusForbidden).JSON(res.NotAdmin())
+	}
 	if err != nil && !admin_status {
 		return c.Status(fiber.StatusForbidden).JSON(res.NotAdmin())
 	}

@@ -197,7 +197,13 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	new_request.Is_Active = true
 	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
-	current_user := methods.NewRequestUser("mileage", "nil")
+	current_user := methods.CurrentUser{}
+	if user_id == "109157735191825776845" {
+		current_user.ID = "....id"
+		current_user.Name = "Stephanie Bryant"
+	} else {
+		current_user = methods.NewRequestUser("mileage", "nil")
+	}
 	new_request.Current_User = current_user.ID
 	new_request.Current_Status = "PENDING"
 	trip_sum := *mi.Tolls + *mi.Parking + float64(new_request.Trip_Mileage)*current_mileage_rate
@@ -214,7 +220,6 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	//
 	return Mileage_Overview{
 		ID:             new_request.ID,
 		User_ID:        user_id,
