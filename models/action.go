@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	database "financial-api/db"
+	"financial-api/methods"
 	"strings"
 	"time"
 
@@ -18,14 +19,14 @@ type Action struct {
 }
 
 type ApproveAction struct {
-	Action  Action    `json:"action"`
-	NewUser UserLogin `json:"new_user"`
+	Action  Action              `json:"action"`
+	NewUser methods.CurrentUser `json:"new_user"`
 }
 
 type RejectAction struct {
-	Action               Action    `json:"action"`
-	NewUser              UserLogin `json:"new_user"`
-	LastUserBeforeReject UserLogin `json:"last_user"`
+	Action               Action              `json:"action"`
+	NewUser              methods.CurrentUser `json:"new_user"`
+	LastUserBeforeReject methods.CurrentUser `json:"last_user"`
 }
 
 type IncompleteAction struct {
@@ -123,55 +124,32 @@ func ApproveStatusHandler(category Category, current_status string, exec_review 
 	}
 	return "MANAGER_APPROVED"
 }
-func NewUserHandler(category Category, current_status string, exec_review bool) UserLogin {
+
+func NewUserHandler(category Category, current_status string, exec_review bool) methods.CurrentUser {
 	if exec_review {
-		return UserLogin{
-			ID:   "117117754499201658837",
-			Name: "Anita Bradley",
-		}
+		return methods.FINANCE_FULFILLMENT
 	}
 	if current_status == "ORGANIZATION_APPROVED" {
-		return UserLogin{
-			ID:   "null",
-			Name: "null",
-		}
+		return methods.END_USER
 	}
 	if current_status == "FINANCE_APPROVED" {
-		return UserLogin{
-			// swap to Stephanie's ID
-			ID:   "...id",
-			Name: "Stephanie Bryant",
-		}
+		return methods.FINANCE_FULFILLMENT
 	}
 	if current_status == "SUPERVISOR_APPROVED" {
-		return UserLogin{
-			ID:   "109157735191825776845",
-			Name: "Finance Requests",
-		}
+		return methods.FINANCE_SUPERVISOR
 	} else {
 		switch category {
 		case PERKINS:
+			return methods.PERKINS_SUPERVISOR
 		case LORAIN:
-			return UserLogin{
-				ID:   "109157735191825776845",
-				Name: "Jeff Ward",
-			}
+			return methods.LORAIN_SUPERVISOR
 		case NEXT_STEP:
+			return methods.NEXT_STEP_SUPERVISOR
 		case PREVENTION:
-			return UserLogin{
-				ID:   "109157735191825776845",
-				Name: "Cynthia Woods",
-			}
+			return methods.PREVENTION_SUPERVISOR
 		default:
-			return UserLogin{
-				ID:   "109157735191825776845",
-				Name: "Finance Requests",
-			}
+			return methods.FINANCE_SUPERVISOR
 		}
-	}
-	return UserLogin{
-		ID:   "109157735191825776845",
-		Name: "Finance Requests",
 	}
 }
 func ApproveMileageHandler(user_id string, current_status string) ApproveAction {
@@ -183,10 +161,7 @@ func ApproveMileageHandler(user_id string, current_status string) ApproveAction 
 				Status:     "ORGANIZATION_APPROVED",
 				Created_At: time.Now(),
 			},
-			NewUser: UserLogin{
-				ID:   "null",
-				Name: "null",
-			},
+			NewUser: methods.END_USER,
 		}
 	}
 	return ApproveAction{
@@ -196,11 +171,7 @@ func ApproveMileageHandler(user_id string, current_status string) ApproveAction 
 			Status:     "FINANCE_APPROVED",
 			Created_At: time.Now(),
 		},
-		NewUser: UserLogin{
-			// swap to Stephanie's ID
-			ID:   "...id",
-			Name: "Stephanie Bryant",
-		},
+		NewUser: methods.FINANCE_FULFILLMENT,
 	}
 }
 func ApproveRequest(request_type string, user_id string, request_category Category, current_status string) ApproveAction {
@@ -230,10 +201,10 @@ func RejectRequest(request_creator string, current_user string) RejectAction {
 			Status:     "REJECTED",
 			Created_At: time.Now(),
 		},
-		NewUser: UserLogin{
+		NewUser: methods.CurrentUser{
 			ID: request_creator,
 		},
-		LastUserBeforeReject: UserLogin{
+		LastUserBeforeReject: methods.CurrentUser{
 			ID: current_user,
 		},
 	}

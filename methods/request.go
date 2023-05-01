@@ -12,137 +12,142 @@ type CurrentUser struct {
 // ****CURRENT IDS ARE FOR SEED PURPOSES ONLY*****
 
 // iop manager
-var iop_manager = CurrentUser{
+var IOP_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "100323196510465985735",
 	Name: "Intensive Outpatient Manager",
 }
 
 // intake manager
-var intake_manager = CurrentUser{
+var INTAKE_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "114839465093091142050",
 	Name: "Intake Manager",
 }
 
 // peer manager
-var peer_manager = CurrentUser{
+var PEER_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "100323196510465985735",
 	Name: "Peer Support Manager",
 }
 
 // act manager
-var act_manager = CurrentUser{
+var ACT_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "109904620612313503312",
 	Name: "ACT Manager",
 }
 
 // ihbt manager
-var ihbt_manager = CurrentUser{
+var IHBT_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "111724747499299581748",
 	Name: "IHBT Manager",
 }
 
 // perkins manager
-var perkins_manager = CurrentUser{
+var PERKINS_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "101753058297288934715",
 	Name: "Perkins Manager",
 }
 
 // perkins supervisor
-var perkins_supervisor = CurrentUser{
+var PERKINS_SUPERVISOR = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "100323196510465985735",
 	Name: "Perkins Supervisor",
 }
 
 // next step manager
-var next_step_manager = CurrentUser{
+var NEXT_STEP_MANAGER = CurrentUser{
 	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "104213502974305953852",
 	Name: "NEXT Step Manager",
 }
 
 // next step supervisor
-var next_step_supervisor = CurrentUser{
+var NEXT_STEP_SUPERVISOR = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "114839465093091142050",
 	Name: "NEXT Step Supervisor",
 }
 
 // lorain manager
-var lorain_manager = CurrentUser{
+var LORAIN_MANAGER = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "102294853567984211361",
 	Name: "Lorain Manager",
 }
 
 // lorain supervisor
-var lorain_supervisor = CurrentUser{
+var LORAIN_SUPERVISOR = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "100323196510465985735",
 	Name: "Lorain Supervisor",
 }
 
 // prevention manager
-var prevention_manager = CurrentUser{
+var PREVENTION_MANAGER = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "106544031410769042454",
 	Name: "Prevention Manager",
 }
 
 // prevention supervisor
-var prevention_supervisor = CurrentUser{
+var PREVENTION_SUPERVISOR = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "114839465093091142050",
 	Name: "Prevention Supervisor",
 }
 
 // men's house manager
-var mens_house_manager = CurrentUser{
+var MENS_HOUSE_MANAGER = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "100323196510465985735",
 	Name: "Men's House Manager",
 }
 
 // administrative manager
-var admin_manager = CurrentUser{
+var ADMIN_MANAGER = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "111724747499299581748",
 	Name: "Administrative Manager",
 }
 
 // finance manager
-var finance_manager = CurrentUser{
+var FINANCE_MANAGER = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "111876803051097580983",
 	Name: "Finance Manager",
 }
 
 // finance supervisor
-var finance_supervisor = CurrentUser{
+var FINANCE_SUPERVISOR = CurrentUser{
 	ID: "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
 	// ID:   "516510984003210861035",
 	Name: "Finance Supervisor",
 }
 
 // finance fulfillment
-var finance_fulfillment = CurrentUser{
+var FINANCE_FULFILLMENT = CurrentUser{
 	ID: "2e780f36-7829-4707-9a17-34fce224c53e",
 	// ID:   "109157735191825776845",
 	Name: "Finance Requests",
 }
 
+var END_USER = CurrentUser{
+	ID:   "null",
+	Name: "null",
+}
+
 func NewRequestUser(request_type string, request_category string, user_id string) CurrentUser {
 	if strings.ToLower(strings.TrimSpace(request_type)) == "mileage" {
 		if user_id == "" {
-			return finance_fulfillment
+			return FINANCE_FULFILLMENT
 		}
-		return finance_supervisor
+		return FINANCE_SUPERVISOR
 	} else {
 		current_user := NewRequestHandler(request_category, user_id)
 		return current_user
@@ -152,84 +157,84 @@ func NewRequestUser(request_type string, request_category string, user_id string
 func NewRequestHandler(category string, user_id string) CurrentUser {
 	switch category {
 	case "ADMINISTRATIVE":
-		if user_id == admin_manager.ID {
-			return finance_supervisor
+		if user_id == ADMIN_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return admin_manager
+		return ADMIN_MANAGER
 	case "IHBT":
-		if user_id == ihbt_manager.ID {
-			return finance_supervisor
+		if user_id == IHBT_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return ihbt_manager
+		return IHBT_MANAGER
 	case "IOP":
-		if user_id == iop_manager.ID {
-			return finance_supervisor
+		if user_id == IOP_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return iop_manager
+		return IOP_MANAGER
 	case "PEERS":
-		if user_id == peer_manager.ID {
-			return finance_supervisor
+		if user_id == PEER_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return peer_manager
+		return PEER_MANAGER
 	case "MENS_HOUSE":
-		if user_id == mens_house_manager.ID {
-			return finance_supervisor
+		if user_id == MENS_HOUSE_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return mens_house_manager
+		return MENS_HOUSE_MANAGER
 	case "INTAKE":
-		if user_id == intake_manager.ID {
-			return finance_supervisor
+		if user_id == INTAKE_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return ihbt_manager
+		return IHBT_MANAGER
 	case "ACT_TEAM":
-		if user_id == act_manager.ID {
-			return finance_supervisor
+		if user_id == ACT_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return act_manager
+		return ACT_MANAGER
 	case "FINANCE":
-		if user_id == finance_supervisor.ID {
-			return finance_fulfillment
+		if user_id == FINANCE_SUPERVISOR.ID {
+			return FINANCE_FULFILLMENT
 		}
-		if user_id == finance_manager.ID {
-			return finance_supervisor
+		if user_id == FINANCE_MANAGER.ID {
+			return FINANCE_SUPERVISOR
 		}
-		return finance_manager
+		return FINANCE_MANAGER
 	case "LORAIN":
-		if user_id == lorain_supervisor.ID {
-			return finance_supervisor
+		if user_id == LORAIN_SUPERVISOR.ID {
+			return FINANCE_SUPERVISOR
 		}
-		if user_id == lorain_manager.ID {
-			return lorain_supervisor
+		if user_id == LORAIN_MANAGER.ID {
+			return LORAIN_SUPERVISOR
 		}
-		return lorain_manager
+		return LORAIN_MANAGER
 	case "NEXT_STEP":
-		if user_id == next_step_supervisor.ID {
-			return finance_supervisor
+		if user_id == NEXT_STEP_SUPERVISOR.ID {
+			return FINANCE_SUPERVISOR
 		}
-		if user_id == next_step_manager.ID {
-			return next_step_supervisor
+		if user_id == NEXT_STEP_MANAGER.ID {
+			return NEXT_STEP_SUPERVISOR
 		}
-		return next_step_manager
+		return NEXT_STEP_MANAGER
 	case "PERKINS":
-		if user_id == perkins_supervisor.ID {
-			return finance_supervisor
+		if user_id == PERKINS_SUPERVISOR.ID {
+			return FINANCE_SUPERVISOR
 		}
-		if user_id == perkins_manager.ID {
-			return perkins_supervisor
+		if user_id == PERKINS_MANAGER.ID {
+			return PERKINS_SUPERVISOR
 		}
-		return perkins_manager
+		return PERKINS_MANAGER
 	case "PREVENTION":
-		if user_id == prevention_supervisor.ID {
-			return finance_supervisor
+		if user_id == PREVENTION_SUPERVISOR.ID {
+			return FINANCE_SUPERVISOR
 		}
-		if user_id == prevention_manager.ID {
-			return prevention_supervisor
+		if user_id == PREVENTION_MANAGER.ID {
+			return PREVENTION_SUPERVISOR
 		}
-		return prevention_manager
+		return PREVENTION_MANAGER
 	default:
-		if user_id == finance_supervisor.ID {
-			return finance_fulfillment
+		if user_id == FINANCE_SUPERVISOR.ID {
+			return FINANCE_FULFILLMENT
 		}
-		return finance_supervisor
+		return FINANCE_SUPERVISOR
 	}
 }

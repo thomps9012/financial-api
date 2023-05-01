@@ -35,19 +35,19 @@ func NotAdmin() NilRes {
 
 func RequestExists(request_type string) NilRes {
 	return NilRes{
-		Message: "You're attempting to create a duplicate " + request_type + " request. Please edit an existing one or make the appropriate changes.",
+		Message: "You're attempting to create a duplicate " + request_type + " request. Please edit an existing one, or make the appropriate changes.",
 		Data:    "null",
 	}
 }
 
 type MalformedBodyRes struct {
-	Message string                   `json:"string"`
+	Message string                   `json:"message"`
 	Data    []*methods.ErrorResponse `json:"data"`
 }
 
 func MalformedBody(errors []*methods.ErrorResponse) MalformedBodyRes {
 	return MalformedBodyRes{
-		Message: "You're request body is invalid",
+		Message: "Your request body is invalid",
 		Data:    errors,
 	}
 }
@@ -74,7 +74,7 @@ func InvalidEmail() NilRes {
 }
 
 type ErrorLogRes struct {
-	Message string                  `json:"string"`
+	Message string                  `json:"message"`
 	Data    models.ErrorLogOverview `json:"data"`
 }
 
