@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var grantSeeds = []interface{}{
@@ -168,8 +169,8 @@ var userSeeds = []interface{}{
 	},
 }
 
-var mileageRequests = []interface{}{
-	models.Mileage_Request{
+var mileageRequests = []models.Mileage_Request{
+	{
 		ID:                "c2e85479-827c-4030-80fa-fe0b657b26fa",
 		Grant_ID:          "H79SP082264",
 		User_ID:           "c160b410-e6a8-4cbb-92c2-068112187612",
@@ -196,7 +197,7 @@ var mileageRequests = []interface{}{
 		Last_User_Before_Reject: "",
 		Is_Active:               true,
 	},
-	models.Mileage_Request{
+	{
 		ID:                "3015d932-1b43-467f-8cbc-8d687ed8ef81",
 		Grant_ID:          "H79TI082369",
 		User_ID:           "c160b410-e6a8-4cbb-92c2-068112187612",
@@ -225,8 +226,8 @@ var mileageRequests = []interface{}{
 	},
 }
 
-var checkRequestSeeds = []interface{}{
-	models.Check_Request{
+var checkRequestSeeds = []models.Check_Request{
+	{
 		ID:       "cd304148-d143-4acc-a666-3854fd109e0f",
 		Grant_ID: "2020-JY-FX-0014",
 		User_ID:  "d160b410-e6a8-4cbb-92c2-068112187305",
@@ -271,7 +272,7 @@ var checkRequestSeeds = []interface{}{
 		Last_User_Before_Reject: "null",
 		Is_Active:               true,
 	},
-	models.Check_Request{
+	{
 		ID:       "cd304148-d143-4acc-a666-3854fd109e0W",
 		Grant_ID: "2020-JY-FX-0014",
 		User_ID:  "d160b410-e6a8-4cbb-92c2-068112187503",
@@ -318,8 +319,8 @@ var checkRequestSeeds = []interface{}{
 	},
 }
 
-var pettyCashSeeds = []interface{}{
-	models.Petty_Cash_Request{
+var pettyCashSeeds = []models.Petty_Cash_Request{
+	{
 		ID:          "81ebdc42-cd41-469f-a449-6ba30947f972",
 		User_ID:     "c160b410-e6a8-4cbb-92c2-068112187612",
 		Grant_ID:    "SOR_TWR",
@@ -342,7 +343,7 @@ var pettyCashSeeds = []interface{}{
 		Last_User_Before_Reject: "null",
 		Is_Active:               true,
 	},
-	models.Petty_Cash_Request{
+	{
 		ID:          "81ebdc42-cd41-469f-a449-6ba30947f973",
 		User_ID:     "d160b410-e6a8-4cbb-92c2-068112187503",
 		Grant_ID:    "SOR_LORAIN",
@@ -364,6 +365,51 @@ var pettyCashSeeds = []interface{}{
 		Current_Status:          "PENDING",
 		Last_User_Before_Reject: "null",
 		Is_Active:               true,
+	},
+}
+
+var incomplete_actionSeeds = []interface{}{
+	models.IncompleteAction{
+		ID:          uuid.NewString(),
+		ActionID:    mileageRequests[1].Action_History[0].ID,
+		UserID:      mileageRequests[1].Current_User,
+		RequestID:   mileageRequests[1].ID,
+		RequestType: "mileage",
+	},
+	models.IncompleteAction{
+		ID:          uuid.NewString(),
+		ActionID:    mileageRequests[0].Action_History[0].ID,
+		UserID:      mileageRequests[0].Current_User,
+		RequestID:   mileageRequests[0].ID,
+		RequestType: "mileage",
+	},
+	models.IncompleteAction{
+		ID:          uuid.NewString(),
+		ActionID:    checkRequestSeeds[0].Action_History[0].ID,
+		UserID:      checkRequestSeeds[0].Current_User,
+		RequestID:   checkRequestSeeds[0].ID,
+		RequestType: "check",
+	},
+	models.IncompleteAction{
+		ID:          uuid.NewString(),
+		ActionID:    checkRequestSeeds[1].Action_History[0].ID,
+		UserID:      checkRequestSeeds[1].Current_User,
+		RequestID:   checkRequestSeeds[1].ID,
+		RequestType: "check",
+	},
+	models.IncompleteAction{
+		ID:          uuid.NewString(),
+		ActionID:    pettyCashSeeds[0].Action_History[0].ID,
+		UserID:      pettyCashSeeds[0].Current_User,
+		RequestID:   pettyCashSeeds[0].ID,
+		RequestType: "petty_cash",
+	},
+	models.IncompleteAction{
+		ID:          uuid.NewString(),
+		ActionID:    pettyCashSeeds[1].Action_History[0].ID,
+		UserID:      pettyCashSeeds[1].Current_User,
+		RequestID:   pettyCashSeeds[1].ID,
+		RequestType: "petty_cash",
 	},
 }
 
@@ -395,33 +441,54 @@ func SeedData(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	m_res, err := mileage.InsertMany(context.TODO(), mileageRequests)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	m_res := make([]*mongo.InsertOneResult, 0)
+	for _, req := range mileageRequests {
+		res, err := mileage.InsertOne(context.TODO(), req)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err)
+		}
+		m_res = append(m_res, res)
 	}
 	check_requests, err := database.Use("check_requests")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	c_res, err := check_requests.InsertMany(context.TODO(), checkRequestSeeds)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	c_res := make([]*mongo.InsertOneResult, 0)
+	for _, req := range checkRequestSeeds {
+		res, err := check_requests.InsertOne(context.TODO(), req)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err)
+		}
+		c_res = append(c_res, res)
 	}
 	petty_cash, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	p_res, err := petty_cash.InsertMany(context.TODO(), pettyCashSeeds)
+	p_res := make([]*mongo.InsertOneResult, 0)
+	for _, req := range pettyCashSeeds {
+		res, err := petty_cash.InsertOne(context.TODO(), req)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err)
+		}
+		p_res = append(p_res, res)
+	}
+	incomplete_actions, err := database.Use("incomplete_actions")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
+	i_res, err := incomplete_actions.InsertMany(context.TODO(), incomplete_actionSeeds)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
 
 	return c.Status(http.StatusCreated).JSON(fiber.Map{
-		"grants":     g_res,
-		"users":      u_res,
-		"mileage":    m_res,
-		"check":      c_res,
-		"petty_cash": p_res,
+		"grants":             g_res,
+		"users":              u_res,
+		"mileage":            m_res,
+		"check":              c_res,
+		"petty_cash":         p_res,
+		"incomplete_actions": i_res,
 	})
 }
 
@@ -473,12 +540,21 @@ func DeleteSeeds(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
+	incomplete_actions, err := database.Use("incomplete_actions")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
+	i_res, err := incomplete_actions.DeleteMany(context.TODO(), bson.D{{}})
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
 
 	return c.Status(http.StatusOK).JSON(fiber.Map{
-		"grants":     g_res,
-		"users":      u_res,
-		"mileage":    m_res,
-		"check":      c_res,
-		"petty_cash": p_res,
+		"grants":             g_res,
+		"users":              u_res,
+		"mileage":            m_res,
+		"check":              c_res,
+		"petty_cash":         p_res,
+		"incomplete_actions": i_res,
 	})
 }
