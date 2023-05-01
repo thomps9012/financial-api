@@ -9,111 +9,131 @@ type CurrentUser struct {
 	Name string `json:"name" bson:"name"`
 }
 
+// ****CURRENT IDS ARE FOR SEED PURPOSES ONLY*****
+
 // iop manager
 var iop_manager = CurrentUser{
-	ID:   "100323196510465985735",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "100323196510465985735",
 	Name: "Intensive Outpatient Manager",
 }
 
 // intake manager
 var intake_manager = CurrentUser{
-	ID:   "114839465093091142050",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "114839465093091142050",
 	Name: "Intake Manager",
 }
 
 // peer manager
 var peer_manager = CurrentUser{
-	ID:   "100323196510465985735",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "100323196510465985735",
 	Name: "Peer Support Manager",
 }
 
 // act manager
 var act_manager = CurrentUser{
-	ID:   "109904620612313503312",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "109904620612313503312",
 	Name: "ACT Manager",
 }
 
 // ihbt manager
 var ihbt_manager = CurrentUser{
-	ID:   "111724747499299581748",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "111724747499299581748",
 	Name: "IHBT Manager",
 }
 
 // perkins manager
 var perkins_manager = CurrentUser{
-	ID:   "101753058297288934715",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "101753058297288934715",
 	Name: "Perkins Manager",
 }
 
 // perkins supervisor
 var perkins_supervisor = CurrentUser{
-	ID:   "100323196510465985735",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "100323196510465985735",
 	Name: "Perkins Supervisor",
 }
 
 // next step manager
 var next_step_manager = CurrentUser{
-	ID:   "104213502974305953852",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
+	// ID:   "104213502974305953852",
 	Name: "NEXT Step Manager",
 }
 
 // next step supervisor
 var next_step_supervisor = CurrentUser{
-	ID:   "114839465093091142050",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "114839465093091142050",
 	Name: "NEXT Step Supervisor",
 }
 
 // lorain manager
 var lorain_manager = CurrentUser{
-	ID:   "102294853567984211361",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "102294853567984211361",
 	Name: "Lorain Manager",
 }
 
 // lorain supervisor
 var lorain_supervisor = CurrentUser{
-	ID:   "100323196510465985735",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "100323196510465985735",
 	Name: "Lorain Supervisor",
 }
 
 // prevention manager
 var prevention_manager = CurrentUser{
-	ID:   "106544031410769042454",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "106544031410769042454",
 	Name: "Prevention Manager",
 }
 
 // prevention supervisor
 var prevention_supervisor = CurrentUser{
-	ID:   "114839465093091142050",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "114839465093091142050",
 	Name: "Prevention Supervisor",
 }
 
 // men's house manager
 var mens_house_manager = CurrentUser{
-	ID:   "100323196510465985735",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "100323196510465985735",
 	Name: "Men's House Manager",
 }
 
 // administrative manager
 var admin_manager = CurrentUser{
-	ID:   "111724747499299581748",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "111724747499299581748",
 	Name: "Administrative Manager",
 }
 
 // finance manager
 var finance_manager = CurrentUser{
-	ID:   "111876803051097580983",
+	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	// ID:   "111876803051097580983",
 	Name: "Finance Manager",
 }
 
 // finance supervisor
 var finance_supervisor = CurrentUser{
-	ID:   "516510984003210861035",
+	ID: "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
+	// ID:   "516510984003210861035",
 	Name: "Finance Supervisor",
 }
 
 // finance fulfillment
 var finance_fulfillment = CurrentUser{
-	ID:   "109157735191825776845",
+	ID: "2e780f36-7829-4707-9a17-34fce224c53e",
+	// ID:   "109157735191825776845",
 	Name: "Finance Requests",
 }
 

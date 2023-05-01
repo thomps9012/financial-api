@@ -8,78 +8,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
-
-// Seed data for the Action model
-var actions = []models.Action{
-	{
-		ID:         "1",
-		User:       "d160b410-e6a8-4cbb-92c2-068112187503",
-		Status:     "APPROVED",
-		Created_At: time.Now(),
-	},
-	{
-		ID:         "2",
-		User:       "c160b410-e6a8-4cbb-92c2-068112187612",
-		Status:     "PENDING",
-		Created_At: time.Now().Add(-24 * time.Hour),
-	},
-	{
-		ID:         "3",
-		User:       "d160b410-e6a8-4cbb-92c2-068112187305",
-		Status:     "REJECTED",
-		Created_At: time.Now().Add(-24 * time.Hour),
-	},
-}
-
-// Seed data for the Mileage_Request model
-var mileageRequests = []interface{}{
-	models.Mileage_Request{
-		ID:                      "c2e85479-827c-4030-80fa-fe0b657b26fa",
-		Grant_ID:                "H79SP082264",
-		User_ID:                 "c160b410-e6a8-4cbb-92c2-068112187612",
-		Date:                    time.Now(),
-		Category:                models.IOP,
-		Starting_Location:       "Cleveland",
-		Destination:             "Akron",
-		Trip_Purpose:            "Meeting",
-		Start_Odometer:          10000,
-		End_Odometer:            10200,
-		Tolls:                   5.50,
-		Parking:                 10.00,
-		Trip_Mileage:            200,
-		Reimbursement:           150.00,
-		Created_At:              time.Now(),
-		Action_History:          []models.Action{actions[0]},
-		Current_User:            "d160b410-e6a8-4cbb-92c2-068112187503",
-		Current_Status:          "APPROVED",
-		Last_User_Before_Reject: "",
-		Is_Active:               true,
-	},
-	models.Mileage_Request{
-		ID:                      "3015d932-1b43-467f-8cbc-8d687ed8ef81",
-		Grant_ID:                "H79TI082369",
-		User_ID:                 "c160b410-e6a8-4cbb-92c2-068112187612",
-		Date:                    time.Now().Add(-48 * time.Hour),
-		Category:                models.PERKINS,
-		Starting_Location:       "Cleveland",
-		Destination:             "Columbus",
-		Trip_Purpose:            "Training",
-		Start_Odometer:          15000,
-		End_Odometer:            15200,
-		Tolls:                   7.50,
-		Parking:                 15.00,
-		Trip_Mileage:            200,
-		Reimbursement:           150.00,
-		Created_At:              time.Now().Add(-48 * time.Hour),
-		Action_History:          []models.Action{actions[1], actions[2]},
-		Current_User:            "d160b410-e6a8-4cbb-92c2-068112187503",
-		Current_Status:          "REJECTED",
-		Last_User_Before_Reject: "d160b410-e6a8-4cbb-92c2-068112187305",
-		Is_Active:               false,
-	},
-}
 
 var grantSeeds = []interface{}{
 	models.Grant{
@@ -170,7 +101,7 @@ var userSeeds = []interface{}{
 		},
 		Is_Active:   true,
 		Admin:       true,
-		Permissions: []string{"FINANCE_TEAM", "SUPERVISOR"},
+		Permissions: []string{"NEXT_STEP_MANAGER", "PERKINS_SUPERVISOR", "PERKINS_MANAGER", "IHBT_MANAGER", "ACT_MANAGER", "PEER_SUPPORT_MANAGER", "INTAKE_MANAGER", "IOP_MANAGER"},
 	},
 	models.User{
 		ID:         "d160b410-e6a8-4cbb-92c2-068112187305",
@@ -191,7 +122,106 @@ var userSeeds = []interface{}{
 		},
 		Is_Active:   true,
 		Admin:       true,
-		Permissions: []string{"EXECUTIVE", "MANAGER"},
+		Permissions: []string{"FINANCE_MANAGER", "ADMIN_MANAGER", "MENS_HOUSE_MANAGER", "PREVENTION_SUPERVISOR", "PREVENTION_MANAGER", "LORAIN_SUPERVISOR", "LORAIN_MANAGER", "NEXT_STEP_SUPERVISOR"},
+	},
+	models.User{
+		ID:         "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
+		Email:      "hford@example.com",
+		Name:       "Harrison Ford",
+		Last_Login: time.Now(),
+		Vehicles: []models.Vehicle{
+			{
+				ID:          "1",
+				Name:        "Honda Civic",
+				Description: "2018 Model",
+			},
+			{
+				ID:          "2",
+				Name:        "Toyota Corolla",
+				Description: "2017 Model",
+			},
+		},
+		Is_Active:   true,
+		Admin:       true,
+		Permissions: []string{"FINANCE_SUPERVISOR"},
+	},
+	models.User{
+		ID:         "2e780f36-7829-4707-9a17-34fce224c53e",
+		Email:      "chewy@example.com",
+		Name:       "Chewbacca",
+		Last_Login: time.Now(),
+		Vehicles: []models.Vehicle{
+			{
+				ID:          "1",
+				Name:        "Honda Civic",
+				Description: "2018 Model",
+			},
+			{
+				ID:          "2",
+				Name:        "Toyota Corolla",
+				Description: "2017 Model",
+			},
+		},
+		Is_Active:   true,
+		Admin:       true,
+		Permissions: []string{"FINANCE_FULFILLMENT"},
+	},
+}
+
+var mileageRequests = []interface{}{
+	models.Mileage_Request{
+		ID:                "c2e85479-827c-4030-80fa-fe0b657b26fa",
+		Grant_ID:          "H79SP082264",
+		User_ID:           "c160b410-e6a8-4cbb-92c2-068112187612",
+		Date:              time.Now(),
+		Category:          models.IOP,
+		Starting_Location: "Cleveland",
+		Destination:       "Akron",
+		Trip_Purpose:      "Meeting",
+		Start_Odometer:    10000,
+		End_Odometer:      10200,
+		Tolls:             5.50,
+		Parking:           10.00,
+		Trip_Mileage:      200,
+		Reimbursement:     150.00,
+		Created_At:        time.Now(),
+		Action_History: []models.Action{{
+			ID:         uuid.NewString(),
+			User:       "c160b410-e6a8-4cbb-92c2-068112187612",
+			Status:     "CREATED",
+			Created_At: time.Now(),
+		}},
+		Current_User:            "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
+		Current_Status:          "PENDING",
+		Last_User_Before_Reject: "",
+		Is_Active:               true,
+	},
+	models.Mileage_Request{
+		ID:                "3015d932-1b43-467f-8cbc-8d687ed8ef81",
+		Grant_ID:          "H79TI082369",
+		User_ID:           "c160b410-e6a8-4cbb-92c2-068112187612",
+		Date:              time.Now().Add(-48 * time.Hour),
+		Category:          models.PERKINS,
+		Starting_Location: "Cleveland",
+		Destination:       "Columbus",
+		Trip_Purpose:      "Training",
+		Start_Odometer:    15000,
+		End_Odometer:      15200,
+		Tolls:             7.50,
+		Parking:           15.00,
+		Trip_Mileage:      200,
+		Reimbursement:     150.00,
+		Created_At:        time.Now().Add(-48 * time.Hour),
+		Action_History: []models.Action{{
+			ID:         uuid.NewString(),
+			User:       "c160b410-e6a8-4cbb-92c2-068112187612",
+			Status:     "CREATED",
+			Created_At: time.Now(),
+		}},
+		Current_User:            "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
+		Current_Status:          "PENDING",
+		Last_User_Before_Reject: "null",
+		Is_Active:               true,
 	},
 }
 
@@ -230,13 +260,13 @@ var checkRequestSeeds = []interface{}{
 		Created_At:  time.Now(),
 		Action_History: []models.Action{
 			{
-				ID:         "14d0dfae-8d43-48f3-8858-73c0098e8a14",
+				ID:         uuid.NewString(),
 				User:       "d160b410-e6a8-4cbb-92c2-068112187305",
 				Status:     "CREATED",
 				Created_At: time.Now(),
 			},
 		},
-		Current_User:            "c160b410-e6a8-4cbb-92c2-068112187612",
+		Current_User:            "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
 		Current_Status:          "PENDING",
 		Last_User_Before_Reject: "null",
 		Is_Active:               true,
@@ -275,21 +305,15 @@ var checkRequestSeeds = []interface{}{
 		Created_At:  time.Now(),
 		Action_History: []models.Action{
 			{
-				ID:         "14d0dfae-8d43-48f3-8858-73c0098e8a14",
+				ID:         uuid.NewString(),
 				User:       "d160b410-e6a8-4cbb-92c2-068112187503",
 				Status:     "CREATED",
 				Created_At: time.Now(),
 			},
-			{
-				ID:         "b2f12f44-66a0-45db-9646-708dfca7c9d7",
-				User:       "d160b410-e6a8-4cbb-92c2-068112187305",
-				Status:     "REJECTED",
-				Created_At: time.Now(),
-			},
 		},
-		Current_User:            "d160b410-e6a8-4cbb-92c2-068112187503",
-		Current_Status:          "REJECTED",
-		Last_User_Before_Reject: "d160b410-e6a8-4cbb-92c2-068112187305",
+		Current_User:            "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
+		Current_Status:          "PENDING",
+		Last_User_Before_Reject: "null",
 		Is_Active:               true,
 	},
 }
@@ -307,22 +331,16 @@ var pettyCashSeeds = []interface{}{
 		Created_At:  time.Now().Add(55 * -time.Hour),
 		Action_History: []models.Action{
 			{
-				ID:         "90de4b14-503f-461b-9971-ccd778df0566",
+				ID:         uuid.NewString(),
 				User:       "c160b410-e6a8-4cbb-92c2-068112187612",
 				Status:     "CREATED",
 				Created_At: time.Now().Add(55 * -time.Hour),
 			},
-			{
-				ID:         "ddc15aee-5e79-4a47-86a4-1073ee93ea0b",
-				User:       "d160b410-e6a8-4cbb-92c2-068112187305",
-				Status:     "ORGANIZATION_APPROVED",
-				Created_At: time.Now().Add(55 * -time.Hour),
-			},
 		},
-		Current_User:            "c160b410-e6a8-4cbb-92c2-068112187612",
-		Current_Status:          "ORGANIZATION_APPROVED",
+		Current_User:            "d160b410-e6a8-4cbb-92c2-068112187305",
+		Current_Status:          "PENDING",
 		Last_User_Before_Reject: "null",
-		Is_Active:               false,
+		Is_Active:               true,
 	},
 	models.Petty_Cash_Request{
 		ID:          "81ebdc42-cd41-469f-a449-6ba30947f973",
@@ -336,16 +354,16 @@ var pettyCashSeeds = []interface{}{
 		Created_At:  time.Now().Add(5 * -time.Hour),
 		Action_History: []models.Action{
 			{
-				ID:         "90de4b14-503f-461b-9971-ccd778df0566",
+				ID:         uuid.NewString(),
 				User:       "d160b410-e6a8-4cbb-92c2-068112187503",
 				Status:     "CREATED",
 				Created_At: time.Now().Add(5 * -time.Hour),
 			},
 		},
-		Current_User:            "d160b410-e6a8-4cbb-92c2-068112187305",
+		Current_User:            "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
 		Current_Status:          "PENDING",
 		Last_User_Before_Reject: "null",
-		Is_Active:               false,
+		Is_Active:               true,
 	},
 }
 
