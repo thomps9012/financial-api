@@ -194,7 +194,7 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	new_request.Is_Active = true
 	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
-	current_user := methods.NewRequestUser("check_request", "nil")
+	current_user := methods.NewRequestUser("check_request", "nil", user_id)
 	new_request.Current_User = current_user.ID
 	new_request.Current_Status = "PENDING"
 	total := 0.0

@@ -173,7 +173,7 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	new_request.Is_Active = true
 	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
-	current_user := methods.NewRequestUser("petty_cash", string(pi.Category))
+	current_user := methods.NewRequestUser("petty_cash", string(pi.Category), user_id)
 	new_request.Current_User = current_user.ID
 	new_request.Current_Status = "PENDING"
 	check_req_coll, err := database.Use("petty_cash_requests")
