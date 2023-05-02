@@ -210,7 +210,7 @@ func (mi *MileageInput) CreateMileage(user_id string) (Mileage_Overview, error) 
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	err = CreateIncompleteAction("MILEAGE", new_request.ID, first_action[0], current_user.ID)
+	err = CreateIncompleteAction("mileage", new_request.ID, first_action[0], current_user.ID)
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
@@ -421,6 +421,10 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	} else {
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+		err = CreateIncompleteAction("mileage", m.ID, new_action.Action, new_action.NewUser.ID)
+		if err != nil {
+			return Mileage_Overview{}, err
+		}
 	}
 	response := new(Mileage_Overview)
 	upsert := true

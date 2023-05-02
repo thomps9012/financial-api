@@ -6,7 +6,6 @@ import (
 	"financial-api/middleware"
 	"financial-api/models"
 	"financial-api/responses"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,7 +22,6 @@ func GetMe(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
-	fmt.Println(user_id)
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}

@@ -210,7 +210,7 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
-	err = CreateIncompleteAction("CHECK", new_request.ID, first_action[0], current_user.ID)
+	err = CreateIncompleteAction("check", new_request.ID, first_action[0], current_user.ID)
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
@@ -435,6 +435,10 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	} else {
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+		err = CreateIncompleteAction("petty_cash", c.ID, new_action.Action, new_action.NewUser.ID)
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
 	}
 	response := new(Check_Request_Overview)
 	upsert := true

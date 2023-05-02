@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"financial-api/config"
-	"fmt"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,18 +15,11 @@ var Collection *mongo.Collection
 
 func Use(collection_name string) (*mongo.Collection, error) {
 	ATLAS_URI := config.ENV("ATLAS_URI")
-	clientOptions := options.Client().ApplyURI(ATLAS_URI)
+	clientOptions := options.Client().ApplyURI(ATLAS_URI).SetMaxConnIdleTime(time.Second * 5)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		return nil, err
 	}
-	err = client.Ping(context.TODO(), nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println("Connected to MongoDB!")
 	dbName := config.ENV("DB_NAME")
 	DB = client.Database(dbName)
 	Collection = DB.Collection(collection_name)
@@ -38,5 +31,4 @@ func CloseDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Connection to MongoDB closed!")
 }

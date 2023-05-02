@@ -184,7 +184,7 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	err = CreateIncompleteAction("PETTY_CASH", new_request.ID, first_action[0], current_user.ID)
+	err = CreateIncompleteAction("petty_cash", new_request.ID, first_action[0], current_user.ID)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
@@ -400,6 +400,10 @@ func (p *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	} else {
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+		err = CreateIncompleteAction("petty_cash", p.ID, new_action.Action, new_action.NewUser.ID)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
 	}
 	response := new(Petty_Cash_Overview)
 	upsert := true
