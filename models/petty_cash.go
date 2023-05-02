@@ -367,7 +367,12 @@ func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 	}
 	new_action := ApproveRequest("petty_cash", c.Current_User, c.Category, c.Current_Status)
 	c.Action_History = append(c.Action_History, new_action.Action)
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	var update bson.D
+	if new_action.Action.Status == "ORGANIZATION_APPROVED" {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	} else {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	}
 	response := new(Petty_Cash_Overview)
 	upsert := true
 	after := options.After

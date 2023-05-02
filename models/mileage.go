@@ -385,7 +385,12 @@ func (m *Mileage_Request) Approve(user_id string) (Mileage_Overview, error) {
 	}
 	new_action := ApproveRequest("mileage", m.Current_User, m.Category, m.Current_Status)
 	m.Action_History = append(m.Action_History, new_action.Action)
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	var update bson.D
+	if new_action.Action.Status == "ORGANIZATION_APPROVED" {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	} else {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	}
 	response := new(Mileage_Overview)
 	upsert := true
 	after := options.After

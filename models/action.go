@@ -153,7 +153,7 @@ func NewUserHandler(category Category, current_status string, exec_review bool) 
 	}
 }
 func ApproveMileageHandler(user_id string, current_status string) ApproveAction {
-	if current_status == "FINANCE_APPROVED" {
+	if current_status == "FINANCE_APPROVED" || user_id == methods.FINANCE_FULFILLMENT.ID {
 		return ApproveAction{
 			Action: Action{
 				ID:         uuid.NewString(),
