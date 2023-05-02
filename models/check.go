@@ -237,6 +237,10 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
+	err = ClearRequestAssociatedActions(ec.ID)
+	if err != nil {
+		return Check_Request_Overview{}, err
+	}
 	switch request.Current_Status {
 	case "REJECTED":
 		edit_action := Action{
@@ -335,6 +339,10 @@ func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user s
 	new_total := 0.0
 	for _, purchase := range ec.Purchases {
 		new_total += purchase.Amount
+	}
+	err = CreateIncompleteAction("check", ec.ID, action, new_user)
+	if err != nil {
+		return Check_Request{}, err
 	}
 	var update bson.D
 	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {

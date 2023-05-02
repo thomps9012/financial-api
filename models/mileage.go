@@ -236,6 +236,10 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
+	err = ClearRequestAssociatedActions(em.ID)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
 	switch request.Current_Status {
 	case "REJECTED":
 		edit_action := Action{
@@ -323,6 +327,10 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	}
 	new_mileage := em.End_Odometer - *em.Start_Odometer
 	new_reimbursement := *em.Tolls + *em.Parking + float64(new_mileage)*current_mileage_rate
+	err = CreateIncompleteAction("mileage", em.ID, action, new_user)
+	if err != nil {
+		return Mileage_Request{}, err
+	}
 	var update bson.D
 	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "reimbursement", Value: new_reimbursement}, {Key: "grant_id", Value: em.Grant_ID}, {Key: "date", Value: em.Date}, {Key: "category", Value: em.Category}, {Key: "starting_location", Value: em.Starting_Location}, {Key: "destination", Value: em.Destination}, {Key: "trip_purpose", Value: em.Trip_Purpose}, {Key: "start_odometer", Value: em.Start_Odometer}, {Key: "end_odometer", Value: em.End_Odometer}, {Key: "tolls", Value: em.Tolls}, {Key: "parking", Value: em.Parking}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}, {Key: "last_user_before_reject", Value: "null"}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
@@ -341,7 +349,6 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	if err != nil {
 		return Mileage_Request{}, err
 	}
-
 	return *mileage_req, nil
 }
 func DeleteMileage(mileage_id string) (Mileage_Overview, error) {

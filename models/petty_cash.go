@@ -211,6 +211,10 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
+	err = ClearRequestAssociatedActions(ep.ID)
+	if err != nil {
+		return Petty_Cash_Overview{}, err
+	}
 	switch request.Current_Status {
 	case "REJECTED":
 		edit_action := Action{
@@ -290,6 +294,10 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 }
 func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) (Petty_Cash_Request, error) {
 	collection, err := database.Use("petty_cash_requests")
+	if err != nil {
+		return Petty_Cash_Request{}, err
+	}
+	err = CreateIncompleteAction("petty_cash", ep.ID, action, new_user)
 	if err != nil {
 		return Petty_Cash_Request{}, err
 	}

@@ -124,7 +124,6 @@ func ApproveStatusHandler(category Category, current_status string, exec_review 
 	}
 	return "MANAGER_APPROVED"
 }
-
 func NewUserHandler(category Category, current_status string, exec_review bool) methods.CurrentUser {
 	if exec_review {
 		return methods.FINANCE_FULFILLMENT
