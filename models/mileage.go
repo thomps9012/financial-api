@@ -452,6 +452,10 @@ func (m *Mileage_Request) Reject(user_id string) (Mileage_Overview, error) {
 	}
 	reject_info := RejectRequest(m.User_ID, m.Current_User)
 	m.Action_History = append(m.Action_History, reject_info.Action)
+	err = CreateIncompleteAction("mileage", m.ID, reject_info.Action, m.User_ID)
+	if err != nil {
+		return Mileage_Overview{}, err
+	}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: m.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Mileage_Overview)
 	upsert := true

@@ -380,26 +380,26 @@ func PettyCashDetails(petty_cash_id string) (PettyCashDetailResponse, error) {
 	request_detail[0].Amount = ToFixed(request_detail[0].Amount, 2)
 	return request_detail[0], nil
 }
-func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error) {
+func (p *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{Key: "_id", Value: c.ID}}
-	err = collection.FindOne(context.TODO(), filter).Decode(&c)
+	filter := bson.D{{Key: "_id", Value: p.ID}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&p)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	if user_id != c.Current_User {
+	if user_id != p.Current_User {
 		return Petty_Cash_Overview{}, errors.New("you are attempting to approve a request for which you are not authorized")
 	}
-	new_action := ApproveRequest("petty_cash", c.Current_User, c.Category, c.Current_Status)
-	c.Action_History = append(c.Action_History, new_action.Action)
+	new_action := ApproveRequest("petty_cash", p.Current_User, p.Category, p.Current_Status)
+	p.Action_History = append(p.Action_History, new_action.Action)
 	var update bson.D
 	if new_action.Action.Status == "ORGANIZATION_APPROVED" {
-		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	} else {
-		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	}
 	response := new(Petty_Cash_Overview)
 	upsert := true
@@ -416,22 +416,26 @@ func (c *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 
 	return *response, nil
 }
-func (c *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error) {
+func (p *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	filter := bson.D{{Key: "_id", Value: c.ID}}
-	err = collection.FindOne(context.TODO(), filter).Decode(&c)
+	filter := bson.D{{Key: "_id", Value: p.ID}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&p)
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	if user_id != c.Current_User {
+	if user_id != p.Current_User {
 		return Petty_Cash_Overview{}, errors.New("you are attempting to reject a request for which you are not authorized")
 	}
-	reject_info := RejectRequest(c.User_ID, c.Current_User)
-	c.Action_History = append(c.Action_History, reject_info.Action)
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
+	reject_info := RejectRequest(p.User_ID, p.Current_User)
+	p.Action_History = append(p.Action_History, reject_info.Action)
+	err = CreateIncompleteAction("petty_cash", p.ID, reject_info.Action, p.User_ID)
+	if err != nil {
+		return Petty_Cash_Overview{}, err
+	}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Petty_Cash_Overview)
 	upsert := true
 	after := options.After

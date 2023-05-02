@@ -466,6 +466,10 @@ func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
 	}
 	reject_info := RejectRequest(c.User_ID, c.Current_User)
 	c.Action_History = append(c.Action_History, reject_info.Action)
+	err = CreateIncompleteAction("check", c.ID, reject_info.Action, c.User_ID)
+	if err != nil {
+		return Check_Request_Overview{}, err
+	}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Check_Request_Overview)
 	upsert := true
