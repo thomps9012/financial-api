@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"financial-api/methods"
+	"financial-api/middleware"
 	"financial-api/models"
 	"financial-api/responses"
 
@@ -17,7 +18,10 @@ import (
 // @success 200 {object} responses.GrantsRes
 // @router /grants [get]
 func GetAllGrants(c *fiber.Ctx) error {
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}

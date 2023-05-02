@@ -9,7 +9,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/joho/godotenv"
 )
 
@@ -49,9 +48,6 @@ func Setup() *fiber.App {
 	}))
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
-	}))
-	app.Use(encryptcookie.New(encryptcookie.Config{
-		Key: config.ENV("COOKIE_SECRET"),
 	}))
 	return app
 }

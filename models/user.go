@@ -137,7 +137,7 @@ func (u *User) Create(user UserLogin) (LoginRes, error) {
 	if err != nil {
 		return LoginRes{}, err
 	}
-	token, err := GenerateToken(u.ID, u.Name)
+	token, err := GenerateToken(u.ID, u.Name, u.Permissions, u.Admin)
 	if err != nil {
 		return LoginRes{}, err
 	}
@@ -166,11 +166,10 @@ func (u *User) Login(user UserLogin) (LoginRes, error) {
 	if err != nil {
 		return LoginRes{}, err
 	}
-	token, err := GenerateToken(u.ID, u.Name)
+	token, err := GenerateToken(u.ID, u.Name, u.Permissions, u.Admin)
 	if err != nil {
 		return LoginRes{}, err
 	}
-
 	return LoginRes{
 		UserID:      u.ID,
 		Token:       token,

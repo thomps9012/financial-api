@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"financial-api/methods"
+	"financial-api/middleware"
 	"financial-api/models"
 	"financial-api/responses"
 
@@ -34,7 +35,10 @@ func CreateCheckRequest(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
@@ -78,7 +82,10 @@ func CheckRequestDetail(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
@@ -114,7 +121,10 @@ func EditCheckRequest(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" || user_id != request.User_ID {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
@@ -151,7 +161,10 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
@@ -192,7 +205,10 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
@@ -235,7 +251,10 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}

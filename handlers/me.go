@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"financial-api/methods"
+	"financial-api/middleware"
 	"financial-api/models"
 	"financial-api/responses"
 	"fmt"
@@ -18,7 +19,10 @@ import (
 // @success 200 {object} responses.MyInfoRes
 // @router /me [get]
 func GetMe(c *fiber.Ctx) error {
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	fmt.Println(user_id)
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
@@ -38,7 +42,10 @@ func GetMe(c *fiber.Ctx) error {
 // @success 200 {object} responses.MileagesRes
 // @router /me/mileage [get]
 func GetMyMileage(c *fiber.Ctx) error {
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}
@@ -57,7 +64,10 @@ func GetMyMileage(c *fiber.Ctx) error {
 // @success 200 {object} responses.CheckRequestsRes
 // @router /me/check [get]
 func GetMyCheckRequests(c *fiber.Ctx) error {
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}
@@ -76,7 +86,10 @@ func GetMyCheckRequests(c *fiber.Ctx) error {
 // @success 200 {object} responses.PettyCashRequestsRes
 // @router /me/petty_cash [get]
 func GetMyPettyCash(c *fiber.Ctx) error {
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	my_petty_cash, err := models.GetUserPettyCashDetail(user_id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
@@ -111,7 +124,10 @@ func AddVehicle(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}
@@ -150,7 +166,10 @@ func EditVehicle(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}
@@ -189,7 +208,10 @@ func RemoveVehicle(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_id := c.Cookies("user_id")
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.BadUserID())
 	}
