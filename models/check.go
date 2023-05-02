@@ -237,7 +237,8 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
-	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
+	switch request.Current_Status {
+	case "REJECTED":
 		edit_action := Action{
 			ID:         uuid.NewString(),
 			User:       ec.User_ID,
@@ -255,7 +256,6 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 		if err != nil {
 			return Check_Request_Overview{}, err
 		}
-
 		return Check_Request_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,
@@ -265,8 +265,34 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 			Current_User:   current_user,
 			Is_Active:      res.Is_Active,
 		}, nil
-	}
-	if request.Current_Status == "PENDING" {
+	case "REJECTED_EDIT_PENDING_REVIEW":
+		edit_action := Action{
+			ID:         uuid.NewString(),
+			User:       ec.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
+		}
+		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
+		return Check_Request_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Order_Total:    res.Order_Total,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
+	case "PENDING":
 		edit_action := Action{
 			ID:         uuid.NewString(),
 			User:       ec.User_ID,
@@ -288,7 +314,6 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 				Date:    res.Date,
 			}, err
 		}
-
 		return Check_Request_Overview{
 			ID:             res.ID,
 			User_ID:        res.User_ID,

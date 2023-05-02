@@ -236,7 +236,8 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
-	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
+	switch request.Current_Status {
+	case "REJECTED":
 		edit_action := Action{
 			ID:         uuid.NewString(),
 			User:       em.User_ID,
@@ -261,8 +262,32 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 			Current_User:   current_user,
 			Is_Active:      res.Is_Active,
 		}, nil
-	}
-	if request.Current_Status == "PENDING" {
+	case "REJECTED_EDIT_PENDING_REVIEW":
+		edit_action := Action{
+			ID:         uuid.NewString(),
+			User:       em.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
+		}
+		res, err := em.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Current_User)
+		if err != nil {
+			return Mileage_Overview{}, err
+		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Mileage_Overview{}, err
+		}
+
+		return Mileage_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Reimbursement:  res.Reimbursement,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
+	case "PENDING":
 		edit_action := Action{
 			ID:         uuid.NewString(),
 			User:       em.User_ID,
@@ -340,7 +365,6 @@ func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
 
 	return *request_info, nil
 }
-
 func MileageDetail(mileage_id string) (MileageDetailResponse, error) {
 	collection, err := database.Use("mileage_requests")
 	if err != nil {

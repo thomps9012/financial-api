@@ -211,7 +211,8 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
-	if request.Current_Status == "REJECTED" || request.Current_Status == "REJECTED_EDIT_PENDING_REVIEW" {
+	switch request.Current_Status {
+	case "REJECTED":
 		edit_action := Action{
 			ID:         uuid.NewString(),
 			User:       ep.User_ID,
@@ -222,23 +223,44 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		if err != nil {
 			return Petty_Cash_Overview{}, err
 		}
-		// username, err := FindUserName(res.Current_User)
-		// if err != nil {
-		// 	return Petty_Cash_Overview{}, err
-		// }
-
+		username, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
 		return Petty_Cash_Overview{
-			ID:      res.ID,
-			User_ID: res.User_ID,
-			Amount:  res.Amount,
-			Date:    res.Date,
-			// Current_User:   username,
-			Current_User:   res.Current_User,
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Amount:         res.Amount,
+			Date:           res.Date,
+			Current_User:   username,
 			Current_Status: res.Current_Status,
 			Is_Active:      res.Is_Active,
 		}, nil
-	}
-	if request.Current_Status == "PENDING" {
+	case "REJECTED_EDIT_PENDING_REVIEW":
+		edit_action := Action{
+			ID:         uuid.NewString(),
+			User:       ep.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
+		}
+		res, err := ep.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Current_User)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
+		username, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
+		return Petty_Cash_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Amount:         res.Amount,
+			Date:           res.Date,
+			Current_User:   username,
+			Current_Status: res.Current_Status,
+			Is_Active:      res.Is_Active,
+		}, nil
+	case "PENDING":
 		edit_action := Action{
 			ID:         uuid.NewString(),
 			User:       ep.User_ID,
@@ -249,18 +271,16 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		if err != nil {
 			return Petty_Cash_Overview{}, err
 		}
-		// username, err := FindUserName(res.Current_User)
-		// if err != nil {
-		// 	return Petty_Cash_Overview{}, err
-		// }
-
+		username, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
 		return Petty_Cash_Overview{
-			ID:      res.ID,
-			User_ID: res.User_ID,
-			Amount:  res.Amount,
-			Date:    res.Date,
-			// Current_User:   username,
-			Current_User:   res.Current_Status,
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Amount:         res.Amount,
+			Date:           res.Date,
+			Current_User:   username,
 			Current_Status: res.Current_Status,
 			Is_Active:      res.Is_Active,
 		}, nil
