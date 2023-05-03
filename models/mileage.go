@@ -354,17 +354,23 @@ func (em *EditMileageInput) SaveEdits(action Action, new_status string, new_user
 	}
 	return *mileage_req, nil
 }
-func DeleteMileage(mileage_id string) (Mileage_Overview, error) {
+func DeleteMileage(mileage_id string, user_id string, user_admin bool) (Mileage_Overview, error) {
 	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
 	filter := bson.D{{Key: "_id", Value: mileage_id}}
 	request_info := new(Mileage_Overview)
-	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
-	if err != nil {
-		return Mileage_Overview{}, err
+	if !user_admin {
+		err = collection.FindOne(context.TODO(), filter).Decode(&request_info)
+		if err != nil {
+			return Mileage_Overview{}, err
+		}
+		if request_info.User_ID != user_id {
+			return Mileage_Overview{}, errors.New("you're attempting to delete a request for which you are unauthorized")
+		}
 	}
+	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	current_user_id := request_info.Current_User
 	user_name, err := FindUserName(current_user_id)
 	if err != nil {

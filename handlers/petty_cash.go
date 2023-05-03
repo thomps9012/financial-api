@@ -165,10 +165,14 @@ func DeletePettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
+	user_admin, err := middleware.TokenAdmin(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.DeletePettyCash(find_request_input.PettyCashID)
+	data, err := models.DeletePettyCash(find_request_input.PettyCashID, user_id, user_admin)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}

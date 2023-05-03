@@ -368,13 +368,22 @@ func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user s
 
 	return *check_req, nil
 }
-func DeleteCheckRequest(request_id string) (Check_Request_Overview, error) {
+func DeleteCheckRequest(request_id string, user_id string, user_admin bool) (Check_Request_Overview, error) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	request_info := new(Check_Request_Overview)
+	if !user_admin {
+		err = collection.FindOne(context.TODO(), filter).Decode(&request_info)
+		if err != nil {
+			return Check_Request_Overview{}, err
+		}
+		if request_info.User_ID != user_id {
+			return Check_Request_Overview{}, errors.New("you're attempting to delete a request for which you are unauthorized")
+		}
+	}
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
 		return Check_Request_Overview{}, err

@@ -76,3 +76,11 @@ func TokenID(c *fiber.Ctx) (string, error) {
 	}
 	return token_info["user_id"].(string), nil
 }
+func TokenAdmin(c *fiber.Ctx) (bool, error) {
+	token_string := strings.TrimSpace(strings.Split(c.GetReqHeaders()["Authorization"], "Bearer")[1])
+	token_info, err := ParseToken(token_string)
+	if err != nil {
+		return false, err
+	}
+	return token_info["admin"].(bool), nil
+}

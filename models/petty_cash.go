@@ -325,13 +325,22 @@ func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user st
 
 	return *request, nil
 }
-func DeletePettyCash(request_id string) (Petty_Cash_Overview, error) {
+func DeletePettyCash(request_id string, user_id string, user_admin bool) (Petty_Cash_Overview, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	request_info := new(Petty_Cash_Overview)
+	if !user_admin {
+		err = collection.FindOne(context.TODO(), filter).Decode(&request_info)
+		if err != nil {
+			return Petty_Cash_Overview{}, err
+		}
+		if request_info.User_ID != user_id {
+			return Petty_Cash_Overview{}, errors.New("you're attempting to delete a request for which you are unauthorized")
+		}
+	}
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
 		return Petty_Cash_Overview{

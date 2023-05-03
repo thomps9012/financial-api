@@ -169,10 +169,14 @@ func DeleteMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
+	user_admin, err := middleware.TokenAdmin(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.DeleteMileage(find_mileage_input.MileageID)
+	data, err := models.DeleteMileage(find_mileage_input.MileageID, user_id, user_admin)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}

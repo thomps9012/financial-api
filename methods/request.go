@@ -144,7 +144,7 @@ var END_USER = CurrentUser{
 
 func NewRequestUser(request_type string, request_category string, user_id string) CurrentUser {
 	if strings.ToLower(strings.TrimSpace(request_type)) == "mileage" {
-		if user_id == "" {
+		if user_id == "" || user_id == FINANCE_SUPERVISOR.ID {
 			return FINANCE_FULFILLMENT
 		}
 		return FINANCE_SUPERVISOR
