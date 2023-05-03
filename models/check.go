@@ -237,6 +237,9 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 	if err != nil {
 		return Check_Request_Overview{}, err
 	}
+	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
+		return Check_Request_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
+	}
 	err = ClearRequestAssociatedActions(ec.ID)
 	if err != nil {
 		return Check_Request_Overview{}, err

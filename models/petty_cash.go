@@ -211,6 +211,9 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 	if err != nil {
 		return Petty_Cash_Overview{}, err
 	}
+	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
+		return Petty_Cash_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
+	}
 	err = ClearRequestAssociatedActions(ep.ID)
 	if err != nil {
 		return Petty_Cash_Overview{}, err

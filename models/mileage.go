@@ -236,6 +236,9 @@ func (em *EditMileageInput) EditMileage() (Mileage_Overview, error) {
 	if err != nil {
 		return Mileage_Overview{}, err
 	}
+	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
+		return Mileage_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
+	}
 	err = ClearRequestAssociatedActions(em.ID)
 	if err != nil {
 		return Mileage_Overview{}, err
