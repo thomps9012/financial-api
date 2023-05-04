@@ -162,8 +162,8 @@ func (ci *CheckRequestInput) Exists(user_id string) (bool, *CustomError) {
 		}
 	}
 	date_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: ci.Date}}
-	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: ci.Grant_ID}, {Key: "date", Value: ci.Date}}
-	purchase_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "purchases", Value: ci.Purchases}, {Key: "date", Value: ci.Date}}
+	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: ci.Grant_ID}, {Key: "category", Value: ci.Category}, {Key: "description", Value: ci.Description}}
+	purchase_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "purchases", Value: ci.Purchases}}
 	date_count, err := check_req_coll.CountDocuments(context.TODO(), date_filter)
 	if err != nil {
 		return false, &CustomError{
@@ -205,7 +205,7 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	new_request.Is_Active = true
 	first_action := FirstActions(user_id)
 	new_request.Action_History = first_action
-	current_user := methods.NewRequestUser("check_request", "nil", user_id)
+	current_user := methods.NewRequestUser("check_request", string(new_request.Category), user_id)
 	new_request.Current_User = current_user.ID
 	new_request.Current_Status = "PENDING"
 	total := 0.0

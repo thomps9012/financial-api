@@ -76,7 +76,7 @@ var NEXT_STEP_SUPERVISOR = CurrentUser{
 
 // lorain manager
 var LORAIN_MANAGER = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
+	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
 	// ID:   "102294853567984211361",
 	Name: "Lorain Manager",
 }
@@ -109,8 +109,8 @@ var MENS_HOUSE_MANAGER = CurrentUser{
 	Name: "Men's House Manager",
 }
 
-// administrative manager
-var ADMIN_MANAGER = CurrentUser{
+// administrative supervisor
+var ADMINISTRATIVE_SUPERVISOR = CurrentUser{
 	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
 	// ID:   "111724747499299581748",
 	Name: "Administrative Manager",
@@ -157,10 +157,10 @@ func NewRequestUser(request_type string, request_category string, user_id string
 func NewRequestHandler(category string, user_id string) CurrentUser {
 	switch category {
 	case "ADMINISTRATIVE":
-		if user_id == ADMIN_MANAGER.ID {
+		if user_id == ADMINISTRATIVE_SUPERVISOR.ID {
 			return FINANCE_SUPERVISOR
 		}
-		return ADMIN_MANAGER
+		return ADMINISTRATIVE_SUPERVISOR
 	case "IHBT":
 		if user_id == IHBT_MANAGER.ID {
 			return FINANCE_SUPERVISOR

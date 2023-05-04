@@ -141,8 +141,8 @@ func (pi *PettyCashInput) Exists(user_id string) (bool, error) {
 		return false, err
 	}
 	date_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: pi.Date}}
-	amount_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "amount", Value: pi.Amount}, {Key: "date", Value: pi.Date}}
-	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: pi.Grant_ID}, {Key: "date", Value: pi.Date}}
+	amount_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "amount", Value: pi.Amount}, {Key: "description", Value: pi.Description}}
+	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: pi.Grant_ID}, {Key: "amount", Value: pi.Amount}, {Key: "category", Value: pi.Category}}
 	date_count, err := check_req_coll.CountDocuments(context.TODO(), date_filter)
 	if err != nil {
 		return false, err
