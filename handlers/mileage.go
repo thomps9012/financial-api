@@ -6,7 +6,6 @@ import (
 	"financial-api/middleware"
 	"financial-api/models"
 	"financial-api/responses"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -98,9 +97,9 @@ func MileageDetail(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.MileageDetail(find_mileage_input.MileageID, user_id, user_admin)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, detail_err := models.MileageDetail(find_mileage_input.MileageID, user_id, user_admin)
+	if detail_err != nil {
+		return c.Status(detail_err.Status).JSON(responses.ServerError(detail_err.Error()))
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.MileageDetail(data))
 }
@@ -141,15 +140,12 @@ func EditMileage(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	fmt.Println(user_admin)
-	fmt.Println(user_id)
-	fmt.Println(mileage_request.User_ID)
 	if !user_admin && user_id != mileage_request.User_ID {
 		return c.Status(fiber.StatusForbidden).JSON(responses.NotAdmin())
 	}
-	response, err := mileage_request.EditMileage()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	response, edit_err := mileage_request.EditMileage()
+	if edit_err != nil {
+		return c.Status(edit_err.Status).JSON(responses.ServerError(edit_err.Error()))
 	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditMileage(response))
@@ -191,9 +187,9 @@ func DeleteMileage(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.DeleteMileage(find_mileage_input.MileageID, user_id, user_admin)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, delete_err := models.DeleteMileage(find_mileage_input.MileageID, user_id, user_admin)
+	if delete_err != nil {
+		return c.Status(delete_err.Status).JSON(responses.ServerError(delete_err.Error()))
 	}
 	err = models.ClearRequestAssociatedActions(find_mileage_input.MileageID)
 	if err != nil {
@@ -237,9 +233,9 @@ func ApproveMileage(c *fiber.Ctx) error {
 	}
 	mileage := new(models.Mileage_Request)
 	mileage.ID = approve_info.RequestID
-	data, err := mileage.Approve(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, approve_err := mileage.Approve(user_id)
+	if approve_err != nil {
+		return c.Status(approve_err.Status).JSON(responses.ServerError(approve_err.Error()))
 	}
 	err = models.ClearIncompleteAction("mileage", mileage.ID, user_id)
 	if err != nil {
@@ -283,9 +279,9 @@ func RejectMileage(c *fiber.Ctx) error {
 	}
 	mileage := new(models.Mileage_Request)
 	mileage.ID = reject_info.RequestID
-	data, err := mileage.Reject(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, reject_err := mileage.Reject(user_id)
+	if reject_err != nil {
+		return c.Status(reject_err.Status).JSON(responses.ServerError(reject_err.Error()))
 	}
 	err = models.ClearIncompleteAction("mileage", mileage.ID, user_id)
 	if err != nil {
