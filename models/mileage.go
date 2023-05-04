@@ -381,7 +381,7 @@ func DeleteMileage(mileage_id string, user_id string, user_admin bool) (Mileage_
 
 	return *request_info, nil
 }
-func MileageDetail(mileage_id string) (MileageDetailResponse, error) {
+func MileageDetail(mileage_id string, user_id string, user_admin bool) (MileageDetailResponse, error) {
 	collection, err := database.Use("mileage_requests")
 	if err != nil {
 		return MileageDetailResponse{}, err
@@ -406,6 +406,11 @@ func MileageDetail(mileage_id string) (MileageDetailResponse, error) {
 	}
 	if len(request_detail) == 0 {
 		return MileageDetailResponse{}, errors.New("no mileage request with that id found")
+	}
+	if !user_admin {
+		if request_detail[0].RequestCreator[0].ID != user_id {
+			return MileageDetailResponse{}, errors.New("you're attempting to view a mileage request without authorization")
+		}
 	}
 	request_detail[0].Reimbursement = ToFixed(request_detail[0].Reimbursement, 2)
 	return request_detail[0], nil

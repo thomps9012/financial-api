@@ -363,7 +363,7 @@ func DeletePettyCash(request_id string, user_id string, user_admin bool) (Petty_
 
 	return *request_info, nil
 }
-func PettyCashDetails(petty_cash_id string) (PettyCashDetailResponse, error) {
+func PettyCashDetails(petty_cash_id string, user_id string, user_admin bool) (PettyCashDetailResponse, error) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
 		return PettyCashDetailResponse{}, err
@@ -388,6 +388,11 @@ func PettyCashDetails(petty_cash_id string) (PettyCashDetailResponse, error) {
 	}
 	if len(request_detail) == 0 {
 		return PettyCashDetailResponse{}, errors.New("no petty cash request with that id found")
+	}
+	if !user_admin {
+		if request_detail[0].RequestCreator[0].ID != user_id {
+			return PettyCashDetailResponse{}, errors.New("you're attempting to view a petty cash request without authorization")
+		}
 	}
 	request_detail[0].Amount = ToFixed(request_detail[0].Amount, 2)
 	return request_detail[0], nil

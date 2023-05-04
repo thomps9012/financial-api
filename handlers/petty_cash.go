@@ -86,10 +86,14 @@ func PettyCashDetail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
+	user_admin, err := middleware.TokenAdmin(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.PettyCashDetails(find_request_input.PettyCashID)
+	data, err := models.PettyCashDetails(find_request_input.PettyCashID, user_id, user_admin)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
@@ -125,8 +129,15 @@ func EditPettyCash(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
-	if user_id == "" || user_id != request.User_ID {
+	user_admin, err := middleware.TokenAdmin(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
+	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
+	}
+	if !user_admin && user_id != request.User_ID {
+		return c.Status(fiber.StatusForbidden).JSON(responses.NotAdmin())
 	}
 	response, err := request.EditPettyCash()
 	if err != nil {

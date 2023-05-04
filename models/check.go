@@ -398,7 +398,7 @@ func DeleteCheckRequest(request_id string, user_id string, user_admin bool) (Che
 
 	return *request_info, nil
 }
-func CheckRequestDetail(check_id string) (CheckRequestDetailResponse, error) {
+func CheckRequestDetail(check_id string, user_id string, user_admin bool) (CheckRequestDetailResponse, error) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
 		return CheckRequestDetailResponse{}, err
@@ -423,6 +423,11 @@ func CheckRequestDetail(check_id string) (CheckRequestDetailResponse, error) {
 	}
 	if len(request_detail) == 0 {
 		return CheckRequestDetailResponse{}, errors.New("no check request found with that id")
+	}
+	if !user_admin {
+		if request_detail[0].RequestCreator[0].ID != user_id {
+			return CheckRequestDetailResponse{}, errors.New("you're attempting to view a check request without authorization")
+		}
 	}
 	request_detail[0].Order_Total = ToFixed(request_detail[0].Order_Total, 2)
 	return request_detail[0], nil

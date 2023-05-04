@@ -34,6 +34,7 @@ func LogError(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
+	// add in status filter
 	res, err := request.Save()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))

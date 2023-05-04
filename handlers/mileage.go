@@ -6,6 +6,7 @@ import (
 	"financial-api/middleware"
 	"financial-api/models"
 	"financial-api/responses"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -90,10 +91,14 @@ func MileageDetail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
+	user_admin, err := middleware.TokenAdmin(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.MileageDetail(find_mileage_input.MileageID)
+	data, err := models.MileageDetail(find_mileage_input.MileageID, user_id, user_admin)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
@@ -129,8 +134,18 @@ func EditMileage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
 	}
-	if user_id == "" || user_id != mileage_request.User_ID {
+	user_admin, err := middleware.TokenAdmin(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
+	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
+	}
+	fmt.Println(user_admin)
+	fmt.Println(user_id)
+	fmt.Println(mileage_request.User_ID)
+	if !user_admin && user_id != mileage_request.User_ID {
+		return c.Status(fiber.StatusForbidden).JSON(responses.NotAdmin())
 	}
 	response, err := mileage_request.EditMileage()
 	if err != nil {

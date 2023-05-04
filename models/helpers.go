@@ -101,9 +101,19 @@ type ApproveRejectRequest struct {
 	RequestID string `json:"request_id" bson:"request_id" validate:"required"`
 }
 
+type CustomError struct {
+	Status  int    `json:"status" bson:"status"`
+	Message string `json:"message" bson:"message"`
+}
+
+func (e *CustomError) Error() string {
+	return e.Message
+}
+
 type ErrorLog struct {
 	ID           string    `json:"id" bson:"_id"`
 	UserID       string    `json:"user_id" bson:"user_id" validate:"required"`
+	Status       int       `json:"error_status" bson:"error_status" validate:"required"`
 	Error        string    `json:"error" bson:"error" validate:"required"`
 	ErrorPath    string    `json:"error_path" bson:"error_path" validate:"required"`
 	ErrorMessage string    `json:"error_message" bson:"error_message" validate:"required"`

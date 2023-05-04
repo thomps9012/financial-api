@@ -35,22 +35,22 @@ func Login(c *fiber.Ctx) error {
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	exists, err := user_login.Exists()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	exists, exists_err := user_login.Exists()
+	if exists_err.Error() != "" {
+		return c.Status(exists_err.Status).JSON(responses.ServerError(exists_err.Error()))
 	}
 	user := new(models.User)
 	if !exists {
-		login_res, err := user.Create(*user_login)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		login_res, create_err := user.Create(*user_login)
+		if create_err != nil {
+			return c.Status(create_err.Status).JSON(responses.ServerError(create_err.Error()))
 		}
 		c.Response().Header.Add("no-cache", "true")
 		return c.Status(fiber.StatusCreated).JSON(responses.NewUser(login_res))
 	} else {
-		login_res, err := user.Login(*user_login)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		login_res, login_err := user.Login(*user_login)
+		if login_err != nil {
+			return c.Status(login_err.Status).JSON(responses.ServerError(login_err.Error()))
 		}
 		c.Response().Header.Add("no-cache", "true")
 		return c.Status(fiber.StatusOK).JSON(responses.LoggedIn(login_res))

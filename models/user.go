@@ -68,24 +68,31 @@ type VehicleInput struct {
 	Description string `json:"description" bson:"description" validate:"required"`
 }
 
+// deprecated
 var admin_arr = [10]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes", "jward", "cwoods", "abradley", "finance_requests"}
 var mgr_arr = [6]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes"}
 var supervisor_arr = [2]string{"jward", "cwoods"}
 var exec_arr = [1]string{"abradley"}
 var fin_arr = [1]string{"finance_requests"}
 
-func (ul *UserLogin) Exists() (bool, error) {
+func (ul *UserLogin) Exists() (bool, *CustomError) {
 	users, err := database.Use("users")
 	if err != nil {
-		return false, err
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: ul.ID}}
 	count, err := users.CountDocuments(context.TODO(), filter)
 	if err != nil {
-		return false, err
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 
-	return count > 0, nil
+	return count > 0, &CustomError{}
 }
 func isAdmin(user_email string) bool {
 	user_name := strings.Split(user_email, "@")[0]
@@ -120,10 +127,13 @@ func setPermissions(user_email string) []string {
 	}
 	return []string{"EMPLOYEE"}
 }
-func (u *User) Create(user UserLogin) (LoginRes, error) {
+func (u *User) Create(user UserLogin) (LoginRes, *CustomError) {
 	users, err := database.Use("users")
 	if err != nil {
-		return LoginRes{}, err
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	u.ID = user.ID
 	u.Email = user.Email
@@ -135,11 +145,17 @@ func (u *User) Create(user UserLogin) (LoginRes, error) {
 	u.Permissions = setPermissions(u.Email)
 	_, err = users.InsertOne(context.TODO(), *u)
 	if err != nil {
-		return LoginRes{}, err
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	token, err := GenerateToken(u.ID, u.Name, u.Permissions, u.Admin)
 	if err != nil {
-		return LoginRes{}, err
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 
 	return LoginRes{
@@ -147,12 +163,15 @@ func (u *User) Create(user UserLogin) (LoginRes, error) {
 		Token:       token,
 		Admin:       u.Admin,
 		Permissions: u.Permissions,
-	}, nil
+	}, &CustomError{}
 }
-func (u *User) Login(user UserLogin) (LoginRes, error) {
+func (u *User) Login(user UserLogin) (LoginRes, *CustomError) {
 	users, err := database.Use("users")
 	if err != nil {
-		return LoginRes{}, err
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: user.ID}}
 	upsert := true
@@ -164,11 +183,17 @@ func (u *User) Login(user UserLogin) (LoginRes, error) {
 	update := bson.D{{Key: "$set", Value: bson.M{"last_login": time.Now()}}}
 	err = users.FindOneAndUpdate(context.TODO(), filter, update, &opt).Decode(&u)
 	if err != nil {
-		return LoginRes{}, err
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	token, err := GenerateToken(u.ID, u.Name, u.Permissions, u.Admin)
 	if err != nil {
-		return LoginRes{}, err
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	return LoginRes{
 		UserID:      u.ID,
@@ -180,7 +205,7 @@ func (u *User) Login(user UserLogin) (LoginRes, error) {
 func GetPublicInfo(user_id string) (PublicInfo, error) {
 	users, err := database.Use("users")
 	if err != nil {
-		return PublicInfo{}, err
+		return PublicInfo{}, &CustomError{}
 	}
 	user_info := make([]PublicInfo, 0)
 	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: user_id}}}}
