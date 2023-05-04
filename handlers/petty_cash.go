@@ -93,9 +93,9 @@ func PettyCashDetail(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.PettyCashDetails(find_request_input.PettyCashID, user_id, user_admin)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, detail_err := models.PettyCashDetails(find_request_input.PettyCashID, user_id, user_admin)
+	if detail_err != nil {
+		return c.Status(detail_err.Status).JSON(responses.ServerError(detail_err.Error()))
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.PettyCashDetail(data))
 }
@@ -139,9 +139,9 @@ func EditPettyCash(c *fiber.Ctx) error {
 	if !user_admin && user_id != request.User_ID {
 		return c.Status(fiber.StatusForbidden).JSON(responses.NotAdmin())
 	}
-	response, err := request.EditPettyCash()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	response, edit_err := request.EditPettyCash()
+	if edit_err != nil {
+		return c.Status(edit_err.Status).JSON(responses.ServerError(edit_err.Error()))
 	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditPettyCash(response))
@@ -183,9 +183,9 @@ func DeletePettyCash(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.DeletePettyCash(find_request_input.PettyCashID, user_id, user_admin)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, delete_err := models.DeletePettyCash(find_request_input.PettyCashID, user_id, user_admin)
+	if delete_err != nil {
+		return c.Status(delete_err.Status).JSON(responses.ServerError(delete_err.Error()))
 	}
 	err = models.ClearRequestAssociatedActions(find_request_input.PettyCashID)
 	if err != nil {
@@ -229,9 +229,9 @@ func ApprovePettyCash(c *fiber.Ctx) error {
 	}
 	request := new(models.Petty_Cash_Request)
 	request.ID = approve_info.RequestID
-	data, err := request.Approve(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, approve_err := request.Approve(user_id)
+	if approve_err != nil {
+		return c.Status(approve_err.Status).JSON(responses.ServerError(approve_err.Error()))
 	}
 	err = models.ClearIncompleteAction("petty_cash", request.ID, user_id)
 	if err != nil {
@@ -275,9 +275,9 @@ func RejectPettyCash(c *fiber.Ctx) error {
 	}
 	request := new(models.Petty_Cash_Request)
 	request.ID = reject_info.RequestID
-	data, err := request.Reject(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, reject_err := request.Reject(user_id)
+	if reject_err != nil {
+		return c.Status(reject_err.Status).JSON(responses.ServerError(reject_err.Error()))
 	}
 	err = models.ClearIncompleteAction("petty_cash", request.ID, user_id)
 	if err != nil {

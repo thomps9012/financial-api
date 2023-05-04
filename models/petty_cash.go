@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"errors"
 	database "financial-api/db"
 	"financial-api/methods"
 	"time"
@@ -199,24 +198,36 @@ func (pi *PettyCashInput) CreatePettyCash(user_id string) (Petty_Cash_Overview, 
 		Is_Active:      true,
 	}, nil
 }
-func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
+func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, *CustomError) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: ep.ID}}
 	opts := options.FindOne().SetProjection(bson.D{{Key: "action_history", Value: 1}, {Key: "current_status", Value: 1}, {Key: "current_user", Value: 1}, {Key: "last_user_before_reject", Value: 1}})
 	request := new(Petty_Cash_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
-		return Petty_Cash_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  423,
+			Message: "Request being processed by organization",
+		}
 	}
 	err = ClearRequestAssociatedActions(ep.ID)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	switch request.Current_Status {
 	case "REJECTED":
@@ -228,11 +239,17 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		}
 		res, err := ep.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		username, err := FindUserName(res.Current_User)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		return Petty_Cash_Overview{
 			ID:             res.ID,
@@ -252,11 +269,17 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		}
 		res, err := ep.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Current_User)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		username, err := FindUserName(res.Current_User)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		return Petty_Cash_Overview{
 			ID:             res.ID,
@@ -276,11 +299,17 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		}
 		res, err := ep.SaveEdits(edit_action, "PENDING", request.Current_User)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		username, err := FindUserName(res.Current_User)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		return Petty_Cash_Overview{
 			ID:             res.ID,
@@ -293,7 +322,10 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, error) {
 		}, nil
 	}
 
-	return Petty_Cash_Overview{}, errors.New("this request is currently being processed by the finance team")
+	return Petty_Cash_Overview{}, &CustomError{
+		Status:  423,
+		Message: "Request being processed by organization",
+	}
 }
 func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) (Petty_Cash_Request, error) {
 	collection, err := database.Use("petty_cash_requests")
@@ -325,33 +357,45 @@ func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user st
 
 	return *request, nil
 }
-func DeletePettyCash(request_id string, user_id string, user_admin bool) (Petty_Cash_Overview, error) {
+func DeletePettyCash(request_id string, user_id string, user_admin bool) (Petty_Cash_Overview, *CustomError) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	request_info := new(Petty_Cash_Overview)
 	if !user_admin {
 		err = collection.FindOne(context.TODO(), filter).Decode(&request_info)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		if request_info.User_ID != user_id {
-			return Petty_Cash_Overview{}, errors.New("you're attempting to delete a request for which you are unauthorized")
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  403,
+				Message: "Unauthorized",
+			}
 		}
 	}
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
 		return Petty_Cash_Overview{
-			ID:             request_id,
-			User_ID:        "",
-			Amount:         0,
-			Date:           time.Time{},
-			Current_User:   "",
-			Current_Status: "",
-			Is_Active:      false,
-		}, err
+				ID:             request_id,
+				User_ID:        "",
+				Amount:         0,
+				Date:           time.Time{},
+				Current_User:   "",
+				Current_Status: "",
+				Is_Active:      false,
+			}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 	}
 	current_user_id := request_info.Current_User
 	user_name, err := FindUserName(current_user_id)
@@ -363,10 +407,13 @@ func DeletePettyCash(request_id string, user_id string, user_admin bool) (Petty_
 
 	return *request_info, nil
 }
-func PettyCashDetails(petty_cash_id string, user_id string, user_admin bool) (PettyCashDetailResponse, error) {
+func PettyCashDetails(petty_cash_id string, user_id string, user_admin bool) (PettyCashDetailResponse, *CustomError) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return PettyCashDetailResponse{}, err
+		return PettyCashDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: petty_cash_id}}}}
 	grant_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "grants"}, {Key: "localField", Value: "grant_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "grant"},
@@ -380,35 +427,56 @@ func PettyCashDetails(petty_cash_id string, user_id string, user_admin bool) (Pe
 	request_detail := make([]PettyCashDetailResponse, 0)
 	cursor, err := collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		return PettyCashDetailResponse{}, err
+		return PettyCashDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	err = cursor.All(context.TODO(), &request_detail)
 	if err != nil {
-		return PettyCashDetailResponse{}, err
+		return PettyCashDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if len(request_detail) == 0 {
-		return PettyCashDetailResponse{}, errors.New("no petty cash request with that id found")
+		return PettyCashDetailResponse{}, &CustomError{
+			Status:  404,
+			Message: "No request found",
+		}
 	}
 	if !user_admin {
 		if request_detail[0].RequestCreator[0].ID != user_id {
-			return PettyCashDetailResponse{}, errors.New("you're attempting to view a petty cash request without authorization")
+			return PettyCashDetailResponse{}, &CustomError{
+				Status:  403,
+				Message: "Unauthorized",
+			}
 		}
 	}
 	request_detail[0].Amount = ToFixed(request_detail[0].Amount, 2)
 	return request_detail[0], nil
 }
-func (p *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error) {
+func (p *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, *CustomError) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: p.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&p)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if user_id != p.Current_User {
-		return Petty_Cash_Overview{}, errors.New("you are attempting to approve a request for which you are not authorized")
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  403,
+			Message: "Unauthorized",
+		}
 	}
 	new_action := ApproveRequest("petty_cash", p.Current_User, p.Category, p.Current_Status)
 	p.Action_History = append(p.Action_History, new_action.Action)
@@ -419,7 +487,10 @@ func (p *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 		err = CreateIncompleteAction("petty_cash", p.ID, new_action.Action, new_action.NewUser.ID)
 		if err != nil {
-			return Petty_Cash_Overview{}, err
+			return Petty_Cash_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 	}
 	response := new(Petty_Cash_Overview)
@@ -431,30 +502,45 @@ func (p *Petty_Cash_Request) Approve(user_id string) (Petty_Cash_Overview, error
 	}
 	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	response.Current_User = new_action.NewUser.Name
 
 	return *response, nil
 }
-func (p *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error) {
+func (p *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, *CustomError) {
 	collection, err := database.Use("petty_cash_requests")
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: p.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&p)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if user_id != p.Current_User {
-		return Petty_Cash_Overview{}, errors.New("you are attempting to reject a request for which you are not authorized")
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  403,
+			Message: "Unauthorized",
+		}
 	}
 	reject_info := RejectRequest(p.User_ID, p.Current_User)
 	p.Action_History = append(p.Action_History, reject_info.Action)
 	err = CreateIncompleteAction("petty_cash", p.ID, reject_info.Action, p.User_ID)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: p.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Petty_Cash_Overview)
@@ -466,11 +552,17 @@ func (p *Petty_Cash_Request) Reject(user_id string) (Petty_Cash_Overview, error)
 	}
 	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	current_user_name, err := FindUserName(reject_info.NewUser.ID)
 	if err != nil {
-		return Petty_Cash_Overview{}, err
+		return Petty_Cash_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	response.Current_User = current_user_name
 
