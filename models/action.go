@@ -55,10 +55,6 @@ func CreateIncompleteAction(request_type string, request_id string, action Actio
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 func ClearIncompleteAction(request_type string, request_id string, action_taker string) error {

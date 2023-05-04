@@ -92,7 +92,7 @@ func (ul *UserLogin) Exists() (bool, *CustomError) {
 		}
 	}
 
-	return count > 0, &CustomError{}
+	return count > 0, nil
 }
 func isAdmin(user_email string) bool {
 	user_name := strings.Split(user_email, "@")[0]
@@ -163,7 +163,7 @@ func (u *User) Create(user UserLogin) (LoginRes, *CustomError) {
 		Token:       token,
 		Admin:       u.Admin,
 		Permissions: u.Permissions,
-	}, &CustomError{}
+	}, nil
 }
 func (u *User) Login(user UserLogin) (LoginRes, *CustomError) {
 	users, err := database.Use("users")
@@ -205,7 +205,7 @@ func (u *User) Login(user UserLogin) (LoginRes, *CustomError) {
 func GetPublicInfo(user_id string) (PublicInfo, error) {
 	users, err := database.Use("users")
 	if err != nil {
-		return PublicInfo{}, &CustomError{}
+		return PublicInfo{}, err
 	}
 	user_info := make([]PublicInfo, 0)
 	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: user_id}}}}

@@ -42,16 +42,16 @@ func CreateCheckRequest(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	exists, err := request.Exists(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	exists, exists_err := request.Exists(user_id)
+	if exists_err != nil {
+		return c.Status(exists_err.Status).JSON(responses.ServerError(exists_err.Error()))
 	}
 	if exists {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.RequestExists("check"))
 	}
-	res, err := request.CreateCheckRequest(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	res, create_err := request.CreateCheckRequest(user_id)
+	if create_err != nil {
+		return c.Status(create_err.Status).JSON(responses.ServerError(create_err.Error()))
 	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.NewCheckRequest(res))
@@ -93,9 +93,9 @@ func CheckRequestDetail(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.CheckRequestDetail(find_check_input.CheckID, user_id, user_admin)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, detail_err := models.CheckRequestDetail(find_check_input.CheckID, user_id, user_admin)
+	if detail_err != nil {
+		return c.Status(detail_err.Status).JSON(responses.ServerError(err.Error()))
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.CheckRequestDetail(data))
 }
@@ -139,9 +139,9 @@ func EditCheckRequest(c *fiber.Ctx) error {
 	if !user_admin && user_id != request.User_ID {
 		return c.Status(fiber.StatusForbidden).JSON(responses.NotAdmin())
 	}
-	response, err := request.EditCheckRequest()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	response, edit_err := request.EditCheckRequest()
+	if edit_err != nil {
+		return c.Status(edit_err.Status).JSON(responses.ServerError(edit_err.Error()))
 	}
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusOK).JSON(responses.EditCheckRequest(response))
@@ -183,9 +183,9 @@ func DeleteCheckRequest(c *fiber.Ctx) error {
 	if user_id == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
 	}
-	data, err := models.DeleteCheckRequest(find_request_input.CheckID, user_id, user_admin)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, delete_err := models.DeleteCheckRequest(find_request_input.CheckID, user_id, user_admin)
+	if delete_err != nil {
+		return c.Status(delete_err.Status).JSON(responses.ServerError(delete_err.Error()))
 	}
 	err = models.ClearRequestAssociatedActions(find_request_input.CheckID)
 	if err != nil {
@@ -229,9 +229,9 @@ func ApproveCheckRequest(c *fiber.Ctx) error {
 	}
 	request := new(models.Check_Request)
 	request.ID = approve_info.RequestID
-	data, err := request.Approve(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, approve_err := request.Approve(user_id)
+	if approve_err != nil {
+		return c.Status(approve_err.Status).JSON(responses.ServerError(approve_err.Error()))
 	}
 	err = models.ClearIncompleteAction("check", request.ID, user_id)
 	if err != nil {
@@ -275,9 +275,9 @@ func RejectCheckRequest(c *fiber.Ctx) error {
 	}
 	request := new(models.Check_Request)
 	request.ID = reject_info.RequestID
-	data, err := request.Reject(user_id)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	data, reject_err := request.Reject(user_id)
+	if reject_err != nil {
+		return c.Status(reject_err.Status).JSON(responses.ServerError(reject_err.Error()))
 	}
 	err = models.ClearIncompleteAction("check", request.ID, user_id)
 	if err != nil {

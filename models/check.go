@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"errors"
 	database "financial-api/db"
 	"financial-api/methods"
 	"time"
@@ -154,30 +153,42 @@ func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
 
 	return requests, nil
 }
-func (ci *CheckRequestInput) Exists(user_id string) (bool, error) {
+func (ci *CheckRequestInput) Exists(user_id string) (bool, *CustomError) {
 	check_req_coll, err := database.Use("check_requests")
 	if err != nil {
-		return false, err
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	date_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: ci.Date}}
 	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: ci.Grant_ID}, {Key: "date", Value: ci.Date}}
 	purchase_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "purchases", Value: ci.Purchases}, {Key: "date", Value: ci.Date}}
 	date_count, err := check_req_coll.CountDocuments(context.TODO(), date_filter)
 	if err != nil {
-		return false, err
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	grant_count, err := check_req_coll.CountDocuments(context.TODO(), grant_filter)
 	if err != nil {
-		return false, err
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	purchase_count, err := check_req_coll.CountDocuments(context.TODO(), purchase_filter)
 	if err != nil {
-		return false, err
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	return date_count+grant_count+purchase_count > 0, nil
 
 }
-func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_Overview, error) {
+func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_Overview, *CustomError) {
 	new_request := new(Check_Request)
 	new_request.ID = uuid.NewString()
 	new_request.Grant_ID = ci.Grant_ID
@@ -204,15 +215,24 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 	new_request.Order_Total = total
 	check_req_coll, err := database.Use("check_requests")
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	_, err = check_req_coll.InsertOne(context.TODO(), new_request)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	err = CreateIncompleteAction("check", new_request.ID, first_action[0], current_user.ID)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 
 	return Check_Request_Overview{
@@ -225,24 +245,36 @@ func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_O
 		Is_Active:      true,
 	}, nil
 }
-func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
+func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, *CustomError) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: ec.ID}}
 	opts := options.FindOne().SetProjection(bson.D{{Key: "action_history", Value: 1}, {Key: "current_status", Value: 1}, {Key: "current_user", Value: 1}, {Key: "last_user_before_reject", Value: 1}})
 	request := new(Check_Request)
 	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
-		return Check_Request_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
+		return Check_Request_Overview{}, &CustomError{
+			Status:  423,
+			Message: "Request is being processed by organization",
+		}
 	}
 	err = ClearRequestAssociatedActions(ec.ID)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	switch request.Current_Status {
 	case "REJECTED":
@@ -254,14 +286,23 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 		}
 		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		current_user, err := FindUserName(res.Current_User)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		return Check_Request_Overview{
 			ID:             res.ID,
@@ -281,14 +322,23 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 		}
 		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Current_User)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		current_user, err := FindUserName(res.Current_User)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		return Check_Request_Overview{
 			ID:             res.ID,
@@ -308,18 +358,27 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 		}
 		res, err := ec.SaveEdits(edit_action, "PENDING", request.Current_User)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		current_user, err := FindUserName(res.Current_User)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		if err != nil {
 			return Check_Request_Overview{
-				ID:      res.ID,
-				User_ID: res.User_ID,
-				Date:    res.Date,
-			}, err
+					ID:      res.ID,
+					User_ID: res.User_ID,
+					Date:    res.Date,
+				}, &CustomError{
+					Status:  500,
+					Message: err.Error(),
+				}
 		}
 		return Check_Request_Overview{
 			ID:             res.ID,
@@ -332,7 +391,10 @@ func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, error) {
 		}, nil
 	}
 
-	return Check_Request_Overview{}, errors.New("this request is currently being processed by the organization and not editable")
+	return Check_Request_Overview{}, &CustomError{
+		Status:  423,
+		Message: "Request is being processed by organization",
+	}
 }
 func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user string) (Check_Request, error) {
 	collection, err := database.Use("check_requests")
@@ -368,25 +430,37 @@ func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user s
 
 	return *check_req, nil
 }
-func DeleteCheckRequest(request_id string, user_id string, user_admin bool) (Check_Request_Overview, error) {
+func DeleteCheckRequest(request_id string, user_id string, user_admin bool) (Check_Request_Overview, *CustomError) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: request_id}}
 	request_info := new(Check_Request_Overview)
 	if !user_admin {
 		err = collection.FindOne(context.TODO(), filter).Decode(&request_info)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 		if request_info.User_ID != user_id {
-			return Check_Request_Overview{}, errors.New("you're attempting to delete a request for which you are unauthorized")
+			return Check_Request_Overview{}, &CustomError{
+				Status:  403,
+				Message: "Unauthorized Deletion",
+			}
 		}
 	}
 	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	current_user_id := request_info.Current_User
 	user_name, err := FindUserName(current_user_id)
@@ -398,10 +472,13 @@ func DeleteCheckRequest(request_id string, user_id string, user_admin bool) (Che
 
 	return *request_info, nil
 }
-func CheckRequestDetail(check_id string, user_id string, user_admin bool) (CheckRequestDetailResponse, error) {
+func CheckRequestDetail(check_id string, user_id string, user_admin bool) (CheckRequestDetailResponse, *CustomError) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
-		return CheckRequestDetailResponse{}, err
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: check_id}}}}
 	grant_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "grants"}, {Key: "localField", Value: "grant_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "grant"},
@@ -415,35 +492,56 @@ func CheckRequestDetail(check_id string, user_id string, user_admin bool) (Check
 	request_detail := make([]CheckRequestDetailResponse, 0)
 	cursor, err := collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		return CheckRequestDetailResponse{}, err
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	err = cursor.All(context.TODO(), &request_detail)
 	if err != nil {
-		return CheckRequestDetailResponse{}, err
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if len(request_detail) == 0 {
-		return CheckRequestDetailResponse{}, errors.New("no check request found with that id")
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  404,
+			Message: "Request not found",
+		}
 	}
 	if !user_admin {
 		if request_detail[0].RequestCreator[0].ID != user_id {
-			return CheckRequestDetailResponse{}, errors.New("you're attempting to view a check request without authorization")
+			return CheckRequestDetailResponse{}, &CustomError{
+				Status:  403,
+				Message: "Unauthorized",
+			}
 		}
 	}
 	request_detail[0].Order_Total = ToFixed(request_detail[0].Order_Total, 2)
 	return request_detail[0], nil
 }
-func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) {
+func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, *CustomError) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: c.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&c)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if c.Current_User != user_id {
-		return Check_Request_Overview{}, errors.New("you're attempting to approve a request for which you are unauthorized")
+		return Check_Request_Overview{}, &CustomError{
+			Status:  403,
+			Message: "Unauthorized",
+		}
 	}
 	new_action := ApproveRequest("check_request", c.Current_User, c.Category, c.Current_Status)
 	c.Action_History = append(c.Action_History, new_action.Action)
@@ -454,7 +552,10 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 		err = CreateIncompleteAction("petty_cash", c.ID, new_action.Action, new_action.NewUser.ID)
 		if err != nil {
-			return Check_Request_Overview{}, err
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
 		}
 	}
 	response := new(Check_Request_Overview)
@@ -466,30 +567,44 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, error) 
 	}
 	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	response.Current_User = new_action.NewUser.Name
-
 	return *response, nil
 }
-func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
+func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, *CustomError) {
 	collection, err := database.Use("check_requests")
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	filter := bson.D{{Key: "_id", Value: c.ID}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&c)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	if c.Current_User != user_id {
-		return Check_Request_Overview{}, errors.New("you're attempting to reject a request for which you are unauthorized")
+		return Check_Request_Overview{}, &CustomError{
+			Status:  403,
+			Message: "Unauthorized",
+		}
 	}
 	reject_info := RejectRequest(c.User_ID, c.Current_User)
 	c.Action_History = append(c.Action_History, reject_info.Action)
 	err = CreateIncompleteAction("check", c.ID, reject_info.Action, c.User_ID)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
 	response := new(Check_Request_Overview)
@@ -501,11 +616,17 @@ func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, error) {
 	}
 	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	current_user_name, err := FindUserName(reject_info.NewUser.ID)
 	if err != nil {
-		return Check_Request_Overview{}, err
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
 	response.Current_User = current_user_name
 

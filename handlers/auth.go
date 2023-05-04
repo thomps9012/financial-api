@@ -36,7 +36,7 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
 	exists, exists_err := user_login.Exists()
-	if exists_err.Error() != "" {
+	if exists_err != nil {
 		return c.Status(exists_err.Status).JSON(responses.ServerError(exists_err.Error()))
 	}
 	user := new(models.User)
