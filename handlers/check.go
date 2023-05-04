@@ -95,7 +95,7 @@ func CheckRequestDetail(c *fiber.Ctx) error {
 	}
 	data, detail_err := models.CheckRequestDetail(find_check_input.CheckID, user_id, user_admin)
 	if detail_err != nil {
-		return c.Status(detail_err.Status).JSON(responses.ServerError(err.Error()))
+		return c.Status(detail_err.Status).JSON(responses.ServerError(detail_err.Error()))
 	}
 	return c.Status(fiber.StatusOK).JSON(responses.CheckRequestDetail(data))
 }
