@@ -219,7 +219,7 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, *CustomError) {
 	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
 		return Petty_Cash_Overview{}, &CustomError{
 			Status:  423,
-			Message: "Request being processed by organization",
+			Message: "Request is being processed by organization",
 		}
 	}
 	err = ClearRequestAssociatedActions(ep.ID)
@@ -324,7 +324,7 @@ func (ep *EditPettyCash) EditPettyCash() (Petty_Cash_Overview, *CustomError) {
 
 	return Petty_Cash_Overview{}, &CustomError{
 		Status:  423,
-		Message: "Request being processed by organization",
+		Message: "Request is being processed by organization",
 	}
 }
 func (ep *EditPettyCash) SaveEdits(action Action, new_status string, new_user string) (Petty_Cash_Request, error) {
