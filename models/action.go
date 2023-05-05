@@ -234,7 +234,6 @@ func NewUserHandler(current_user_id string, category Category, exec_review bool)
 	default:
 		return methods.FINANCE_SUPERVISOR
 	}
-
 }
 func ApproveMileageHandler(user_id string, current_status string) ApproveAction {
 	if current_status == "FINANCE_APPROVED" || user_id == methods.FINANCE_FULFILLMENT.ID {

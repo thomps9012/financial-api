@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	database "financial-api/db"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -68,13 +67,6 @@ type VehicleInput struct {
 	Description string `json:"description" bson:"description" validate:"required"`
 }
 
-// deprecated
-var admin_arr = [10]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes", "jward", "cwoods", "abradley", "finance_requests"}
-var mgr_arr = [6]string{"churt", "rgiusti", "dbaker", "bgriffin", "lamanor", "lfuentes"}
-var supervisor_arr = [2]string{"jward", "cwoods"}
-var exec_arr = [1]string{"abradley"}
-var fin_arr = [1]string{"finance_requests"}
-
 func (ul *UserLogin) Exists() (bool, *CustomError) {
 	users, err := database.Use("users")
 	if err != nil {
@@ -94,39 +86,6 @@ func (ul *UserLogin) Exists() (bool, *CustomError) {
 
 	return count > 0, nil
 }
-func isAdmin(user_email string) bool {
-	user_name := strings.Split(user_email, "@")[0]
-	for _, name := range admin_arr {
-		if name == user_name {
-			return true
-		}
-	}
-	return false
-}
-func setPermissions(user_email string) []string {
-	user_name := strings.Split(user_email, "@")[0]
-	for _, name := range exec_arr {
-		if name == user_name {
-			return []string{"EXECUTIVE"}
-		}
-	}
-	for _, name := range fin_arr {
-		if name == user_name {
-			return []string{"FINANCE_TEAM"}
-		}
-	}
-	for _, name := range supervisor_arr {
-		if name == user_name {
-			return []string{"SUPERVISOR", "MANAGER"}
-		}
-	}
-	for _, name := range mgr_arr {
-		if name == user_name {
-			return []string{"MANAGER"}
-		}
-	}
-	return []string{"EMPLOYEE"}
-}
 func (u *User) Create(user UserLogin) (LoginRes, *CustomError) {
 	users, err := database.Use("users")
 	if err != nil {
@@ -141,8 +100,8 @@ func (u *User) Create(user UserLogin) (LoginRes, *CustomError) {
 	u.Is_Active = true
 	u.Last_Login = time.Now()
 	u.Vehicles = make([]Vehicle, 0)
-	u.Admin = isAdmin(u.Email)
-	u.Permissions = setPermissions(u.Email)
+	u.Admin = false
+	u.Permissions = make([]string, 0)
 	_, err = users.InsertOne(context.TODO(), *u)
 	if err != nil {
 		return LoginRes{}, &CustomError{

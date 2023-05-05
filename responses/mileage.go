@@ -5,8 +5,6 @@ import (
 	"financial-api/models"
 	"strconv"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type MileageOverviewRes struct {
@@ -73,11 +71,9 @@ func MonthlyMileage(month int, year int, mileage_info []models.Mileage_Overview)
 		Data:    mileage_info,
 	}
 }
-func MileageVariance() fiber.Map {
-	return fiber.Map{
-		"status":  "NOT IMPLEMENTED",
-		"code":    501,
-		"message": "This API Endpoint is still in development",
-		"data":    nil,
+func MileageVariance() NilRes {
+	return NilRes{
+		Message: "This API Endpoint is still in development",
+		Data:    "null",
 	}
 }
