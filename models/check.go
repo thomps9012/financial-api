@@ -550,7 +550,7 @@ func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, *Custom
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
 	} else {
 		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
-		err = CreateIncompleteAction("petty_cash", c.ID, new_action.Action, new_action.NewUser.ID)
+		err = CreateIncompleteAction("check", c.ID, new_action.Action, new_action.NewUser.ID)
 		if err != nil {
 			return Check_Request_Overview{}, &CustomError{
 				Status:  500,
