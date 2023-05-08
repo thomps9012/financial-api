@@ -48,8 +48,6 @@ func (g *Grant) GetGrantMileage() ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	data := make([]Mileage_Overview, 0)
 	filter := bson.D{{Key: "grant_id", Value: g.ID}}
 	cursor, err := mileage_coll.Find(context.TODO(), filter)
@@ -68,8 +66,6 @@ func (g *Grant) GetGrantPettyCash() ([]Petty_Cash_Overview, error) {
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	data := make([]Petty_Cash_Overview, 0)
 	filter := bson.D{{Key: "grant_id", Value: g.ID}}
 	cursor, err := petty_cash_coll.Find(context.TODO(), filter)
@@ -88,8 +84,6 @@ func (g *Grant) GetGrantCheckRequest() ([]Check_Request_Overview, error) {
 	if err != nil {
 		return []Check_Request_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	data := make([]Check_Request_Overview, 0)
 	filter := bson.D{{Key: "grant_id", Value: g.ID}}
 	cursor, err := check_req_coll.Find(context.TODO(), filter)

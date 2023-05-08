@@ -102,8 +102,6 @@ func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "reimbursement", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
@@ -122,8 +120,6 @@ func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
 	if err != nil {
 		return []Mileage_Request{}, err
 	}
-	// TODO
-	// add in name aggregation
 	requests := make([]Mileage_Request, 0)
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	projection := bson.D{{Key: "action_history", Value: 0}}
@@ -578,8 +574,6 @@ func MonthlyMileage(month int, year int) ([]Mileage_Overview, error) {
 	if err != nil {
 		return []Mileage_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	response := make([]Mileage_Overview, 0)
 	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
 	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)

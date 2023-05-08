@@ -83,8 +83,6 @@ func GetUserPettyCash(user_id string) ([]Petty_Cash_Overview, error) {
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "amount", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
 	opts := options.Find().SetProjection(projection)
@@ -104,8 +102,6 @@ func GetUserPettyCashDetail(user_id string) ([]Petty_Cash_Request, error) {
 	if err != nil {
 		return []Petty_Cash_Request{}, err
 	}
-	// TODO
-	// add in name aggregation
 	filter := bson.D{{Key: "user_id", Value: user_id}}
 	projection := bson.D{{Key: "action_history", Value: 0}}
 	opts := options.Find().SetProjection(projection)
@@ -557,8 +553,6 @@ func MonthlyPettyCash(month int, year int) ([]Petty_Cash_Overview, error) {
 	if err != nil {
 		return []Petty_Cash_Overview{}, err
 	}
-	// TODO
-	// add in name aggregation
 	response := make([]Petty_Cash_Overview, 0)
 	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
 	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
