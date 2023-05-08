@@ -5,6 +5,7 @@ import (
 	"financial-api/methods"
 	"financial-api/models"
 	"financial-api/responses"
+	"regexp"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -38,6 +39,10 @@ func Login(c *fiber.Ctx) error {
 	exists, exists_err := user_login.Exists()
 	if exists_err != nil {
 		return c.Status(exists_err.Status).JSON(responses.ServerError(exists_err.Error()))
+	}
+	valid_email, email_err := regexp.Match(`\w+@norainc.org`, []byte(user_login.Email))
+	if !valid_email || email_err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.InvalidEmail())
 	}
 	user := new(models.User)
 	if !exists {

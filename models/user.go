@@ -2,19 +2,23 @@ package models
 
 import (
 	"context"
+	"financial-api/config"
 	database "financial-api/db"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserLogin struct {
-	ID    string `json:"id" validate:"required"`
-	Email string `json:"email" validate:"required,email"`
-	Name  string `json:"name" validate:"required"`
+	ID       string `json:"id" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Name     string `json:"name" validate:"required"`
+	Password string `json:"password" validate:"required,min=5"`
 }
 
 type LoginRes struct {
@@ -28,6 +32,7 @@ type User struct {
 	ID          string    `json:"id" bson:"_id"`
 	Email       string    `json:"email" bson:"email"`
 	Name        string    `json:"name" bson:"name"`
+	Password    string    `json:"password" bson:"password"`
 	Last_Login  time.Time `json:"last_login" bson:"last_login"`
 	Vehicles    []Vehicle `json:"vehicles" bson:"vehicles"`
 	Is_Active   bool      `json:"is_active" bson:"is_active"`
@@ -97,6 +102,21 @@ func (u *User) Create(user UserLogin) (LoginRes, *CustomError) {
 	u.ID = user.ID
 	u.Email = user.Email
 	u.Name = user.Name
+	salt, err := strconv.Atoi(config.ENV("HASH_SALT"))
+	if err != nil {
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	hash_pw, err := bcrypt.GenerateFromPassword([]byte(user.Password), salt)
+	if err != nil {
+		return LoginRes{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	u.Password = string(hash_pw)
 	u.Is_Active = true
 	u.Last_Login = time.Now()
 	u.Vehicles = make([]Vehicle, 0)
@@ -145,6 +165,13 @@ func (u *User) Login(user UserLogin) (LoginRes, *CustomError) {
 		return LoginRes{}, &CustomError{
 			Status:  500,
 			Message: err.Error(),
+		}
+	}
+	confirm_pw := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(user.Password))
+	if confirm_pw != nil {
+		return LoginRes{}, &CustomError{
+			Status:  401,
+			Message: "Incorrect Login Credentials",
 		}
 	}
 	token, err := GenerateToken(u.ID, u.Name, u.Permissions, u.Admin)

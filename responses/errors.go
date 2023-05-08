@@ -68,7 +68,7 @@ func ServerError(message string) NilRes {
 
 func InvalidEmail() NilRes {
 	return NilRes{
-		Message: "You're attempting to access a protected organization site",
+		Message: "You're attempting to access a protected organization site using a non-organization email",
 		Data:    "null",
 	}
 }

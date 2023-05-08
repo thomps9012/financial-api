@@ -2,15 +2,18 @@ package handlers
 
 import (
 	"context"
+	"financial-api/config"
 	database "financial-api/db"
 	"financial-api/models"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var grantSeeds = []interface{}{
@@ -37,7 +40,7 @@ var grantSeeds = []interface{}{
 		Name: "TANF"},
 	models.Grant{
 		ID:   "2020-JY-FX-0014",
-		Name: "JSBT (OJJDP) - Jumpstart For A Better Tomorrow"},
+		Name: "JSBT (OJJDP) - Jump Start For A Better Tomorrow"},
 	models.Grant{
 		ID:   "SOR_LORAIN",
 		Name: "SOR Lorain 2.0"},
@@ -52,7 +55,7 @@ var grantSeeds = []interface{}{
 		Name: "CCBHC"},
 	models.Grant{
 		ID:   "H79TI083662",
-		Name: "IOP New Syrenity Intensive outpatient Program"},
+		Name: "IOP New Serenity Intensive outpatient Program"},
 	models.Grant{
 		ID:   "H79TI085495",
 		Name: "RAP AID (Recover from Addition to Prevent Aids)"},
@@ -60,12 +63,14 @@ var grantSeeds = []interface{}{
 		ID:   "H79TI085410",
 		Name: "N MAT (NORA Medication-Assisted Treatment Program)"},
 }
-
+var salt, _ = strconv.Atoi(config.ENV("HASH_SALT"))
+var hashed_pw, _ = bcrypt.GenerateFromPassword([]byte("pass123!"), salt)
 var userSeeds = []interface{}{
 	models.User{
 		ID:         "d160b410-e6a8-4cbb-92c2-068112187503",
-		Email:      "bob@example.com",
+		Email:      "bob@norainc.org",
 		Name:       "Bob Johnson",
+		Password:   string(hashed_pw),
 		Last_Login: time.Now(),
 		Vehicles: []models.Vehicle{
 			{
@@ -85,7 +90,8 @@ var userSeeds = []interface{}{
 	},
 	models.User{
 		ID:         "c160b410-e6a8-4cbb-92c2-068112187612",
-		Email:      "jane@example.com",
+		Email:      "jane@norainc.org",
+		Password:   string(hashed_pw),
 		Name:       "Jane Smith",
 		Last_Login: time.Now(),
 		Vehicles: []models.Vehicle{
@@ -106,8 +112,9 @@ var userSeeds = []interface{}{
 	},
 	models.User{
 		ID:         "d160b410-e6a8-4cbb-92c2-068112187305",
-		Email:      "john@example.com",
+		Email:      "john@norainc.org",
 		Name:       "John Smith",
+		Password:   string(hashed_pw),
 		Last_Login: time.Now(),
 		Vehicles: []models.Vehicle{
 			{
@@ -127,8 +134,9 @@ var userSeeds = []interface{}{
 	},
 	models.User{
 		ID:         "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
-		Email:      "hford@example.com",
+		Email:      "hford@norainc.org",
 		Name:       "Harrison Ford",
+		Password:   string(hashed_pw),
 		Last_Login: time.Now(),
 		Vehicles: []models.Vehicle{
 			{
@@ -148,8 +156,9 @@ var userSeeds = []interface{}{
 	},
 	models.User{
 		ID:         "2e780f36-7829-4707-9a17-34fce224c53e",
-		Email:      "chewy@example.com",
+		Email:      "chewy@norainc.org",
 		Name:       "Chewbacca",
+		Password:   string(hashed_pw),
 		Last_Login: time.Now(),
 		Vehicles: []models.Vehicle{
 			{
@@ -253,8 +262,8 @@ var checkRequestSeeds = []models.Check_Request{
 			},
 		},
 		Receipts: []string{
-			"https://example.com/receipt1",
-			"https://example.com/receipt2",
+			"receipt1",
+			"receipt2",
 		},
 		Order_Total: 13.97,
 		Credit_Card: "**** **** **** 1234",
@@ -298,8 +307,8 @@ var checkRequestSeeds = []models.Check_Request{
 			},
 		},
 		Receipts: []string{
-			"https://example.com/receipt1",
-			"https://example.com/receipt2",
+			"receipt1",
+			"receipt2",
 		},
 		Order_Total: 13.97,
 		Credit_Card: "**** **** **** 1234",
@@ -328,7 +337,7 @@ var pettyCashSeeds = []models.Petty_Cash_Request{
 		Date:        time.Now().Add(99 * -time.Hour),
 		Description: "Office supplies",
 		Amount:      50.0,
-		Receipts:    []string{"https://example.com/receipt1.jpg", "https://example.com/receipt2.jpg"},
+		Receipts:    []string{"receipt1.jpg", "receipt2.jpg"},
 		Created_At:  time.Now().Add(55 * -time.Hour),
 		Action_History: []models.Action{
 			{
@@ -351,7 +360,7 @@ var pettyCashSeeds = []models.Petty_Cash_Request{
 		Date:        time.Now().Add(17 * -time.Hour),
 		Description: "Printer ink",
 		Amount:      35.0,
-		Receipts:    []string{"https://example.com/receipt1.jpg", "https://example.com/receipt2.jpg"},
+		Receipts:    []string{"receipt1.jpg", "receipt2.jpg"},
 		Created_At:  time.Now().Add(5 * -time.Hour),
 		Action_History: []models.Action{
 			{
