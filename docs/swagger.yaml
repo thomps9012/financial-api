@@ -1,0 +1,1774 @@
+basePath: /api
+definitions:
+  handlers.UserIDBody:
+    properties:
+      user_id:
+        type: string
+    required:
+    - user_id
+    type: object
+  models.Action:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      user:
+        type: string
+    type: object
+  models.ApproveRejectRequest:
+    properties:
+      request_id:
+        type: string
+    required:
+    - request_id
+    type: object
+  models.Category:
+    enum:
+    - IOP
+    - INTAKE
+    - PEERS
+    - ACT_TEAM
+    - IHBT
+    - PERKINS
+    - MENS_HOUSE
+    - NEXT_STEP
+    - LORAIN
+    - PREVENTION
+    - ADMINISTRATIVE
+    - FINANCE
+    type: string
+    x-enum-varnames:
+    - IOP
+    - INTAKE
+    - PEERS
+    - ACT_TEAM
+    - IHBT
+    - PERKINS
+    - MENS_HOUSE
+    - NEXT_STEP
+    - LORAIN
+    - PREVENTION
+    - ADMINISTRATIVE
+    - FINANCE
+  models.Check_Request:
+    properties:
+      action_history:
+        items:
+          $ref: '#/definitions/models.Action'
+        type: array
+      category:
+        $ref: '#/definitions/models.Category'
+      created_at:
+        type: string
+      credit_card:
+        type: string
+      current_status:
+        type: string
+      current_user:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      grant_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_user_before_reject:
+        type: string
+      order_total:
+        type: number
+      purchases:
+        items:
+          $ref: '#/definitions/models.Purchase'
+        type: array
+      receipts:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: string
+      vendor:
+        $ref: '#/definitions/models.Vendor'
+    type: object
+  models.Check_Request_Overview:
+    properties:
+      current_status:
+        type: string
+      current_user:
+        type: string
+      date:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      order_total:
+        type: number
+      user_id:
+        type: string
+    type: object
+  models.CheckRequestInput:
+    properties:
+      category:
+        $ref: '#/definitions/models.Category'
+      credit_card:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      grant_id:
+        type: string
+      purchases:
+        items:
+          $ref: '#/definitions/models.Purchase'
+        type: array
+      receipts:
+        items:
+          type: string
+        type: array
+      vendor:
+        $ref: '#/definitions/models.Vendor'
+    required:
+    - category
+    - credit_card
+    - date
+    - description
+    - grant_id
+    - purchases
+    - receipts
+    - vendor
+    type: object
+  models.EditCheckInput:
+    properties:
+      category:
+        $ref: '#/definitions/models.Category'
+      credit_card:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      grant_id:
+        type: string
+      id:
+        type: string
+      purchases:
+        items:
+          $ref: '#/definitions/models.Purchase'
+        type: array
+      receipts:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: string
+      vendor:
+        $ref: '#/definitions/models.Vendor'
+    required:
+    - category
+    - credit_card
+    - date
+    - description
+    - grant_id
+    - id
+    - purchases
+    - receipts
+    - user_id
+    - vendor
+    type: object
+  models.EditMileageInput:
+    properties:
+      category:
+        $ref: '#/definitions/models.Category'
+      date:
+        type: string
+      destination:
+        type: string
+      end_odometer:
+        type: integer
+      grant_id:
+        type: string
+      id:
+        type: string
+      parking:
+        type: number
+      start_odometer:
+        type: integer
+      starting_location:
+        type: string
+      tolls:
+        type: number
+      trip_purpose:
+        type: string
+      user_id:
+        type: string
+    required:
+    - category
+    - date
+    - destination
+    - end_odometer
+    - grant_id
+    - id
+    - parking
+    - start_odometer
+    - starting_location
+    - tolls
+    - trip_purpose
+    - user_id
+    type: object
+  models.EditPettyCash:
+    properties:
+      amount:
+        type: number
+      category:
+        $ref: '#/definitions/models.Category'
+      date:
+        type: string
+      description:
+        type: string
+      grant_id:
+        type: string
+      id:
+        type: string
+      receipts:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: string
+    required:
+    - amount
+    - category
+    - date
+    - description
+    - grant_id
+    - id
+    - receipts
+    - user_id
+    type: object
+  models.ErrorLog:
+    properties:
+      created_at:
+        type: string
+      error:
+        type: string
+      error_message:
+        type: string
+      error_path:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - error
+    - error_message
+    - error_path
+    - user_id
+    type: object
+  models.ErrorLogOverview:
+    properties:
+      created_at:
+        type: string
+      error_message:
+        type: string
+      id:
+        type: string
+    required:
+    - error_message
+    type: object
+  models.FindCheckInput:
+    properties:
+      check_id:
+        type: string
+    required:
+    - check_id
+    type: object
+  models.FindMileageInput:
+    properties:
+      mileage_id:
+        type: string
+    required:
+    - mileage_id
+    type: object
+  models.FindPettyCashInput:
+    properties:
+      petty_cash_id:
+        type: string
+    required:
+    - petty_cash_id
+    type: object
+  models.Grant:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    required:
+    - id
+    type: object
+  models.IncompleteAction:
+    properties:
+      action_id:
+        type: string
+      id:
+        type: string
+      request_id:
+        type: string
+      request_type:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.LoginRes:
+    properties:
+      admin:
+        type: boolean
+      permissions:
+        items:
+          type: string
+        type: array
+      token:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.Mileage_Overview:
+    properties:
+      current_status:
+        type: string
+      current_user:
+        type: string
+      date:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      reimbursement:
+        type: number
+      user_id:
+        type: string
+    type: object
+  models.Mileage_Request:
+    properties:
+      action_history:
+        items:
+          $ref: '#/definitions/models.Action'
+        type: array
+      category:
+        $ref: '#/definitions/models.Category'
+      created_at:
+        type: string
+      current_status:
+        type: string
+      current_user:
+        type: string
+      date:
+        type: string
+      destination:
+        type: string
+      end_odometer:
+        type: integer
+      grant_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_user_before_reject:
+        type: string
+      parking:
+        type: number
+      reimbursement:
+        type: number
+      start_odometer:
+        type: integer
+      starting_location:
+        type: string
+      tolls:
+        type: number
+      trip_mileage:
+        type: integer
+      trip_purpose:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.MileageInput:
+    properties:
+      category:
+        $ref: '#/definitions/models.Category'
+      date:
+        type: string
+      destination:
+        type: string
+      end_odometer:
+        type: integer
+      grant_id:
+        type: string
+      parking:
+        type: number
+      start_odometer:
+        type: integer
+      starting_location:
+        type: string
+      tolls:
+        type: number
+      trip_purpose:
+        type: string
+    required:
+    - category
+    - date
+    - destination
+    - end_odometer
+    - grant_id
+    - parking
+    - start_odometer
+    - starting_location
+    - tolls
+    - trip_purpose
+    type: object
+  models.Month:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    type: integer
+    x-enum-varnames:
+    - January
+    - February
+    - March
+    - April
+    - May
+    - June
+    - July
+    - August
+    - September
+    - October
+    - November
+    - December
+  models.MonthlyRequestInput:
+    properties:
+      month:
+        $ref: '#/definitions/models.Month'
+      year:
+        type: integer
+    required:
+    - month
+    - year
+    type: object
+  models.Petty_Cash_Overview:
+    properties:
+      amount:
+        type: number
+      current_status:
+        type: string
+      current_user:
+        type: string
+      date:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      user_id:
+        type: string
+    type: object
+  models.Petty_Cash_Request:
+    properties:
+      action_history:
+        items:
+          $ref: '#/definitions/models.Action'
+        type: array
+      amount:
+        type: number
+      category:
+        $ref: '#/definitions/models.Category'
+      created_at:
+        type: string
+      current_status:
+        type: string
+      current_user:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      grant_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_user_before_reject:
+        type: string
+      receipts:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: string
+    type: object
+  models.PettyCashInput:
+    properties:
+      amount:
+        type: number
+      category:
+        $ref: '#/definitions/models.Category'
+      date:
+        type: string
+      description:
+        type: string
+      grant_id:
+        type: string
+      receipts:
+        items:
+          type: string
+        type: array
+    required:
+    - amount
+    - category
+    - date
+    - description
+    - grant_id
+    - receipts
+    type: object
+  models.PublicInfo:
+    properties:
+      admin:
+        type: boolean
+      check_requests:
+        items:
+          $ref: '#/definitions/models.Check_Request_Overview'
+        type: array
+      email:
+        type: string
+      id:
+        type: string
+      incomplete_actions:
+        items:
+          $ref: '#/definitions/models.IncompleteAction'
+        type: array
+      is_active:
+        type: boolean
+      last_login:
+        type: string
+      mileage_requests:
+        items:
+          $ref: '#/definitions/models.Mileage_Overview'
+        type: array
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      petty_cash_requests:
+        items:
+          $ref: '#/definitions/models.Petty_Cash_Overview'
+        type: array
+      vehicles:
+        items:
+          $ref: '#/definitions/models.Vehicle'
+        type: array
+    type: object
+  models.Purchase:
+    properties:
+      amount:
+        type: number
+      description:
+        type: string
+      grant_line_item:
+        type: string
+    required:
+    - amount
+    - description
+    - grant_line_item
+    type: object
+  models.UserLogin:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - id
+    - name
+    type: object
+  models.Vehicle:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.VehicleInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - name
+    type: object
+  models.Vendor:
+    properties:
+      address_line_one:
+        type: string
+      address_line_two:
+        type: string
+      name:
+        type: string
+      website:
+        type: string
+    required:
+    - address_line_one
+    - name
+    type: object
+  responses.CheckDetailRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Check_Request'
+      message:
+        type: string
+    type: object
+  responses.CheckOverviewRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Check_Request_Overview'
+      message:
+        type: string
+    type: object
+  responses.CheckOverviewsRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Check_Request_Overview'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.CheckRequestsRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Check_Request'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.ErrorLogRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.ErrorLogOverview'
+      string:
+        type: string
+    type: object
+  responses.GrantRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Grant'
+      message:
+        type: string
+    type: object
+  responses.GrantsRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Grant'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.MileageOverviewRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Mileage_Overview'
+      message:
+        type: string
+    type: object
+  responses.MileageOverviewsRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Mileage_Overview'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.MileageRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Mileage_Request'
+      message:
+        type: string
+    type: object
+  responses.MileagesRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Mileage_Request'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.MyInfoRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.PublicInfo'
+      message:
+        type: string
+    type: object
+  responses.NilRes:
+    properties:
+      data:
+        type: string
+      message:
+        type: string
+    type: object
+  responses.PettyCashOverviewRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Petty_Cash_Overview'
+      message:
+        type: string
+    type: object
+  responses.PettyCashOverviewsRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Petty_Cash_Overview'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.PettyCashRequestsRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Petty_Cash_Request'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.PettyCashRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Petty_Cash_Request'
+      message:
+        type: string
+    type: object
+  responses.UserInfoRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.PublicInfo'
+      message:
+        type: string
+    type: object
+  responses.UserLoginRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.LoginRes'
+      message:
+        type: string
+    type: object
+  responses.UserNameRes:
+    properties:
+      data:
+        type: string
+      message:
+        type: string
+    type: object
+  responses.UsersInfoRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.PublicInfo'
+        type: array
+      message:
+        type: string
+    type: object
+  responses.VehicleRes:
+    properties:
+      data:
+        $ref: '#/definitions/models.Vehicle'
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    email: app_support@norainc.org
+    name: APP Support
+  description: An API Endpoint for handling organizational financial reimbursement
+    requests
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Financial Request Handler API
+  version: "2.0"
+paths:
+  /auth/login:
+    post:
+      description: either logs a user in or creates an account depending on previous
+        use of the application
+      operationId: login-user
+      parameters:
+      - description: user's account information
+        in: body
+        name: login-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.UserLoginRes'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.UserLoginRes'
+      summary: login user
+      tags:
+      - user
+      - no-cache
+      - auth
+  /auth/logout:
+    post:
+      description: logs a user out and clears all server side cookies associated with
+        their session
+      operationId: logout-user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.NilRes'
+      summary: logout user
+      tags:
+      - user
+      - no-cache
+      - auth
+  /check:
+    delete:
+      description: allows a logged in user to delete and removes one of their check
+        requests
+      operationId: delete-check
+      parameters:
+      - description: check request id to delete
+        in: body
+        name: check-request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.FindCheckInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
+      summary: delete check request
+      tags:
+      - check
+      - no-cache
+    post:
+      description: creates a check request for a logged in user
+      operationId: add-check
+      parameters:
+      - description: new check request information
+        in: body
+        name: check-request-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckRequestInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
+      summary: add check request
+      tags:
+      - check
+      - no-cache
+    put:
+      description: allows a logged in user to edit their pending or reject check requests
+      operationId: edit-check
+      parameters:
+      - description: check request information to update
+        in: body
+        name: check-request-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.EditCheckInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
+      summary: edit check request
+      tags:
+      - check
+      - no-cache
+  /check/approve:
+    post:
+      description: allows an administrative user to approve a specific check request
+      operationId: approve-check
+      parameters:
+      - description: check request id to approve
+        in: body
+        name: request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApproveRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
+      summary: approve check request
+      tags:
+      - check
+      - no-cache
+      - admin
+  /check/detail:
+    get:
+      description: generates detailed information for a specific check request
+      operationId: check-detail
+      parameters:
+      - description: check request id to find
+        in: body
+        name: check-request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.FindCheckInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckDetailRes'
+      summary: check request detail
+      tags:
+      - check
+  /check/monthly:
+    get:
+      description: creates a monthly check report for the entire organization for
+        a given month and year
+      operationId: monthly-check
+      parameters:
+      - description: month and year for report on organization wide check requests
+        in: body
+        name: month-year-input
+        required: true
+        schema:
+          $ref: '#/definitions/models.MonthlyRequestInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewsRes'
+      summary: monthly check request report
+      tags:
+      - check
+      - reports
+      - admin
+  /check/reject:
+    post:
+      description: allows a logged in administrative user to reject a check request
+        until further edits have been made
+      operationId: reject-check
+      parameters:
+      - description: check request id to reject
+        in: body
+        name: request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApproveRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewRes'
+      summary: reject check request
+      tags:
+      - check
+      - no-cache
+      - admin
+  /error:
+    post:
+      description: logs client side errors to allow for faster issue remediation
+      operationId: log-error
+      parameters:
+      - description: error log information
+        in: body
+        name: error-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.ErrorLog'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ErrorLogRes'
+      summary: logs errors
+      tags:
+      - errors
+  /grants:
+    get:
+      description: generates basic information for all organization-wide grants
+      operationId: get-grants
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.GrantsRes'
+      summary: all grant information
+      tags:
+      - grants
+  /grants/check:
+    get:
+      description: generates an overview of check requests for a specified grant
+      operationId: get-grant-check
+      parameters:
+      - description: grant id for which check request report should be run
+        in: body
+        name: grant-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Grant'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewsRes'
+      summary: one grant's check requests
+      tags:
+      - grants
+      - check
+      - reports
+      - admin
+  /grants/detail:
+    get:
+      description: generates basic information for a specified grant
+      operationId: get-grant
+      parameters:
+      - description: grant id
+        in: body
+        name: grant-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Grant'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.GrantRes'
+      summary: one grant information
+      tags:
+      - grants
+  /grants/mileage:
+    get:
+      description: generates an overview of mileage requests for a specified grant
+      operationId: get-grant-mileage
+      parameters:
+      - description: grant id for which mileage request report should be run
+        in: body
+        name: grant-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Grant'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewsRes'
+      summary: one grant's mileage requests
+      tags:
+      - grants
+      - mileage
+      - reports
+      - admin
+  /grants/petty_cash:
+    get:
+      description: generates an overview of petty cash requests for a specified grant
+      operationId: get-grant-petty_cash
+      parameters:
+      - description: grant id for which petty cash request report should be run
+        in: body
+        name: grant-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Grant'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewsRes'
+      summary: one grant's petty cash requests
+      tags:
+      - grants
+      - petty cash
+      - reports
+      - admin
+  /me:
+    get:
+      description: gathers basic request information for a logged in user and the
+        requests' current status
+      operationId: get-me
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MyInfoRes'
+      summary: get my info
+      tags:
+      - user
+      - reports
+  /me/check:
+    get:
+      description: gathers more detailed request information for a logged in user's
+        check requests
+      operationId: get-my-checks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckRequestsRes'
+      summary: get my check reqs
+      tags:
+      - user
+      - check
+      - reports
+  /me/mileage:
+    get:
+      description: gathers more detailed request information for a logged in user's
+        mileage requests
+      operationId: get-my-mileage
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileagesRes'
+      summary: get my mileage reqs
+      tags:
+      - user
+      - mileage
+      - reports
+  /me/petty_cash:
+    get:
+      description: gathers more detailed request information for a logged in user's
+        petty cash requests
+      operationId: get-my-petty-cash
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashRequestsRes'
+      summary: get my petty cash reqs
+      tags:
+      - user
+      - petty cash
+      - reports
+  /me/vehicle:
+    delete:
+      description: removes vehicle information from a logged in user's account
+      operationId: remove-vehicle
+      parameters:
+      - description: deleted vehicle information
+        in: body
+        name: vehicle-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Vehicle'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VehicleRes'
+      summary: remove a vehicle
+      tags:
+      - user
+      - no-cache
+    post:
+      description: adds vehicle information to a logged in user's account
+      operationId: add-vehicle
+      parameters:
+      - description: user's vehicle information
+        in: body
+        name: vehicle-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.VehicleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VehicleRes'
+      summary: add a vehicle
+      tags:
+      - user
+      - no-cache
+    put:
+      description: edits information about a specific vehicle for a logged in user
+      operationId: edit-vehicle
+      parameters:
+      - description: edited vehicle information
+        in: body
+        name: vehicle-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Vehicle'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VehicleRes'
+      summary: edit a vehicle
+      tags:
+      - user
+      - no-cache
+  /mileage:
+    delete:
+      description: allows a logged in user to delete and removes one of their mileage
+        requests
+      operationId: delete-mileage
+      parameters:
+      - description: mileage request id to delete
+        in: body
+        name: mileage-request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.FindMileageInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
+      summary: delete mileage request
+      tags:
+      - mileage
+      - no-cache
+    post:
+      description: creates a mileage request for a logged in user
+      operationId: add-mileage
+      parameters:
+      - description: new mileage request information
+        in: body
+        name: mileage-request-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.MileageInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
+      summary: add mileage request
+      tags:
+      - mileage
+      - no-cache
+    put:
+      description: allows a logged in user to edit their pending or reject mileage
+        requests
+      operationId: edit-mileage
+      parameters:
+      - description: mileage request information to update
+        in: body
+        name: mileage-request-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.EditMileageInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
+      summary: edit mileage request
+      tags:
+      - mileage
+      - no-cache
+  /mileage/approve:
+    post:
+      description: allows an administrative user to approve a specific mileage request
+      operationId: approve-mileage
+      parameters:
+      - description: mileage request id to approve
+        in: body
+        name: request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApproveRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
+      summary: approve mileage request
+      tags:
+      - mileage
+      - no-cache
+      - admin
+  /mileage/detail:
+    get:
+      description: generates detailed information for a specific mileage request
+      operationId: mileage-detail
+      parameters:
+      - description: mileage request id to find
+        in: body
+        name: mileage-request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.FindMileageInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageRes'
+      summary: mileage request detail
+      tags:
+      - mileage
+  /mileage/monthly:
+    get:
+      description: creates a monthly mileage report for the entire organization for
+        a given month and year
+      operationId: monthly-mileage
+      parameters:
+      - description: month and year for report on organization wide mileage requests
+        in: body
+        name: month-year-input
+        required: true
+        schema:
+          $ref: '#/definitions/models.MonthlyRequestInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewsRes'
+      summary: monthly mileage report
+      tags:
+      - mileage
+      - reports
+      - admin
+  /mileage/reject:
+    post:
+      description: allows a logged in administrative user to reject a mileage request
+        until further edits have been made
+      operationId: reject-mileage
+      parameters:
+      - description: mileage request id to reject
+        in: body
+        name: request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApproveRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewRes'
+      summary: reject mileage request
+      tags:
+      - mileage
+      - no-cache
+      - admin
+  /petty_cash:
+    delete:
+      description: allows a logged in user to delete and removes one of their petty
+        cash requests
+      operationId: delete-petty_cash
+      parameters:
+      - description: petty cash request id to delete
+        in: body
+        name: petty-cash-request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.FindPettyCashInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
+      summary: delete petty cash request
+      tags:
+      - petty cash
+      - no-cache
+    post:
+      description: creates a petty cash request for a logged in user
+      operationId: add-petty_cash
+      parameters:
+      - description: new petty cash request information
+        in: body
+        name: petty-cash-request-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.PettyCashInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
+      summary: add petty cash request
+      tags:
+      - petty cash
+      - no-cache
+    put:
+      description: allows a logged in user to edit their pending or reject petty cash
+        requests
+      operationId: edit-petty_cash
+      parameters:
+      - description: petty cash request information to update
+        in: body
+        name: petty-cash-request-info
+        required: true
+        schema:
+          $ref: '#/definitions/models.EditPettyCash'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
+      summary: edit petty cash request
+      tags:
+      - petty cash
+      - no-cache
+  /petty_cash/approve:
+    post:
+      description: allows an administrative user to approve a specific petty cash
+        request
+      operationId: approve-petty_cash
+      parameters:
+      - description: petty cash request id to approve
+        in: body
+        name: request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApproveRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
+      summary: approve petty cash request
+      tags:
+      - petty cash
+      - no-cache
+      - admin
+  /petty_cash/detail:
+    get:
+      description: generates detailed information for a specific petty cash request
+      operationId: petty_cash-detail
+      parameters:
+      - description: petty cash request id to find
+        in: body
+        name: petty-cash-request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.FindPettyCashInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashRes'
+      summary: petty cash request detail
+      tags:
+      - petty cash
+  /petty_cash/monthly:
+    get:
+      description: creates a monthly petty cash report for the entire organization
+        for a given month and year
+      operationId: monthly-petty_cash
+      parameters:
+      - description: month and year for report on organization wide petty cash requests
+        in: body
+        name: month-year-input
+        required: true
+        schema:
+          $ref: '#/definitions/models.MonthlyRequestInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewsRes'
+      summary: monthly petty cash request report
+      tags:
+      - petty cash
+      - reports
+      - admin
+  /petty_cash/reject:
+    post:
+      description: allows a logged in administrative user to reject a petty cash request
+        until further edits have been made
+      operationId: reject-petty_cash
+      parameters:
+      - description: petty cash request id to reject
+        in: body
+        name: request-id
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApproveRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewRes'
+      summary: reject petty cash request
+      tags:
+      - petty cash
+      - no-cache
+      - admin
+  /seeds:
+    delete:
+      description: removes seed data used for testing and development purposes
+      operationId: delete-seed-data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: deletes seed data
+      tags:
+      - setup
+      - no-cache
+    post:
+      description: loads seed data for testing data and development purposes
+      operationId: seed-data
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: initial seed data
+      tags:
+      - setup
+      - no-cache
+  /user:
+    get:
+      description: gathers basic request information for all users in the system and
+        the current status of their requests'
+      operationId: get-users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.UsersInfoRes'
+      summary: get all users
+      tags:
+      - user
+      - reports
+      - admin
+  /user/check:
+    get:
+      description: gathers more detailed information on a specific user's check requests
+      operationId: user-check
+      parameters:
+      - description: specific user's id information
+        in: body
+        name: user-info
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UserIDBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CheckOverviewsRes'
+      summary: user check requests
+      tags:
+      - user
+      - reports
+      - check
+      - admin
+  /user/deactivate:
+    delete:
+      description: deactivates a user's account and all of their associated requests
+      operationId: delete-user
+      parameters:
+      - description: specific user's id information
+        in: body
+        name: user-info
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UserIDBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.NilRes'
+      summary: deactivates a user
+      tags:
+      - user
+      - no-cache
+      - admin
+  /user/detail:
+    get:
+      description: gathers basic request information for a specific user in the system
+        and the current status of their requests'
+      operationId: get-user
+      parameters:
+      - description: specific user's id information
+        in: body
+        name: user-info
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UserIDBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.UserInfoRes'
+      summary: gets one user
+      tags:
+      - user
+      - reports
+      - admin
+  /user/mileage:
+    get:
+      description: gathers more detailed information on a specific user's mileage
+        requests
+      operationId: user-mileage
+      parameters:
+      - description: specific user's id information
+        in: body
+        name: user-info
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UserIDBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MileageOverviewsRes'
+      summary: user mileage
+      tags:
+      - user
+      - reports
+      - mileage
+      - admin
+  /user/petty_cash:
+    get:
+      description: gathers more detailed information on a specific user's petty cash
+        requests
+      operationId: user-petty_cash
+      parameters:
+      - description: specific user's id information
+        in: body
+        name: user-info
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UserIDBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PettyCashOverviewsRes'
+      summary: user petty cash
+      tags:
+      - user
+      - reports
+      - petty cash
+      - admin
+swagger: "2.0"

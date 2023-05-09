@@ -1,42 +1,53 @@
 package main
 
 import (
-	conn "financial-api/db"
-	r "financial-api/graphql/root"
-	auth "financial-api/middleware"
-	"net/http"
-	"os"
+	"financial-api/config"
+	"financial-api/routes"
+	"log"
 
-	"github.com/go-chi/chi"
-	"github.com/gorilla/handlers"
-	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/handler"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/joho/godotenv"
 )
 
-const defaultPort = "8080"
-
-var rootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    r.RootQueries,
-	Mutation: r.RootMutations,
-})
-
+// @title Financial Request Handler API
+// @version 2.0
+// @description An API Endpoint for handling organizational financial reimbursement requests
+// @contact.name APP Support
+// @contact.email app_support@norainc.org
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath /api
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
+	app := Setup()
+	log.Fatal(app.Listen(":" + config.ENV("PORT")))
+	log.Println("Starting application @ http://localhost:" + config.ENV("PORT"))
+}
+
+func Setup() *fiber.App {
+	app := fiber.New()
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal(err)
 	}
-	conn.InitDB()
-	defer conn.CloseDB()
-	// delete below on final production push
-	rootRequestHandler := handler.New(&handler.Config{
-		Schema: &rootSchema,
-		Pretty: true,
-	})
-	router := chi.NewRouter()
-	router.Use(auth.Middleware())
-	router.Handle("/graphql", rootRequestHandler)
-	originsOK := handlers.AllowedOrigins([]string{"https://thomps9012.github.io", "https://finance-requests.vercel.app"})
-	headersOK := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
-	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(auth.LimitApiCalls(router)))
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "https://thomps9012.github.io, https://finance-requests.vercel.app, http://localhost:3000, http://localhost:3001",
+		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization,X-Requested-With",
+		AllowMethods:     "GET,POST,PUT,DELETE",
+		AllowCredentials: true,
+	}))
+	routes.Use(app)
+	app.Use(limiter.New())
+	app.Use(cache.New(cache.Config{
+		Next: func(c *fiber.Ctx) bool {
+			return c.GetRespHeader("no-cache", "false") == "true"
+		},
+	}))
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestSpeed,
+	}))
+	return app
 }

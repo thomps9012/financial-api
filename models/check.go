@@ -2,449 +2,634 @@ package models
 
 import (
 	"context"
-	conn "financial-api/db"
-	"fmt"
-	"math"
+	database "financial-api/db"
+	"financial-api/methods"
 	"time"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Address struct {
-	Website  string `json:"website" bson:"website"`
-	Street   string `json:"street" bson:"street"`
-	City     string `json:"city" bson:"city"`
-	State    string `json:"state" bson:"state"`
-	Zip_Code int    `json:"zip" bson:"zip"`
-}
 type Vendor struct {
-	Name    string  `json:"name" bson:"name"`
-	Address Address `json:"address" bson:"address"`
+	Name         string `json:"name" bson:"name" validate:"required"`
+	Website      string `json:"website" bson:"website"`
+	AddressLine1 string `json:"address_line_one" bson:"address_line_one" validate:"required"`
+	AddressLine2 string `json:"address_line_two" bson:"address_line_two"`
 }
 type Purchase struct {
-	Grant_Line_Item string  `json:"line_item" bson:"line_item"`
-	Description     string  `json:"description" bson:"description"`
-	Amount          float64 `json:"amount" bson:"amount"`
+	Grant_Line_Item string  `json:"grant_line_item" bson:"grant_line_item" validate:"required"`
+	Description     string  `json:"description" bson:"description" validate:"required"`
+	Amount          float64 `json:"amount" bson:"amount" validate:"required"`
+}
+type CheckRequestDetailResponse struct {
+	ID             string         `json:"id" bson:"_id"`
+	Grant          []Grant        `json:"grant" bson:"grant"`
+	RequestCreator []UserNameInfo `json:"request_creator" bson:"request_creator"`
+	Date           time.Time      `json:"date" bson:"date"`
+	Category       Category       `json:"category" bson:"category"`
+	Vendor         Vendor         `json:"vendor" bson:"vendor"`
+	Description    string         `json:"description" bson:"description"`
+	Purchases      []Purchase     `json:"purchases" bson:"purchases"`
+	Receipts       []string       `json:"receipts" bson:"receipts"`
+	Order_Total    float64        `json:"order_total" bson:"order_total"`
+	Credit_Card    string         `json:"credit_card" bson:"credit_card"`
+	Created_At     time.Time      `json:"created_at" bson:"created_at"`
+	Action_History []Action       `json:"action_history" bson:"action_history"`
+	Current_User   []UserNameInfo `json:"current_user" bson:"current_user"`
+	Current_Status string         `json:"current_status" bson:"current_status"`
+	Is_Active      bool           `json:"is_active" bson:"is_active"`
 }
 type Check_Request struct {
-	ID             string     `json:"id" bson:"_id"`
-	Date           time.Time  `json:"date" bson:"date"`
-	Category       Category   `json:"category" bson:"category"`
-	Vendor         Vendor     `json:"vendor" bson:"vendor"`
-	Description    string     `json:"description" bson:"description"`
-	Grant_ID       string     `json:"grant_id" bson:"grant_id"`
-	Purchases      []Purchase `json:"purchases" bson:"purchases"`
-	Receipts       []string   `json:"receipts" bson:"receipts"`
-	Order_Total    float64    `json:"order_total" bson:"order_total"`
-	Credit_Card    string     `json:"credit_card" bson:"credit_card"`
-	Created_At     time.Time  `json:"created_at" bson:"created_at"`
-	User_ID        string     `json:"user_id" bson:"user_id"`
-	Action_History []Action   `json:"action_history" bson:"action_history"`
-	Current_User   string     `json:"current_user" bson:"current_user"`
-	Current_Status Status     `json:"current_status" bson:"current_status"`
-	Is_Active      bool       `json:"is_active" bson:"is_active"`
+	ID                      string     `json:"id" bson:"_id"`
+	Grant_ID                string     `json:"grant_id" bson:"grant_id"`
+	User_ID                 string     `json:"user_id" bson:"user_id"`
+	Date                    time.Time  `json:"date" bson:"date"`
+	Category                Category   `json:"category" bson:"category"`
+	Vendor                  Vendor     `json:"vendor" bson:"vendor"`
+	Description             string     `json:"description" bson:"description"`
+	Purchases               []Purchase `json:"purchases" bson:"purchases"`
+	Receipts                []string   `json:"receipts" bson:"receipts"`
+	Order_Total             float64    `json:"order_total" bson:"order_total"`
+	Credit_Card             string     `json:"credit_card" bson:"credit_card"`
+	Created_At              time.Time  `json:"created_at" bson:"created_at"`
+	Action_History          []Action   `json:"action_history" bson:"action_history"`
+	Current_User            string     `json:"current_user" bson:"current_user"`
+	Current_Status          string     `json:"current_status" bson:"current_status"`
+	Last_User_Before_Reject string     `json:"last_user_before_reject" bson:"last_user_before_reject"`
+	Is_Active               bool       `json:"is_active" bson:"is_active"`
+}
+type CheckRequestInput struct {
+	Grant_ID    string     `json:"grant_id" bson:"grant_id" validate:"required"`
+	Date        time.Time  `json:"date" bson:"date" validate:"required"`
+	Category    Category   `json:"category" bson:"category" validate:"required"`
+	Vendor      Vendor     `json:"vendor" bson:"vendor" validate:"required"`
+	Description string     `json:"description" bson:"description" validate:"required"`
+	Purchases   []Purchase `json:"purchases" bson:"purchases" validate:"required,dive,required"`
+	Receipts    []string   `json:"receipts" bson:"receipts" validate:"required"`
+	Credit_Card string     `json:"credit_card" bson:"credit_card" validate:"required"`
+}
+type EditCheckInput struct {
+	ID          string     `json:"id" bson:"_id" validate:"required"`
+	User_ID     string     `json:"user_id" bson:"user_id" validate:"required"`
+	Grant_ID    string     `json:"grant_id" bson:"grant_id" validate:"required"`
+	Date        time.Time  `json:"date" bson:"date" validate:"required"`
+	Category    Category   `json:"category" bson:"category" validate:"required"`
+	Vendor      Vendor     `json:"vendor" bson:"vendor" validate:"required"`
+	Description string     `json:"description" bson:"description" validate:"required"`
+	Purchases   []Purchase `json:"purchases" bson:"purchases" validate:"required,dive,required"`
+	Receipts    []string   `json:"receipts" bson:"receipts" validate:"required"`
+	Credit_Card string     `json:"credit_card" bson:"credit_card" validate:"required"`
 }
 type Check_Request_Overview struct {
 	ID             string    `json:"id" bson:"_id"`
 	User_ID        string    `json:"user_id" bson:"user_id"`
-	User           User      `json:"user" bson:"user"`
-	Grant_ID       string    `json:"grant_id" bson:"grant_id"`
-	Grant          Grant     `json:"grant" bson:"grant"`
 	Date           time.Time `json:"date" bson:"date"`
-	Vendor         Vendor    `json:"vendor" bson:"vendor"`
 	Order_Total    float64   `json:"order_total" bson:"order_total"`
-	Current_Status Status    `json:"current_status" bson:"current_status"`
-	Created_At     time.Time `json:"created_at" bson:"created_at"`
+	Current_Status string    `json:"current_status" bson:"current_status"`
+	Current_User   string    `json:"current_user" bson:"current_user"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
-
-func (c *Check_Request) DeleteAll() bool {
-	collection := conn.Db.Collection("check_requests")
-	record_count, _ := collection.CountDocuments(context.TODO(), bson.D{{}})
-	cleared, _ := collection.DeleteMany(context.TODO(), bson.D{{}})
-	return cleared.DeletedCount == record_count
-}
-func (c *Check_Request) Exists(user_id string, vendor_name string, order_total float64, date time.Time) bool {
-	collection := conn.Db.Collection("check_requests")
-	var check_req Check_Request
-	filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: date}, {Key: "order_total", Value: order_total}, {Key: "vendor.name", Value: vendor_name}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
-	if err != nil {
-		return false
-	}
-	return true
+type FindCheckInput struct {
+	CheckID string `json:"check_id" bson:"check_id" validate:"required"`
 }
 
-func (c *Check_Request) Create(requestor User) (string, error) {
-	collection := conn.Db.Collection("check_requests")
-	c.ID = uuid.NewString()
-	c.Created_At = time.Now()
-	c.Is_Active = true
-	c.User_ID = requestor.ID
-	c.Current_Status = PENDING
-	// build in logic for setting current user id
-	current_user_email := UserEmailHandler(c.Category, PENDING, false)
-	fmt.Printf("current user email: %s", current_user_email)
-	var user User
-	// this breaks if current user email is not in database
-	// on production all managers will need to create signed accounts
-	current_user_id, err := user.FindID(current_user_email)
+func GetUserCheckRequests(user_id string) ([]Check_Request_Overview, error) {
+	collection, err := database.Use("check_requests")
+	requests := make([]Check_Request_Overview, 0)
 	if err != nil {
-		panic(err)
+		return []Check_Request_Overview{}, err
 	}
-	c.Current_User = current_user_id
-	first_action := &Action{
-		ID:           uuid.NewString(),
-		User:         requestor.ID,
-		Request_ID:   c.ID,
-		Request_Type: CHECK,
-		Status:       CREATED,
-		Created_At:   time.Now(),
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "order_total", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
+	opts := options.Find().SetProjection(projection)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return []Check_Request_Overview{}, err
 	}
-	c.Action_History = append(c.Action_History, *first_action)
-	user.AddNotification(*first_action, current_user_id)
-	_, insert_err := collection.InsertOne(context.TODO(), *c)
-	if insert_err != nil {
-		panic(insert_err)
+	err = cursor.All(context.TODO(), &requests)
+	if err != nil {
+		return []Check_Request_Overview{}, err
 	}
-	return c.ID, nil
+	return requests, nil
 }
-func (c *Check_Request) Update(request Check_Request, requestor User) (Check_Request, error) {
-	collection := conn.Db.Collection("check_requests")
-	if request.Current_Status == REJECTED {
-		update_action := &Action{
-			ID:           uuid.NewString(),
-			User:         requestor.ID,
-			Request_ID:   request.ID,
-			Request_Type: CHECK,
-			Status:       REJECTED_EDIT,
-			Created_At:   time.Now(),
+func GetUserCheckRequestDetail(user_id string) ([]Check_Request, error) {
+	collection, err := database.Use("check_requests")
+	requests := make([]Check_Request, 0)
+	if err != nil {
+		return []Check_Request{}, err
+	}
+	filter := bson.D{{Key: "user_id", Value: user_id}}
+	projection := bson.D{{Key: "action_history", Value: 0}}
+	opts := options.Find().SetProjection(projection)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return []Check_Request{}, err
+	}
+	err = cursor.All(context.TODO(), &requests)
+	if err != nil {
+		return []Check_Request{}, err
+	}
+	return requests, nil
+}
+func (ci *CheckRequestInput) Exists(user_id string) (bool, *CustomError) {
+	check_req_coll, err := database.Use("check_requests")
+	if err != nil {
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
 		}
-		prev_user_id := ReturnPrevAdminID(request.Action_History, requestor.ID)
-		request.Current_User = prev_user_id
-		var user User
-		current_user, err := user.FindByID(prev_user_id)
-		if err != nil {
-			panic(err)
+	}
+	date_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: ci.Date}}
+	grant_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "grant_id", Value: ci.Grant_ID}, {Key: "category", Value: ci.Category}, {Key: "description", Value: ci.Description}}
+	purchase_filter := bson.D{{Key: "user_id", Value: user_id}, {Key: "purchases", Value: ci.Purchases}}
+	date_count, err := check_req_coll.CountDocuments(context.TODO(), date_filter)
+	if err != nil {
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
 		}
-		request.Action_History = append(request.Action_History, *update_action)
-		_, clear_notification_err := current_user.ClearNotification(request.ID, requestor.ID)
-		if clear_notification_err != nil {
-			panic(clear_notification_err)
+	}
+	grant_count, err := check_req_coll.CountDocuments(context.TODO(), grant_filter)
+	if err != nil {
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
 		}
-		_, notify_err := current_user.AddNotification(*update_action, prev_user_id)
-		if notify_err != nil {
-			panic(notify_err)
+	}
+	purchase_count, err := check_req_coll.CountDocuments(context.TODO(), purchase_filter)
+	if err != nil {
+		return false, &CustomError{
+			Status:  500,
+			Message: err.Error(),
 		}
-	} else {
-		update_action := &Action{
+	}
+	return date_count+grant_count+purchase_count > 0, nil
+
+}
+func (ci *CheckRequestInput) CreateCheckRequest(user_id string) (Check_Request_Overview, *CustomError) {
+	new_request := new(Check_Request)
+	new_request.ID = uuid.NewString()
+	new_request.Grant_ID = ci.Grant_ID
+	new_request.User_ID = user_id
+	new_request.Date = ci.Date
+	new_request.Category = ci.Category
+	new_request.Vendor = ci.Vendor
+	new_request.Description = ci.Description
+	new_request.Purchases = ci.Purchases
+	new_request.Receipts = ci.Receipts
+	new_request.Credit_Card = ci.Credit_Card
+	new_request.Created_At = time.Now()
+	new_request.Last_User_Before_Reject = bson.TypeNull.String()
+	new_request.Is_Active = true
+	first_action := FirstActions(user_id)
+	new_request.Action_History = first_action
+	current_user := methods.NewRequestUser("check_request", string(new_request.Category), user_id)
+	new_request.Current_User = current_user.ID
+	new_request.Current_Status = "PENDING"
+	total := 0.0
+	for _, purchase := range ci.Purchases {
+		total += purchase.Amount
+	}
+	new_request.Order_Total = total
+	check_req_coll, err := database.Use("check_requests")
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	_, err = check_req_coll.InsertOne(context.TODO(), new_request)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	err = CreateIncompleteAction("check", new_request.ID, first_action[0], current_user.ID)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+
+	return Check_Request_Overview{
+		ID:             new_request.ID,
+		User_ID:        user_id,
+		Date:           new_request.Date,
+		Order_Total:    new_request.Order_Total,
+		Current_Status: new_request.Current_Status,
+		Current_User:   current_user.Name,
+		Is_Active:      true,
+	}, nil
+}
+func (ec *EditCheckInput) EditCheckRequest() (Check_Request_Overview, *CustomError) {
+	collection, err := database.Use("check_requests")
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	filter := bson.D{{Key: "_id", Value: ec.ID}}
+	opts := options.FindOne().SetProjection(bson.D{{Key: "action_history", Value: 1}, {Key: "current_status", Value: 1}, {Key: "current_user", Value: 1}, {Key: "last_user_before_reject", Value: 1}})
+	request := new(Check_Request)
+	err = collection.FindOne(context.TODO(), filter, opts).Decode(&request)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	if request.Current_Status != "PENDING" && request.Current_Status != "REJECTED" && request.Current_Status != "REJECTED_EDIT_PENDING_REVIEW" {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  423,
+			Message: "Request is being processed by organization",
+		}
+	}
+	err = ClearRequestAssociatedActions(ec.ID)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	switch request.Current_Status {
+	case "REJECTED":
+		edit_action := Action{
 			ID:         uuid.NewString(),
-			User:       requestor.ID,
-			Request_ID: request.ID,
-			Status:     EDIT,
+			User:       ec.User_ID,
+			Status:     "REJECTED_EDIT",
 			Created_At: time.Now(),
 		}
-		request.Action_History = append(request.Action_History, *update_action)
+		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Last_User_Before_Reject)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		return Check_Request_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Order_Total:    res.Order_Total,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
+	case "REJECTED_EDIT_PENDING_REVIEW":
+		edit_action := Action{
+			ID:         uuid.NewString(),
+			User:       ec.User_ID,
+			Status:     "REJECTED_EDIT",
+			Created_At: time.Now(),
+		}
+		res, err := ec.SaveEdits(edit_action, "REJECTED_EDIT_PENDING_REVIEW", request.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		return Check_Request_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Order_Total:    res.Order_Total,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
+	case "PENDING":
+		edit_action := Action{
+			ID:         uuid.NewString(),
+			User:       ec.User_ID,
+			Status:     "PENDING_EDIT",
+			Created_At: time.Now(),
+		}
+		res, err := ec.SaveEdits(edit_action, "PENDING", request.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		current_user, err := FindUserName(res.Current_User)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		if err != nil {
+			return Check_Request_Overview{
+					ID:      res.ID,
+					User_ID: res.User_ID,
+					Date:    res.Date,
+				}, &CustomError{
+					Status:  500,
+					Message: err.Error(),
+				}
+		}
+		return Check_Request_Overview{
+			ID:             res.ID,
+			User_ID:        res.User_ID,
+			Date:           res.Date,
+			Order_Total:    res.Order_Total,
+			Current_Status: res.Current_Status,
+			Current_User:   current_user,
+			Is_Active:      res.Is_Active,
+		}, nil
 	}
-	// add in edit tracker
-	var check_request Check_Request
-	request.Current_Status = PENDING
-	filter := bson.D{{Key: "_id", Value: request.ID}}
+
+	return Check_Request_Overview{}, &CustomError{
+		Status:  423,
+		Message: "Request is being processed by organization",
+	}
+}
+func (ec *EditCheckInput) SaveEdits(action Action, new_status string, new_user string) (Check_Request, error) {
+	collection, err := database.Use("check_requests")
+	if err != nil {
+		return Check_Request{}, err
+	}
+	new_total := 0.0
+	for _, purchase := range ec.Purchases {
+		new_total += purchase.Amount
+	}
+	err = CreateIncompleteAction("check", ec.ID, action, new_user)
+	if err != nil {
+		return Check_Request{}, err
+	}
+	var update bson.D
+	if new_status == "REJECTED_EDIT_PENDING_REVIEW" {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "grant_id", Value: ec.Grant_ID}, {Key: "date", Value: ec.Date}, {Key: "category", Value: ec.Category}, {Key: "vendor", Value: ec.Vendor}, {Key: "description", Value: ec.Description}, {Key: "purchases", Value: ec.Purchases}, {Key: "receipts", Value: ec.Receipts}, {Key: "credit_card", Value: ec.Credit_Card}, {Key: "order_total", Value: new_total}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}, {Key: "last_user_before_reject", Value: "null"}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
+	} else {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "grant_id", Value: ec.Grant_ID}, {Key: "date", Value: ec.Date}, {Key: "category", Value: ec.Category}, {Key: "vendor", Value: ec.Vendor}, {Key: "description", Value: ec.Description}, {Key: "purchases", Value: ec.Purchases}, {Key: "receipts", Value: ec.Receipts}, {Key: "credit_card", Value: ec.Credit_Card}, {Key: "order_total", Value: new_total}, {Key: "current_status", Value: new_status}, {Key: "current_user", Value: new_user}}}, {Key: "$push", Value: bson.D{{Key: "action_history", Value: action}}}}
+	}
+	filter := bson.D{{Key: "_id", Value: ec.ID}}
+	check_req := new(Check_Request)
+	upsert := true
 	after := options.After
-	opts := options.FindOneAndReplaceOptions{
+	opts := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&check_req)
+	if err != nil {
+		return Check_Request{}, err
+	}
+
+	return *check_req, nil
+}
+func DeleteCheckRequest(request_id string, user_id string, user_admin bool) (Check_Request_Overview, *CustomError) {
+	collection, err := database.Use("check_requests")
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	filter := bson.D{{Key: "_id", Value: request_id}}
+	request_info := new(Check_Request_Overview)
+	if !user_admin {
+		err = collection.FindOne(context.TODO(), filter).Decode(&request_info)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		if request_info.User_ID != user_id {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  403,
+				Message: "Unauthorized Deletion",
+			}
+		}
+	}
+	err = collection.FindOneAndDelete(context.TODO(), filter).Decode(&request_info)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	current_user_id := request_info.Current_User
+	user_name, err := FindUserName(current_user_id)
+	if err != nil {
+		request_info.Current_User = "N/A"
+	} else {
+		request_info.Current_User = user_name
+	}
+
+	return *request_info, nil
+}
+func CheckRequestDetail(check_id string, user_id string, user_admin bool) (CheckRequestDetailResponse, *CustomError) {
+	collection, err := database.Use("check_requests")
+	if err != nil {
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	filter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: check_id}}}}
+	grant_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "grants"}, {Key: "localField", Value: "grant_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "grant"},
+		{Key: "pipeline", Value: bson.A{
+			bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
+	user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "user_id"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "request_creator"}, {Key: "pipeline", Value: bson.A{
+		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
+	current_user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "current_user"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "current_user"}, {Key: "pipeline", Value: bson.A{
+		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}, {Key: "is_active", Value: 1}}}}}}}}}
+	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage}
+	request_detail := make([]CheckRequestDetailResponse, 0)
+	cursor, err := collection.Aggregate(context.TODO(), pipeline)
+	if err != nil {
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	err = cursor.All(context.TODO(), &request_detail)
+	if err != nil {
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	if len(request_detail) == 0 {
+		return CheckRequestDetailResponse{}, &CustomError{
+			Status:  404,
+			Message: "Request not found",
+		}
+	}
+	if !user_admin {
+		if request_detail[0].RequestCreator[0].ID != user_id {
+			return CheckRequestDetailResponse{}, &CustomError{
+				Status:  403,
+				Message: "Unauthorized",
+			}
+		}
+	}
+	request_detail[0].Order_Total = ToFixed(request_detail[0].Order_Total, 2)
+	return request_detail[0], nil
+}
+func (c *Check_Request) Approve(user_id string) (Check_Request_Overview, *CustomError) {
+	collection, err := database.Use("check_requests")
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	filter := bson.D{{Key: "_id", Value: c.ID}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&c)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	if c.Current_User != user_id {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  403,
+			Message: "Unauthorized",
+		}
+	}
+	new_action := ApproveRequest("check_request", c.Current_User, c.Category, c.Current_Status)
+	c.Action_History = append(c.Action_History, new_action.Action)
+	var update bson.D
+	if new_action.Action.Status == "ORGANIZATION_APPROVED" {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "is_active", Value: false}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+	} else {
+		update = bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: new_action.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: new_action.Action.Status}}}}
+		err = CreateIncompleteAction("check", c.ID, new_action.Action, new_action.NewUser.ID)
+		if err != nil {
+			return Check_Request_Overview{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+	}
+	response := new(Check_Request_Overview)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		Upsert:         &upsert,
 		ReturnDocument: &after,
 	}
-	err := collection.FindOneAndReplace(context.TODO(), filter, request, &opts).Decode(&check_request)
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
 	if err != nil {
-		panic(err)
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
 	}
-	return check_request, nil
+	response.Current_User = new_action.NewUser.Name
+	return *response, nil
 }
+func (c *Check_Request) Reject(user_id string) (Check_Request_Overview, *CustomError) {
+	collection, err := database.Use("check_requests")
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	filter := bson.D{{Key: "_id", Value: c.ID}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&c)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	if c.Current_User != user_id {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  403,
+			Message: "Unauthorized",
+		}
+	}
+	reject_info := RejectRequest(c.User_ID, c.Current_User)
+	c.Action_History = append(c.Action_History, reject_info.Action)
+	err = CreateIncompleteAction("check", c.ID, reject_info.Action, c.User_ID)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "current_user", Value: reject_info.NewUser.ID}, {Key: "action_history", Value: c.Action_History}, {Key: "current_status", Value: "REJECTED"}, {Key: "last_user_before_reject", Value: reject_info.LastUserBeforeReject.ID}}}}
+	response := new(Check_Request_Overview)
+	upsert := true
+	after := options.After
+	opts := options.FindOneAndUpdateOptions{
+		Upsert:         &upsert,
+		ReturnDocument: &after,
+	}
+	err = collection.FindOneAndUpdate(context.TODO(), filter, update, &opts).Decode(&response)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	current_user_name, err := FindUserName(reject_info.NewUser.ID)
+	if err != nil {
+		return Check_Request_Overview{}, &CustomError{
+			Status:  500,
+			Message: err.Error(),
+		}
+	}
+	response.Current_User = current_user_name
 
-func (c *Check_Request) UpdateActionHistory(new_action Action, user_id string) (Request_Info_With_Action_History, error) {
-	var request_info Request_Info_With_Action_History
-	collection := conn.Db.Collection("check_requests")
-	filter := bson.D{{Key: "_id", Value: new_action.Request_ID}}
-	update := bson.D{{Key: "$push", Value: bson.M{"action_history": new_action}}, {Key: "$set", Value: bson.M{"current_user": user_id}}, {Key: "$set", Value: bson.M{"current_status": new_action.Status}}}
-	if err := collection.FindOneAndUpdate(context.TODO(), filter, update, options.FindOneAndUpdate().SetReturnDocument(1)).Decode(&request_info); err != nil {
-		panic(err)
-	}
-	request_info.Type = CHECK
-	return request_info, nil
+	return *response, nil
 }
-func (c *Check_Request) Delete(request Check_Request, user_id string) (bool, error) {
-	collection := conn.Db.Collection("check_requests")
-	var check_request Check_Request
-	filter := bson.D{{Key: "request_id", Value: request.ID}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&check_request)
+func MonthlyCheckRequests(month int, year int) ([]Check_Request_Overview, error) {
+	collection, err := database.Use("check_requests")
 	if err != nil {
-		panic(err)
+		return []Check_Request_Overview{}, err
 	}
-	if check_request.User_ID != user_id {
-		panic("you are not the user who created this request")
-	}
-	current_status := check_request.Current_Status
-	if current_status != PENDING && current_status != REJECTED {
-		panic("this request is already being processed")
-	}
-	result, update_err := collection.DeleteOne(context.TODO(), request.ID)
-	if update_err != nil {
-		panic(update_err)
-	}
-	if result.DeletedCount == 0 {
-		return false, err
-	}
-	return true, nil
-}
-func (c *Check_Request_Overview) FindAll() ([]Check_Request_Overview, error) {
-	collection := conn.Db.Collection("check_requests")
-	var overviews []Check_Request_Overview
-	cursor, err := collection.Find(context.TODO(), bson.D{})
+	response := make([]Check_Request_Overview, 0)
+	start_date := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	end_date := time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
+	filter := bson.D{{Key: "date", Value: bson.D{{Key: "$lte", Value: end_date}, {Key: "$gte", Value: start_date}}}}
+	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "order_total", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
+	opts := options.Find().SetProjection(projection)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
-		panic(err)
+		return []Check_Request_Overview{}, err
 	}
-	for cursor.Next(context.TODO()) {
-		println("hit cursor")
-		var user User
-		var grant Grant
-		var check_req Check_Request
-		decode_err := cursor.Decode(&check_req)
-		if decode_err != nil {
-			println("decode error")
-			panic(decode_err)
-		}
-		println("grant ID", check_req.Grant_ID)
-		grant_info, grant_err := grant.Find(check_req.Grant_ID)
-		if grant_err != nil {
-			println("grant error")
-			panic(grant_err)
-		}
-		println("user ID", check_req.User_ID)
-		user_info, user_err := user.FindByID(check_req.User_ID)
-		if user_err != nil {
-			println("user error")
-			panic(user_err)
-		}
-		println(check_req.ID)
-		check_overview := &Check_Request_Overview{
-			ID:             check_req.ID,
-			User_ID:        check_req.User_ID,
-			User:           user_info,
-			Grant_ID:       check_req.Grant_ID,
-			Grant:          grant_info,
-			Date:           check_req.Date,
-			Vendor:         check_req.Vendor,
-			Order_Total:    check_req.Order_Total,
-			Current_Status: check_req.Current_Status,
-			Created_At:     check_req.Created_At,
-			Is_Active:      check_req.Is_Active,
-		}
-		overviews = append(overviews, *check_overview)
-	}
-	return overviews, nil
-}
-func (c *Check_Request) FindByID(check_id string) (Check_Request, error) {
-	collection := conn.Db.Collection("check_requests")
-	var check_req Check_Request
-	filter := bson.D{{Key: "_id", Value: check_id}}
-	err := collection.FindOne(context.TODO(), filter).Decode(&check_req)
+	err = cursor.All(context.TODO(), &response)
 	if err != nil {
-		panic(err)
+		return []Check_Request_Overview{}, err
 	}
-	return check_req, nil
-}
-
-type Grant_Check_Overview struct {
-	Grant          Grant           `json:"grant" bson:"grant"`
-	Vendors        []Vendor        `json:"vendors" bson:"vendors"`
-	Total_Amount   float64         `json:"total_amount" bson:"total_amount"`
-	Total_Requests int             `json:"total_requests" bson:"total_requests"`
-	Credit_Cards   []string        `json:"credit_cards" bson:"credit_cards"`
-	Requests       []Check_Request `json:"request_ids" bson:"request_ids"`
-}
-
-func (g *Grant_Check_Overview) FindByGrant(grant_id string, start_date string, end_date string) (Grant_Check_Overview, error) {
-	collection := conn.Db.Collection("check_requests")
-	var filter bson.D
-	layout := "2006-01-02T15:04:05.000Z"
-	if start_date != "" && end_date != "" {
-		start, err := time.Parse(layout, start_date)
-		if err != nil {
-			panic(err)
-		}
-		end, enderr := time.Parse(layout, end_date)
-		if enderr != nil {
-			panic(err)
-		}
-		filter = bson.D{{Key: "grant_id", Value: grant_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
-	} else {
-		filter = bson.D{{Key: "grant_id", Value: grant_id}}
-	}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		panic(err)
-	}
-	var grant Grant
-	grant_info, grant_err := grant.Find(grant_id)
-	if grant_err != nil {
-		panic(grant_err)
-	}
-	total_amount := 0.0
-	var vendors []Vendor
-	var credit_cards []string
-	var exists = make(map[string]bool)
-	var vendorExists = make(map[Vendor]bool)
-	var requests []Check_Request
-	for cursor.Next(context.TODO()) {
-		var check_req Check_Request
-		decode_err := cursor.Decode(&check_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		requests = append(requests, check_req)
-		if !vendorExists[check_req.Vendor] {
-			vendors = append(vendors, check_req.Vendor)
-			vendorExists[check_req.Vendor] = true
-		}
-		if !exists[check_req.Credit_Card] {
-			credit_cards = append(credit_cards, check_req.Credit_Card)
-			exists[check_req.Credit_Card] = true
-		}
-		total_amount += math.Round(check_req.Order_Total*100) / 100
-		total_amount = math.Round(total_amount*100) / 100
-	}
-	check_overview := &Grant_Check_Overview{
-		Grant:          grant_info,
-		Vendors:        vendors,
-		Credit_Cards:   credit_cards,
-		Requests:       requests,
-		Total_Requests: len(requests),
-		Total_Amount:   total_amount,
-	}
-	return *check_overview, nil
-}
-
-type User_Check_Requests struct {
-	User         User            `json:"user" bson:"user"`
-	Start_Date   string          `json:"start_date" bson:"start_date"`
-	End_Date     string          `json:"end_date" bson:"end_date"`
-	Total_Amount float64         `json:"total_amount" bson:"total_amount"`
-	Vendors      []Vendor        `json:"vendors" bson:"vendors"`
-	Requests     []Check_Request `json:"requests" bson:"requests"`
-}
-type UserAggChecks struct {
-	ID             string        `json:"id" bson:"_id"`
-	Name           string        `json:"name" bson:"name"`
-	Total_Amount   float64       `json:"total_amount" bson:"total_amount"`
-	Total_Requests int           `json:"total_requests" bson:"total_requests"`
-	Last_Request   Check_Request `json:"last_request" bson:"last_request"`
-}
-
-func (u *User) FindCheckReqs(user_id string, start_date string, end_date string) (User_Check_Requests, error) {
-	collection := conn.Db.Collection("check_requests")
-	var user User
-	result, err := user.FindByID(user_id)
-	if err != nil {
-		panic(err)
-	}
-	var filter bson.D
-	layout := "2006-01-02T15:04:05.000Z"
-	if start_date != "" && end_date != "" {
-		start, err := time.Parse(layout, start_date)
-		if err != nil {
-			panic(err)
-		}
-		end, enderr := time.Parse(layout, end_date)
-		if enderr != nil {
-			panic(err)
-		}
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
-	} else {
-		filter = bson.D{{Key: "user_id", Value: user_id}}
-	}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		panic(err)
-	}
-	total_amount := 0.0
-	var vendors []Vendor
-	var requests []Check_Request
-	var vendorExists = make(map[Vendor]bool)
-	for cursor.Next(context.TODO()) {
-		var check_req Check_Request
-		decode_err := cursor.Decode(&check_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		requests = append(requests, check_req)
-		if !vendorExists[check_req.Vendor] {
-			vendors = append(vendors, check_req.Vendor)
-			vendorExists[check_req.Vendor] = true
-		}
-		total_amount += check_req.Order_Total
-	}
-	return User_Check_Requests{
-		User:         result,
-		Total_Amount: total_amount,
-		Start_Date:   start_date,
-		End_Date:     end_date,
-		Vendors:      vendors,
-		Requests:     requests,
-	}, nil
-}
-func (u *User) AggregateChecks(user_id string, start_date string, end_date string) (UserAggChecks, error) {
-	collection := conn.Db.Collection("check_requests")
-	var user User
-	result, err := user.FindByID(user_id)
-	if err != nil {
-		panic(err)
-	}
-	var filter bson.D
-	layout := "2006-01-02T15:04:05.000Z"
-	if start_date != "" && end_date != "" {
-		start, err := time.Parse(layout, start_date)
-		if err != nil {
-			panic(err)
-		}
-		end, enderr := time.Parse(layout, end_date)
-		if enderr != nil {
-			panic(err)
-		}
-		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.M{"$gte": start}}, {Key: "date", Value: bson.M{"$lte": end}}}
-	} else {
-		filter = bson.D{{Key: "user_id", Value: user_id}}
-	}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		panic(err)
-	}
-	total_amount := 0.0
-	var requests []Check_Request
-	for cursor.Next(context.TODO()) {
-		var check_req Check_Request
-		decode_err := cursor.Decode(&check_req)
-		if decode_err != nil {
-			panic(decode_err)
-		}
-		requests = append(requests, check_req)
-		total_amount += math.Round(check_req.Order_Total*100) / 100
-		total_amount = math.Round(total_amount*100) / 100
-	}
-	var last_request Check_Request
-	if len(requests) > 1 {
-		last_request = requests[len(requests)-1]
-	} else if len(requests) == 1 {
-		last_request = requests[0]
-	} else {
-		last_request = Check_Request{}
-	}
-	return UserAggChecks{
-		ID:             user_id,
-		Name:           result.Name,
-		Total_Amount:   total_amount,
-		Total_Requests: len(requests),
-		Last_Request:   last_request,
-	}, nil
+	return response, nil
 }

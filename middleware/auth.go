@@ -1,15 +1,16 @@
 package middleware
 
 import (
-	"context"
-	"net/http"
+	"financial-api/config"
+	"financial-api/methods"
+	"strings"
+
+	res "financial-api/responses"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gofiber/fiber/v2"
+	jwtware "github.com/gofiber/jwt/v2"
 )
-
-var userCtxKey = &contextKey{"user"}
-
-type contextKey struct {
-	name string
-}
 
 type Permission string
 
@@ -21,67 +22,65 @@ const (
 	FINANCE_TEAM Permission = "FINANCE_TEAM"
 )
 
-type contextInfo struct {
-	id          string
-	name        string
-	admin       bool
-	permissions []Permission
+func Protected() func(*fiber.Ctx) error {
+	return jwtware.New(jwtware.Config{
+		SigningKey:   methods.Normalize(config.ENV("JWT_SECRET")),
+		ErrorHandler: jwtError,
+		ContextKey:   "finance_requests",
+	})
 }
 
-func Middleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			header := r.Header.Get("Authorization")
-			if header == "" {
-				next.ServeHTTP(w, r)
-				return
-			}
-			tokenString := header
-			token, err := ParseToken(tokenString)
-			if err != nil {
-				http.Error(w, "Invalid token", http.StatusForbidden)
-				return
-			}
-			id := token["id"].(string)
-			name := token["name"].(string)
-			admin := token["admin"].(bool)
-			permissions_unformated := token["permissions"].([]interface{})
-			var permissions []Permission
-			for _, permission := range permissions_unformated {
-				permissions = append(permissions, Permission(permission.(string)))
-			}
-			contextInfo := &contextInfo{id, name, admin, permissions}
-			ctx := context.WithValue(r.Context(), userCtxKey, contextInfo)
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
-		})
+func jwtError(c *fiber.Ctx, err error) error {
+	if err.Error() == "Missing or malformed JWT" {
+		return c.Status(fiber.StatusUnauthorized).JSON(res.BadJWT())
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(res.KeyNotFound())
 	}
 }
 
-func LoggedIn(ctx context.Context) bool {
-	if ctx.Value(userCtxKey) == nil {
-		return false
+func ParseToken(token_string string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(token_string, func(token *jwt.Token) (interface{}, error) {
+		return methods.Normalize(config.ENV("JWT_SECRET")), nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.id != ""
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		info := map[string]interface{}{
+			"user_id":     claims["user_id"].(string),
+			"admin":       claims["admin"].(bool),
+			"permissions": claims["permissions"].([]interface{}),
+		}
+		return info, nil
+	}
+	return nil, err
 }
 
-func ForID(ctx context.Context) string {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.id
+func AdminRoute(c *fiber.Ctx) error {
+	token_string := strings.TrimSpace(strings.Split(c.GetReqHeaders()["Authorization"], "Bearer")[1])
+	token_info, err := ParseToken(token_string)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(res.BadJWT())
+	}
+	if token_info["admin"] != true {
+		return c.Status(fiber.StatusForbidden).JSON(res.NotAdmin())
+	}
+	return c.Next()
 }
 
-func ForName(ctx context.Context) string {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.name
+func TokenID(c *fiber.Ctx) (string, error) {
+	token_string := strings.TrimSpace(strings.Split(c.GetReqHeaders()["Authorization"], "Bearer")[1])
+	token_info, err := ParseToken(token_string)
+	if err != nil {
+		return "", err
+	}
+	return token_info["user_id"].(string), nil
 }
-
-func ForAdmin(ctx context.Context) bool {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.admin
-}
-
-func ForPermissions(ctx context.Context) []Permission {
-	raw, _ := ctx.Value(userCtxKey).(*contextInfo)
-	return raw.permissions
+func TokenAdmin(c *fiber.Ctx) (bool, error) {
+	token_string := strings.TrimSpace(strings.Split(c.GetReqHeaders()["Authorization"], "Bearer")[1])
+	token_info, err := ParseToken(token_string)
+	if err != nil {
+		return false, err
+	}
+	return token_info["admin"].(bool), nil
 }
