@@ -12,16 +12,6 @@ import (
 	jwtware "github.com/gofiber/jwt/v2"
 )
 
-type Permission string
-
-const (
-	EMPLOYEE     Permission = "EMPLOYEE"
-	MANAGER      Permission = "MANAGER"
-	SUPERVISOR   Permission = "SUPERVISOR"
-	EXECUTIVE    Permission = "EXECUTIVE"
-	FINANCE_TEAM Permission = "FINANCE_TEAM"
-)
-
 func Protected() func(*fiber.Ctx) error {
 	return jwtware.New(jwtware.Config{
 		SigningKey:   methods.Normalize(config.ENV("JWT_SECRET")),
