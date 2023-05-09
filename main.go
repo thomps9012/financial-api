@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
@@ -28,12 +27,6 @@ func main() {
 
 func Setup() *fiber.App {
 	app := fiber.New()
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "https://finance-requests.vercel.app",
-		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization,X-Requested-With",
-		AllowMethods:     "GET,POST,PUT,DELETE",
-		AllowCredentials: true,
-	}))
 	routes.Use(app)
 	app.Use(limiter.New())
 	app.Use(cache.New(cache.Config{
