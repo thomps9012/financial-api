@@ -10,7 +10,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/joho/godotenv"
 )
 
 // @title Financial Request Handler API
@@ -29,12 +28,8 @@ func main() {
 
 func Setup() *fiber.App {
 	app := fiber.New()
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(err)
-	}
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "https://thomps9012.github.io, https://finance-requests.vercel.app, http://localhost:3000, http://localhost:3001",
+		AllowOrigins:     "https://finance-requests.vercel.app",
 		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization,X-Requested-With",
 		AllowMethods:     "GET,POST,PUT,DELETE",
 		AllowCredentials: true,
