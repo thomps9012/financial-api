@@ -6,7 +6,6 @@ import (
 	"financial-api/middleware"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 )
 
@@ -19,13 +18,7 @@ func Use(app *fiber.App) {
 			SupportedSubmitMethods: []string{""},
 		},
 	))
-
-	// REMOVE LOGGER ON PRODUCTION
-	api := app.Group("/api", logger.New())
-
-	seeds := api.Group("/seeds")
-	seeds.Post("/", handlers.SeedData)
-	seeds.Delete("/", handlers.DeleteSeeds)
+	api := app.Group("/api")
 
 	auth := api.Group("/auth")
 	auth.Post("/login", handlers.Login)

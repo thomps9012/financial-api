@@ -9,89 +9,75 @@ type CurrentUser struct {
 	Name string `json:"name" bson:"name"`
 }
 
-// ****CURRENT IDS ARE FOR SEED PURPOSES ONLY*****
-
 // iop manager
 var IOP_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "100323196510465985735",
+	ID:   "100323196510465985735",
 	Name: "Intensive Outpatient Manager",
 }
 
 // intake manager
 var INTAKE_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "114839465093091142050",
+	ID:   "114839465093091142050",
 	Name: "Intake Manager",
 }
 
 // peer manager
 var PEER_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "100323196510465985735",
+	ID:   "100323196510465985735",
 	Name: "Peer Support Manager",
 }
 
 // act manager
 var ACT_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "109904620612313503312",
+	ID:   "109904620612313503312",
 	Name: "ACT Manager",
 }
 
 // ihbt manager
 var IHBT_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "111724747499299581748",
+	ID:   "111724747499299581748",
 	Name: "IHBT Manager",
 }
 
 // perkins manager
 var PERKINS_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "101753058297288934715",
+	ID:   "101753058297288934715",
 	Name: "Perkins Manager",
 }
 
 // perkins supervisor
 var PERKINS_SUPERVISOR = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "100323196510465985735",
+	ID:   "100323196510465985735",
 	Name: "Perkins Supervisor",
 }
 
 // next step manager
 var NEXT_STEP_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "104213502974305953852",
+	ID:   "104213502974305953852",
 	Name: "NEXT Step Manager",
 }
 
 // next step supervisor
 var NEXT_STEP_SUPERVISOR = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
-	// ID:   "114839465093091142050",
+	ID:   "114839465093091142050",
 	Name: "NEXT Step Supervisor",
 }
 
 // lorain manager
 var LORAIN_MANAGER = CurrentUser{
-	ID: "c160b410-e6a8-4cbb-92c2-068112187612",
-	// ID:   "102294853567984211361",
+	ID:   "102294853567984211361",
 	Name: "Lorain Manager",
 }
 
 // lorain supervisor
 var LORAIN_SUPERVISOR = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
-	// ID:   "100323196510465985735",
+	ID:   "100323196510465985735",
 	Name: "Lorain Supervisor",
 }
 
 // prevention manager
 var PREVENTION_MANAGER = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
-	// ID:   "106544031410769042454",
+	ID:   "106544031410769042454",
 	Name: "Prevention Manager",
 }
 
@@ -104,36 +90,31 @@ var PREVENTION_SUPERVISOR = CurrentUser{
 
 // men's house manager
 var MENS_HOUSE_MANAGER = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
-	// ID:   "100323196510465985735",
+	ID:   "100323196510465985735",
 	Name: "Men's House Manager",
 }
 
 // administrative supervisor
-var ADMINISTRATIVE_SUPERVISOR = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
-	// ID:   "111724747499299581748",
+var ADMINISTRATIVE_MANAGER = CurrentUser{
+	ID:   "111724747499299581748",
 	Name: "Administrative Manager",
 }
 
 // finance manager
 var FINANCE_MANAGER = CurrentUser{
-	ID: "d160b410-e6a8-4cbb-92c2-068112187305",
-	// ID:   "111876803051097580983",
+	ID:   "111876803051097580983",
 	Name: "Finance Manager",
 }
 
 // finance supervisor
 var FINANCE_SUPERVISOR = CurrentUser{
-	ID: "0d1ee9e2-dbe3-4a2a-b9cf-1ff27ce3a500",
-	// ID:   "516510984003210861035",
+	ID:   "114255274706234226599",
 	Name: "Finance Supervisor",
 }
 
 // finance fulfillment
 var FINANCE_FULFILLMENT = CurrentUser{
-	ID: "2e780f36-7829-4707-9a17-34fce224c53e",
-	// ID:   "109157735191825776845",
+	ID:   "109157735191825776845",
 	Name: "Finance Requests",
 }
 
@@ -157,10 +138,10 @@ func NewRequestUser(request_type string, request_category string, user_id string
 func NewRequestHandler(category string, user_id string) CurrentUser {
 	switch category {
 	case "ADMINISTRATIVE":
-		if user_id == ADMINISTRATIVE_SUPERVISOR.ID {
+		if user_id == ADMINISTRATIVE_MANAGER.ID {
 			return FINANCE_SUPERVISOR
 		}
-		return ADMINISTRATIVE_SUPERVISOR
+		return ADMINISTRATIVE_MANAGER
 	case "IHBT":
 		if user_id == IHBT_MANAGER.ID {
 			return FINANCE_SUPERVISOR

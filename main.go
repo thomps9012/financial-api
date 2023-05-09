@@ -6,8 +6,10 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/joho/godotenv"
 )
 
@@ -38,14 +40,12 @@ func Setup() *fiber.App {
 		AllowCredentials: true,
 	}))
 	routes.Use(app)
-	// ADD ON PRODUCTION
-	// app.Use(limiter.New())
-	// app.Use(cache.New(cache.Config{
-	// 	Next: func(c *fiber.Ctx) bool {
-	// 		return c.GetRespHeader("no-cache", "false") == "true"
-	// 	},
-	// }))
-	// END OF ADD ON PRODUCTION
+	app.Use(limiter.New())
+	app.Use(cache.New(cache.Config{
+		Next: func(c *fiber.Ctx) bool {
+			return c.GetRespHeader("no-cache", "false") == "true"
+		},
+	}))
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))

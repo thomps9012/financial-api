@@ -219,10 +219,10 @@ func NewUserHandler(current_user_id string, category Category, exec_review bool)
 		}
 		return methods.PREVENTION_MANAGER
 	case ADMINISTRATIVE:
-		if current_user_id == methods.ADMINISTRATIVE_SUPERVISOR.ID {
+		if current_user_id == methods.ADMINISTRATIVE_MANAGER.ID {
 			return methods.FINANCE_SUPERVISOR
 		}
-		return methods.ADMINISTRATIVE_SUPERVISOR
+		return methods.ADMINISTRATIVE_MANAGER
 	case FINANCE:
 		if current_user_id == methods.FINANCE_SUPERVISOR.ID {
 			return methods.FINANCE_FULFILLMENT
