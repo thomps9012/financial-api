@@ -121,7 +121,7 @@ func (u *User) Create(user UserLogin) (LoginRes, *CustomError) {
 	u.Last_Login = time.Now()
 	u.Vehicles = make([]Vehicle, 0)
 	u.Admin = false
-	u.Permissions = make([]string, 0)
+	u.Permissions = []string{"EMPLOYEE"}
 	_, err = users.InsertOne(context.TODO(), *u)
 	if err != nil {
 		return LoginRes{}, &CustomError{
