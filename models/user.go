@@ -167,6 +167,32 @@ func (u *User) Login(user UserLogin) (LoginRes, *CustomError) {
 			Message: err.Error(),
 		}
 	}
+	placeholder_pw := config.ENV("PLACEHOLDER_PASSWORD")
+	reset_pw := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(placeholder_pw))
+	if reset_pw == nil {
+		salt, err := strconv.Atoi(config.ENV("HASH_SALT"))
+		if err != nil {
+			return LoginRes{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		hash_pw, err := bcrypt.GenerateFromPassword([]byte(user.Password), salt)
+		if err != nil {
+			return LoginRes{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+		set_pw := bson.D{{Key: "$set", Value: bson.M{"password": hash_pw}}}
+		err = users.FindOneAndUpdate(context.TODO(), filter, set_pw, &opt).Decode(&u)
+		if err != nil {
+			return LoginRes{}, &CustomError{
+				Status:  500,
+				Message: err.Error(),
+			}
+		}
+	}
 	confirm_pw := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(user.Password))
 	if confirm_pw != nil {
 		return LoginRes{}, &CustomError{
