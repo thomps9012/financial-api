@@ -24,22 +24,22 @@ type Purchase struct {
 	Amount          float64 `json:"amount" bson:"amount" validate:"required"`
 }
 type CheckRequestDetailResponse struct {
-	ID             string         `json:"id" bson:"_id"`
-	Grant          []Grant        `json:"grant" bson:"grant"`
-	RequestCreator []UserNameInfo `json:"request_creator" bson:"request_creator"`
-	Date           time.Time      `json:"date" bson:"date"`
-	Category       Category       `json:"category" bson:"category"`
-	Vendor         Vendor         `json:"vendor" bson:"vendor"`
-	Description    string         `json:"description" bson:"description"`
-	Purchases      []Purchase     `json:"purchases" bson:"purchases"`
-	Receipts       []string       `json:"receipts" bson:"receipts"`
-	Order_Total    float64        `json:"order_total" bson:"order_total"`
-	Credit_Card    string         `json:"credit_card" bson:"credit_card"`
-	Created_At     time.Time      `json:"created_at" bson:"created_at"`
-	Action_History []Action       `json:"action_history" bson:"action_history"`
-	Current_User   []UserNameInfo `json:"current_user" bson:"current_user"`
-	Current_Status string         `json:"current_status" bson:"current_status"`
-	Is_Active      bool           `json:"is_active" bson:"is_active"`
+	ID             string       `json:"id" bson:"_id"`
+	Grant          Grant        `json:"grant" bson:"grant"`
+	RequestCreator UserNameInfo `json:"request_creator" bson:"request_creator"`
+	Date           time.Time    `json:"date" bson:"date"`
+	Category       Category     `json:"category" bson:"category"`
+	Vendor         Vendor       `json:"vendor" bson:"vendor"`
+	Description    string       `json:"description" bson:"description"`
+	Purchases      []Purchase   `json:"purchases" bson:"purchases"`
+	Receipts       []string     `json:"receipts" bson:"receipts"`
+	Order_Total    float64      `json:"order_total" bson:"order_total"`
+	Credit_Card    string       `json:"credit_card" bson:"credit_card"`
+	Created_At     time.Time    `json:"created_at" bson:"created_at"`
+	Action_History []Action     `json:"action_history" bson:"action_history"`
+	Current_User   UserNameInfo `json:"current_user" bson:"current_user"`
+	Current_Status string       `json:"current_status" bson:"current_status"`
+	Is_Active      bool         `json:"is_active" bson:"is_active"`
 }
 type Check_Request struct {
 	ID                      string     `json:"id" bson:"_id"`
@@ -468,7 +468,10 @@ func CheckRequestDetail(check_id string, user_id string, user_admin bool) (Check
 		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
 	current_user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "current_user"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "current_user"}, {Key: "pipeline", Value: bson.A{
 		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}, {Key: "is_active", Value: 1}}}}}}}}}
-	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage}
+	unwind_request_creator := bson.D{{Key: "$unwind", Value: "$request_creator"}}
+	unwind_current_user := bson.D{{Key: "$unwind", Value: "$current_user"}}
+	unwind_grant := bson.D{{Key: "$unwind", Value: "$grant"}}
+	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage, unwind_current_user, unwind_request_creator, unwind_grant}
 	request_detail := make([]CheckRequestDetailResponse, 0)
 	cursor, err := collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
@@ -491,7 +494,7 @@ func CheckRequestDetail(check_id string, user_id string, user_admin bool) (Check
 		}
 	}
 	if !user_admin {
-		if request_detail[0].RequestCreator[0].ID != user_id {
+		if request_detail[0].RequestCreator.ID != user_id {
 			return CheckRequestDetailResponse{}, &CustomError{
 				Status:  403,
 				Message: "Unauthorized",

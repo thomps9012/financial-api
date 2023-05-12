@@ -30,19 +30,19 @@ type Petty_Cash_Request struct {
 }
 
 type PettyCashDetailResponse struct {
-	ID             string         `json:"id" bson:"_id"`
-	RequestCreator []UserNameInfo `json:"request_creator" bson:"request_creator"`
-	Grant          []Grant        `json:"grant" bson:"grant"`
-	Category       Category       `json:"category" bson:"category"`
-	Date           time.Time      `json:"date" bson:"date"`
-	Description    string         `json:"description" bson:"description"`
-	Amount         float64        `json:"amount" bson:"amount"`
-	Receipts       []string       `json:"receipts" bson:"receipts"`
-	Created_At     time.Time      `json:"created_at" bson:"created_at"`
-	Action_History []Action       `json:"action_history" bson:"action_history"`
-	Current_User   []UserNameInfo `json:"current_user" bson:"current_user"`
-	Current_Status string         `json:"current_status" bson:"current_status"`
-	Is_Active      bool           `json:"is_active" bson:"is_active"`
+	ID             string       `json:"id" bson:"_id"`
+	RequestCreator UserNameInfo `json:"request_creator" bson:"request_creator"`
+	Grant          Grant        `json:"grant" bson:"grant"`
+	Category       Category     `json:"category" bson:"category"`
+	Date           time.Time    `json:"date" bson:"date"`
+	Description    string       `json:"description" bson:"description"`
+	Amount         float64      `json:"amount" bson:"amount"`
+	Receipts       []string     `json:"receipts" bson:"receipts"`
+	Created_At     time.Time    `json:"created_at" bson:"created_at"`
+	Action_History []Action     `json:"action_history" bson:"action_history"`
+	Current_User   UserNameInfo `json:"current_user" bson:"current_user"`
+	Current_Status string       `json:"current_status" bson:"current_status"`
+	Is_Active      bool         `json:"is_active" bson:"is_active"`
 }
 
 type Petty_Cash_Overview struct {
@@ -403,7 +403,10 @@ func PettyCashDetails(petty_cash_id string, user_id string, user_admin bool) (Pe
 		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}}}}}}}}}
 	current_user_stage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "users"}, {Key: "localField", Value: "current_user"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "current_user"}, {Key: "pipeline", Value: bson.A{
 		bson.D{{Key: "$project", Value: bson.D{{Key: "name", Value: 1}, {Key: "is_active", Value: 1}}}}}}}}}
-	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage}
+	unwind_request_creator := bson.D{{Key: "$unwind", Value: "$request_creator"}}
+	unwind_current_user := bson.D{{Key: "$unwind", Value: "$current_user"}}
+	unwind_grant := bson.D{{Key: "$unwind", Value: "$grant"}}
+	pipeline := mongo.Pipeline{filter, grant_stage, user_stage, current_user_stage, unwind_request_creator, unwind_current_user, unwind_grant}
 	request_detail := make([]PettyCashDetailResponse, 0)
 	cursor, err := collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
@@ -426,7 +429,7 @@ func PettyCashDetails(petty_cash_id string, user_id string, user_admin bool) (Pe
 		}
 	}
 	if !user_admin {
-		if request_detail[0].RequestCreator[0].ID != user_id {
+		if request_detail[0].RequestCreator.ID != user_id {
 			return PettyCashDetailResponse{}, &CustomError{
 				Status:  403,
 				Message: "Unauthorized",
