@@ -67,6 +67,7 @@ type MileageInput struct {
 	Tolls             *float64  `json:"tolls" bson:"tolls" validate:"required"`
 	Parking           *float64  `json:"parking" bson:"parking" validate:"required"`
 }
+
 type EditMileageInput struct {
 	ID                string    `json:"id" bson:"_id" validate:"required"`
 	User_ID           string    `json:"user_id" bson:"user_id" validate:"required"`

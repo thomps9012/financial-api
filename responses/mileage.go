@@ -29,6 +29,29 @@ type MileageDetailRes struct {
 	Data    models.MileageDetailResponse `json:"data"`
 }
 
+type TEST_TrackedMileage struct {
+	Message string                         `json:"message"`
+	Data    models.TEST_MileageTrackingRes `json:"data"`
+}
+
+func TEST_CreateTrackedMileage(mileage_info models.TEST_MileageTrackingRes) TEST_TrackedMileage {
+	return TEST_TrackedMileage{
+		Message: "Mileage Request Successfully created @ " + methods.TimeNowFormat(),
+		Data:    mileage_info,
+	}
+}
+
+// type TEST_TrackedMileage struct {
+// 	Message string                       `json:"message"`
+// 	Data    *maps.DistanceMatrixResponse `json:"data"`
+// }
+
+//	func TEST_CreateTrackedMileage(res *maps.DistanceMatrixResponse) TEST_TrackedMileage {
+//		return TEST_TrackedMileage{
+//			Message: "Mileage Request Successfully created @ " + methods.TimeNowFormat(),
+//			Data:    res,
+//		}
+//	}
 func CreateMileage(mileage_info models.Mileage_Overview) MileageOverviewRes {
 	return MileageOverviewRes{
 		Message: "Mileage Request Successfully created @ " + methods.TimeNowFormat(),

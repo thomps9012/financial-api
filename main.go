@@ -29,7 +29,8 @@ func main() {
 func Setup() *fiber.App {
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:  "https://finance-requests.vercel.app",
+		AllowOrigins: "*",
+		// AllowOrigins:  "https://finance-requests.vercel.app",
 		AllowHeaders:  "Authorization, Content-Type, X-Requested-With",
 		ExposeHeaders: "Access-Control-Allow-Origin",
 		AllowMethods:  "GET, POST, PUT, DELETE, HEAD, OPTIONS",

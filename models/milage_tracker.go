@@ -1,48 +1,94 @@
 package models
 
 import (
+	"context"
 	"financial-api/config"
+	database "financial-api/db"
+	"math"
+	"time"
+
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"googlemaps.github.io/maps"
 )
 
-type Mileage_Points struct {
-	LocationPoints []Location `json:"location_points" bson:"location_points"`
-	Starting_Point Location   `json:"starting_point" bson:"starting_point"`
-	Destination    Location   `json:"destination" bson:"destination"`
+type TEST_LocationPoint struct {
+	Latitude  float64 `json:"latitude" bson:"latitude" validate:"required"`
+	Longitude float64 `json:"longitude" bson:"longitude" validate:"required"`
 }
 
-type Location struct {
-	Latitude  float64 `json:"latitude" bson:"latitude"`
-	Longitude float64 `json:"longitude" bson:"longitude"`
-}
-
-type Snapped_Point struct {
-	Location Location `json:"location"`
-	PlaceID  string   `json:"placeId"`
-}
-
-type Snapped_Points_Response struct {
-	Snapped_Points []Snapped_Point `json:"snappedPoints"`
-}
-type Matrix_Sub_Element struct {
+type TEST_MatrixSubElement struct {
 	Text  string `json:"text"`
 	Value int    `json:"value"`
 }
-type Matrix_Elements struct {
-	Distance Matrix_Sub_Element `json:"distance"`
-	Duration Matrix_Sub_Element `json:"duration"`
-	Status   string             `json:"status"`
+type TEST_MatrixElement struct {
+	Distance TEST_MatrixSubElement `json:"distance"`
+	Duration TEST_MatrixSubElement `json:"duration"`
+	Status   string                `json:"status"`
 }
-type Matrix_Row struct {
-	Elements []Matrix_Elements `json:"elements"`
-}
-type Matrix_Response struct {
-	Destination_Addresses []string     `json:"destination_addresses"`
-	Origin_Addresses      []string     `json:"origin_addresses"`
-	Rows                  []Matrix_Row `json:"rows"`
-	Status                string       `json:"status"`
+type TEST_MatrixRow struct {
+	Elements []TEST_MatrixElement `json:"elements"`
 }
 
-type Variance_Level string
+type TEST_MatrixResponse struct {
+	Destination_Addresses []string         `json:"destination_addresses"`
+	Origin_Addresses      []string         `json:"origin_addresses"`
+	Rows                  []TEST_MatrixRow `json:"rows"`
+	Status                string           `json:"status"`
+}
+
+type TEST_MileageTrackingInput struct {
+	Grant_ID          string               `json:"grant_id" bson:"grant_id" validate:"required"`
+	Category          Category             `json:"category" bson:"category" validate:"required"`
+	Starting_Location string               `json:"starting_location" bson:"starting_location" validate:"required"`
+	Destination       string               `json:"destination" bson:"destination" validate:"required"`
+	Trip_Purpose      string               `json:"trip_purpose" bson:"trip_purpose" validate:"required"`
+	Tracked_Points    []TEST_LocationPoint `json:"tracked_points" bson:"tracked_points" validate:"required,dive,required"`
+	Tolls             *float64             `json:"tolls" bson:"tolls" validate:"required"`
+	Parking           *float64             `json:"parking" bson:"parking" validate:"required"`
+	Date              time.Time            `json:"date" bson:"date" validate:"required"`
+}
+
+type TEST_MileageTrackingRequest struct {
+	ID                      string               `json:"id" bson:"_id"`
+	Grant_ID                string               `json:"grant_id" bson:"grant_id"`
+	User_ID                 string               `json:"user_id" bson:"user_id"`
+	Date                    time.Time            `json:"date" bson:"date"`
+	Category                Category             `json:"category" bson:"category"`
+	Starting_Location       string               `json:"starting_location" bson:"starting_location"`
+	Destination             string               `json:"destination" bson:"destination"`
+	Trip_Purpose            string               `json:"trip_purpose" bson:"trip_purpose"`
+	Tolls                   float64              `json:"tolls" bson:"tolls"`
+	Parking                 float64              `json:"parking" bson:"parking"`
+	Tracked_Points          []TEST_LocationPoint `json:"tracked_points" bson:"tracked_points"`
+	Calculated_Distance     float64              `json:"calculated_distance" bson:"calculated_distance"`
+	Trip_Mileage            float64              `json:"trip_mileage" bson:"trip_mileage"`
+	Mileage_Variance        float64              `json:"mileage_variance" bson:"mileage_variance"`
+	Variance_Level          TEST_VarianceLevel   `json:"variance_level" bson:"variance_level"`
+	Reimbursement           float64              `json:"reimbursement" bson:"reimbursement"`
+	Created_At              time.Time            `json:"created_at" bson:"created_at"`
+	Action_History          []Action             `json:"action_history" bson:"action_history"`
+	Current_User            string               `json:"current_user" bson:"current_user"`
+	Current_Status          string               `json:"current_status" bson:"current_status"`
+	Last_User_Before_Reject string               `json:"last_user_before_reject" bson:"last_user_before_reject"`
+	Is_Active               bool                 `json:"is_active" bson:"is_active"`
+}
+
+type TEST_MileageTrackingRes struct {
+	ID               string             `json:"id" bson:"_id"`
+	User_ID          string             `json:"user_id" bson:"user_id"`
+	Date             time.Time          `json:"date" bson:"date"`
+	Reimbursement    float64            `json:"reimbursement" bson:"reimbursement"`
+	Mileage          float64            `json:"mileage" bson:"mileage"`
+	Trip_Mileage     float64            `json:"trip_mileage" bson:"trip_mileage"`
+	Mileage_Variance float64            `json:"mileage_variance" bson:"mileage_variance"`
+	Variance         TEST_VarianceLevel `json:"variance" bson:"variance"`
+	Current_Status   string             `json:"current_status" bson:"current_status"`
+	Current_User     string             `json:"current_user" bson:"current_user"`
+	Is_Active        bool               `json:"is_active" bson:"is_active"`
+}
+
+type TEST_VarianceLevel string
 
 const (
 	HIGH   = "HIGH"
@@ -50,164 +96,145 @@ const (
 	LOW    = "LOW"
 )
 
-type ResponseCompare struct {
-	Matrix_Distance   float64        `json:"matrix_distance"`
-	Traveled_Distance float64        `json:"traveled_distance"`
-	Difference        float64        `json:"difference"`
-	Variance          Variance_Level `json:"variance"`
-}
-type MileageCompare struct {
-	Matrix_Distance   float64        `json:"matrix_distance"`
-	Traveled_Distance float64        `json:"traveled_distance"`
-	Difference        float64        `json:"difference"`
-	Variance          Variance_Level `json:"variance"`
+type TEST_MileageDistance struct {
+	MatrixDistance float64            `json:"matrix_distance"`
+	Mileage        float64            `json:"mileage"`
+	Difference     float64            `json:"difference"`
+	Variance       TEST_VarianceLevel `json:"variance"`
 }
 
 var API_KEY = config.ENV("MAPS_API_KEY")
 
-const SNAP_API_BASE = "https://roads.googleapis.com/v1/snapToRoads?path="
-const MATRIX_API_BASE = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
+func (mti *TEST_MileageTrackingInput) DuplicateRequest(user_id string) (bool, error) {
+	mileage_coll, err := database.Use("test_tracked_mileage")
+	if err != nil {
+		return false, err
+	}
+	odometer_filter := bson.D{{Key: "starting_location", Value: mti.Starting_Location}, {Key: "destination", Value: mti.Destination}, {Key: "user_id", Value: user_id}, {Key: "date", Value: mti.Date}}
+	same_odometer, err := mileage_coll.CountDocuments(context.TODO(), odometer_filter)
+	if err != nil {
+		return false, err
+	}
+	return same_odometer > 0, nil
+}
 
-// func (m *Mileage_Points) formatSnapJSONPoints() string {
-// 	var location_points = m.LocationPoints
-// 	var api_points string
-// 	var point_string string
-// 	for i, point := range location_points {
-// 		if i == len(location_points)-1 {
-// 			point_string = strconv.FormatFloat(point.Latitude, 'f', 5, 64) + "," + strconv.FormatFloat(point.Longitude, 'f', 5, 64)
-// 		} else {
-// 			point_string = strconv.FormatFloat(point.Latitude, 'f', 5, 64) + "," + strconv.FormatFloat(point.Longitude, 'f', 5, 64) + "|"
-// 		}
-// 		api_points += point_string
-// 	}
-// 	return api_points
-// }
+func (mti *TEST_MileageTrackingInput) CallMatrixAPI() (*maps.DistanceMatrixResponse, error) {
+	c, err := maps.NewClient(maps.WithAPIKey(API_KEY))
+	if err != nil {
+		return nil, err
+	}
+	matrix_request := maps.DistanceMatrixRequest{
+		Origins:      []string{mti.Starting_Location},
+		Destinations: []string{mti.Destination},
+		Mode:         maps.TravelModeDriving,
+		Units:        maps.UnitsImperial,
+	}
+	matrix_response, err := c.DistanceMatrix(context.TODO(), &matrix_request)
+	if err != nil {
+		return nil, err
+	}
+	return matrix_response, nil
+}
 
-// func (m *Mileage_Points) formatSnapAPICall() string {
-// 	var api_points = m.formatSnapJSONPoints()
-// 	return SNAP_API_BASE + api_points + "&interpolate=true&key=" + API_KEY
-// }
+func DistanceBetweenLocationPoints(point_one TEST_LocationPoint, point_two TEST_LocationPoint) float64 {
+	lat_one := (point_one.Latitude * math.Pi) / 180
+	long_one := (point_one.Longitude * math.Pi) / 180
+	lat_two := (point_two.Latitude * math.Pi) / 180
+	long_two := (point_two.Longitude * math.Pi) / 180
+	diff_long := long_two - long_one
+	diff_lat := lat_two - lat_one
+	haver_1 := math.Pow(math.Sin(diff_lat/2), 2) + math.Cos(lat_one)*math.Cos(lat_two)*math.Pow(math.Sin(diff_long/2), 2)
+	haver_2 := 2 * math.Asin(math.Sqrt(haver_1))
+	radius := 3956.00
+	return haver_2 * radius
+}
 
-// func (m *Mileage_Points) formatMatrixStart() string {
-// 	var starting_point = m.Starting_Point
-// 	return strconv.FormatFloat(starting_point.Latitude, 'f', 5, 64) + "," + strconv.FormatFloat(starting_point.Longitude, 'f', 5, 64)
-// }
+func (mti *TEST_MileageTrackingInput) CalculateTrackedDistance() float64 {
+	var running_total float64
+	for i, point := range mti.Tracked_Points {
+		if i != len(mti.Tracked_Points)-1 {
+			next_point := mti.Tracked_Points[i+1]
+			distance := DistanceBetweenLocationPoints(point, next_point)
+			running_total += distance
+		}
+	}
+	return running_total
+}
 
-// func (m *Mileage_Points) formatMatrixDestination() string {
-// 	var destination = m.Destination
-// 	return strconv.FormatFloat(destination.Latitude, 'f', 5, 64) + "," + strconv.FormatFloat(destination.Longitude, 'f', 5, 64)
-// }
+func CompareToMatrix(traveled_distance float64, matrix_res maps.DistanceMatrixResponse) (TEST_MileageDistance, error) {
+	matrix_mileage := float64(matrix_res.Rows[0].Elements[0].Distance.Meters) / 1609.344
+	variance := math.Round(traveled_distance - matrix_mileage)
+	var variance_lvl TEST_VarianceLevel
+	if variance > 10 || variance < 0 {
+		variance_lvl = HIGH
+	} else if variance > 1 {
+		variance_lvl = MEDIUM
+	} else {
+		variance_lvl = LOW
+	}
+	return TEST_MileageDistance{
+		MatrixDistance: matrix_mileage,
+		Mileage:        traveled_distance,
+		Variance:       variance_lvl,
+		Difference:     variance,
+	}, nil
+}
 
-// func (m *Mileage_Points) formatMatrixAPICall() string {
-// 	var start_string = m.formatMatrixStart()
-// 	var destination_string = m.formatMatrixDestination()
-// 	return MATRIX_API_BASE + start_string + "&destinations=" + destination_string + "&units=imperial&key=" + API_KEY
-// }
+func (mti *TEST_MileageTrackingInput) CreateRequest(user_id string) (*TEST_MileageTrackingRes, error) {
+	matrix_res, err := mti.CallMatrixAPI()
+	if err != nil {
+		return nil, err
+	}
+	calculated_distance := mti.CalculateTrackedDistance()
+	trip_variance, err := CompareToMatrix(calculated_distance, *matrix_res)
+	if err != nil {
+		return nil, err
+	}
+	first_action := FirstActions(user_id)
 
-// func (m *Mileage_Points) callSnapAPI() (Snapped_Points_Response, error) {
-// 	client := &http.Client{}
-// 	api_url := m.formatSnapAPICall()
-// 	req, err := http.NewRequest("GET", api_url, nil)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	res, err := client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer res.Body.Close()
-// 	body, err := ioutil.ReadAll(res.Body)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	var snapped_points Snapped_Points_Response
-// 	json_err := json.Unmarshal(body, &snapped_points)
-// 	if json_err != nil {
-// 		panic(json_err)
-// 	}
-// 	return snapped_points, nil
-// }
+	new_request := new(TEST_MileageTrackingRequest)
+	new_request.ID = uuid.NewString()
+	new_request.Grant_ID = mti.Grant_ID
+	new_request.User_ID = user_id
+	new_request.Date = mti.Date
+	new_request.Category = mti.Category
+	new_request.Starting_Location = mti.Starting_Location
+	new_request.Destination = mti.Destination
+	new_request.Trip_Purpose = mti.Trip_Purpose
+	new_request.Tolls = *mti.Tolls
+	new_request.Parking = *mti.Parking
+	new_request.Tracked_Points = mti.Tracked_Points
+	new_request.Calculated_Distance = calculated_distance
+	new_request.Trip_Mileage = trip_variance.MatrixDistance
+	new_request.Mileage_Variance = trip_variance.Difference
+	new_request.Variance_Level = trip_variance.Variance
+	new_request.Reimbursement = *mti.Tolls + *mti.Parking + trip_variance.MatrixDistance*0.655
+	new_request.Created_At = time.Now()
+	new_request.Action_History = first_action
+	new_request.Current_User = bson.TypeNull.String()
+	new_request.Current_Status = "TESTING"
+	new_request.Last_User_Before_Reject = bson.TypeNull.String()
+	new_request.Is_Active = false
 
-// func (m *Mileage_Points) CallMatrixAPI() (Matrix_Response, error) {
-// 	api_url := m.formatMatrixAPICall()
-// 	client := &http.Client{}
-// 	req, err := http.NewRequest("GET", api_url, nil)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	res, err := client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer res.Body.Close()
-// 	body, err := ioutil.ReadAll(res.Body)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	var matrix_res Matrix_Response
-// 	json_err := json.Unmarshal(body, &matrix_res)
-// 	if json_err != nil {
-// 		panic(json_err)
-// 	}
-// 	return matrix_res, nil
-// }
-
-// func calculateDistanceBetweenPoints(point_one Location, point_two Location) float64 {
-// 	lat_one := (point_one.Latitude * math.Pi) / 180
-// 	long_one := (point_one.Longitude * math.Pi) / 180
-// 	lat_two := (point_two.Latitude * math.Pi) / 180
-// 	long_two := (point_two.Longitude * math.Pi) / 180
-// 	diff_long := long_two - long_one
-// 	diff_lat := lat_two - lat_one
-// 	haver_1 := math.Pow(math.Sin(diff_lat/2), 2) + math.Cos(lat_one)*math.Cos(lat_two)*math.Pow(math.Sin(diff_long/2), 2)
-// 	haver_2 := 2 * math.Asin(math.Sqrt(haver_1))
-// 	radius := 3956.00
-// 	return haver_2 * radius
-// }
-
-// // func (s *Snapped_Points_Response) calculateSnapAPIDistance() float64 {
-// // 	panic("unimplemented function")
-// // 	// var running_total float64
-// // 	// for i, point := range s.Snapped_Points {
-// // 	// 	if i != len(s.Snapped_Points)-1 {
-// // 	// 		next_point := s.Snapped_Points[i+1].Location
-// // 	// 		distance := calculateDistanceBetweenPoints(point.Location, next_point)
-// // 	// 		running_total += distance
-// // 	// 	}
-// // 	// }
-// // 	// return running_total
-// // }
-
-// func (m *Mileage_Points) CalculatePreSnapDistance() float64 {
-// 	var running_total float64
-// 	for i, point := range m.LocationPoints {
-// 		if i != len(m.LocationPoints)-1 {
-// 			next_point := m.LocationPoints[i+1]
-// 			distance := calculateDistanceBetweenPoints(point, next_point)
-// 			running_total += distance
-// 		}
-// 	}
-// 	return running_total
-// }
-
-// func (mr *Matrix_Response) CompareToMatrix(traveled_distance float64) (ResponseCompare, error) {
-// 	matrix_distance, err := strconv.ParseFloat(strings.Split(mr.Rows[0].Elements[0].Distance.Text, " ")[0], 64)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	variance := math.Round(traveled_distance - matrix_distance)
-// 	var variance_lvl Variance_Level
-// 	if variance > 10 {
-// 		variance_lvl = HIGH
-// 	} else if variance > 1 {
-// 		variance_lvl = MEDIUM
-// 	} else {
-// 		variance_lvl = LOW
-// 	}
-// 	return ResponseCompare{
-// 		Matrix_Distance:   matrix_distance,
-// 		Traveled_Distance: traveled_distance,
-// 		Variance:          variance_lvl,
-// 		Difference:        variance,
-// 	}, nil
-// }
+	collection, err := database.Use("test_tracked_mileage")
+	if err != nil {
+		return nil, err
+	}
+	_, err = collection.InsertOne(context.TODO(), new_request)
+	if err != nil {
+		return nil, err
+	}
+	return &TEST_MileageTrackingRes{
+		ID:               new_request.ID,
+		User_ID:          new_request.User_ID,
+		Date:             new_request.Date,
+		Reimbursement:    new_request.Reimbursement,
+		Mileage:          new_request.Calculated_Distance,
+		Trip_Mileage:     trip_variance.MatrixDistance,
+		Mileage_Variance: trip_variance.Difference,
+		Variance:         trip_variance.Variance,
+		Current_Status:   new_request.Current_Status,
+		Current_User:     new_request.Current_User,
+		Is_Active:        new_request.Is_Active,
+	}, nil
+}

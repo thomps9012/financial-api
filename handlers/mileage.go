@@ -56,9 +56,44 @@ func CreateMileage(c *fiber.Ctx) error {
 	c.Response().Header.Add("no-cache", "true")
 	return c.Status(fiber.StatusCreated).JSON(responses.CreateMileage(res))
 }
+
 func MileageVariance(c *fiber.Ctx) error {
+	var mr *methods.MalformedRequest
+	mileage_request := new(models.TEST_MileageTrackingInput)
+	err := methods.DecodeJSONBody(c, mileage_request)
+	if err != nil {
+		if errors.As(err, &mr) {
+			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+		}
+	} else {
+		c.BodyParser(mileage_request)
+	}
+	errors := methods.ValidateStruct(*mileage_request)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
+	}
+	user_id, err := middleware.TokenID(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.KeyNotFound())
+	}
+	if user_id == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(responses.BadUserID())
+	}
+	exists, err := mileage_request.DuplicateRequest(user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
+	if exists {
+		return c.Status(fiber.StatusBadRequest).JSON(responses.RequestExists("mileage"))
+	}
+	res, err := mileage_request.CreateRequest(user_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
+	}
 	c.Response().Header.Add("no-cache", "true")
-	return c.Status(fiber.StatusNotImplemented).JSON(responses.MileageVariance())
+	return c.Status(fiber.StatusCreated).JSON(responses.TEST_CreateTrackedMileage(*res))
 }
 
 // @id mileage-detail
