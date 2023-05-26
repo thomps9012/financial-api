@@ -50,42 +50,44 @@ type TEST_MileageTrackingInput struct {
 }
 
 type TEST_MileageTrackingRequest struct {
-	ID                      string               `json:"id" bson:"_id"`
-	Grant_ID                string               `json:"grant_id" bson:"grant_id"`
-	User_ID                 string               `json:"user_id" bson:"user_id"`
-	Date                    time.Time            `json:"date" bson:"date"`
-	Category                Category             `json:"category" bson:"category"`
-	Starting_Location       string               `json:"starting_location" bson:"starting_location"`
-	Destination             string               `json:"destination" bson:"destination"`
-	Trip_Purpose            string               `json:"trip_purpose" bson:"trip_purpose"`
-	Tolls                   float64              `json:"tolls" bson:"tolls"`
-	Parking                 float64              `json:"parking" bson:"parking"`
-	Tracked_Points          []TEST_LocationPoint `json:"tracked_points" bson:"tracked_points"`
-	Calculated_Distance     float64              `json:"calculated_distance" bson:"calculated_distance"`
-	Trip_Mileage            float64              `json:"trip_mileage" bson:"trip_mileage"`
-	Mileage_Variance        float64              `json:"mileage_variance" bson:"mileage_variance"`
-	Variance_Level          TEST_VarianceLevel   `json:"variance_level" bson:"variance_level"`
-	Reimbursement           float64              `json:"reimbursement" bson:"reimbursement"`
-	Created_At              time.Time            `json:"created_at" bson:"created_at"`
-	Action_History          []Action             `json:"action_history" bson:"action_history"`
-	Current_User            string               `json:"current_user" bson:"current_user"`
-	Current_Status          string               `json:"current_status" bson:"current_status"`
-	Last_User_Before_Reject string               `json:"last_user_before_reject" bson:"last_user_before_reject"`
-	Is_Active               bool                 `json:"is_active" bson:"is_active"`
+	ID                       string               `json:"id" bson:"_id"`
+	Grant_ID                 string               `json:"grant_id" bson:"grant_id"`
+	User_ID                  string               `json:"user_id" bson:"user_id"`
+	Date                     time.Time            `json:"date" bson:"date"`
+	Category                 Category             `json:"category" bson:"category"`
+	Starting_Location        string               `json:"starting_location" bson:"starting_location"`
+	Destination              string               `json:"destination" bson:"destination"`
+	Trip_Purpose             string               `json:"trip_purpose" bson:"trip_purpose"`
+	Tolls                    float64              `json:"tolls" bson:"tolls"`
+	Parking                  float64              `json:"parking" bson:"parking"`
+	Tracked_Points           []TEST_LocationPoint `json:"tracked_points" bson:"tracked_points"`
+	Calculated_Distance      float64              `json:"calculated_distance" bson:"calculated_distance"`
+	Tracked_Mileage          float64              `json:"tracked_mileage" bson:"tracked_mileage"`
+	Mileage_Variance         float64              `json:"mileage_variance" bson:"mileage_variance"`
+	Variance_Level           TEST_VarianceLevel   `json:"variance_level" bson:"variance_level"`
+	Calculated_Reimbursement float64              `json:"calculated_reimbursement" bson:"calculated_reimbursement"`
+	Tracked_Reimbursement    float64              `json:"tracked_reimbursement" bson:"tracked_reimbursement"`
+	Created_At               time.Time            `json:"created_at" bson:"created_at"`
+	Action_History           []Action             `json:"action_history" bson:"action_history"`
+	Current_User             string               `json:"current_user" bson:"current_user"`
+	Current_Status           string               `json:"current_status" bson:"current_status"`
+	Last_User_Before_Reject  string               `json:"last_user_before_reject" bson:"last_user_before_reject"`
+	Is_Active                bool                 `json:"is_active" bson:"is_active"`
 }
 
 type TEST_MileageTrackingRes struct {
-	ID               string             `json:"id" bson:"_id"`
-	User_ID          string             `json:"user_id" bson:"user_id"`
-	Date             time.Time          `json:"date" bson:"date"`
-	Reimbursement    float64            `json:"reimbursement" bson:"reimbursement"`
-	Mileage          float64            `json:"mileage" bson:"mileage"`
-	Trip_Mileage     float64            `json:"trip_mileage" bson:"trip_mileage"`
-	Mileage_Variance float64            `json:"mileage_variance" bson:"mileage_variance"`
-	Variance         TEST_VarianceLevel `json:"variance" bson:"variance"`
-	Current_Status   string             `json:"current_status" bson:"current_status"`
-	Current_User     string             `json:"current_user" bson:"current_user"`
-	Is_Active        bool               `json:"is_active" bson:"is_active"`
+	ID                       string             `json:"id" bson:"_id"`
+	User_ID                  string             `json:"user_id" bson:"user_id"`
+	Date                     time.Time          `json:"date" bson:"date"`
+	Tracked_Reimbursement    float64            `json:"tracked_reimbursement" bson:"tracked_reimbursement"`
+	Calculated_Reimbursement float64            `json:"calculated_reimbursement" bson:"calculated_reimbursement"`
+	Mileage                  float64            `json:"mileage" bson:"mileage"`
+	Trip_Mileage             float64            `json:"trip_mileage" bson:"trip_mileage"`
+	Mileage_Variance         float64            `json:"mileage_variance" bson:"mileage_variance"`
+	Variance                 TEST_VarianceLevel `json:"variance" bson:"variance"`
+	Current_Status           string             `json:"current_status" bson:"current_status"`
+	Current_User             string             `json:"current_user" bson:"current_user"`
+	Is_Active                bool               `json:"is_active" bson:"is_active"`
 }
 
 type TEST_VarianceLevel string
@@ -204,11 +206,12 @@ func (mti *TEST_MileageTrackingInput) CreateRequest(user_id string) (*TEST_Milea
 	new_request.Tolls = *mti.Tolls
 	new_request.Parking = *mti.Parking
 	new_request.Tracked_Points = mti.Tracked_Points
-	new_request.Calculated_Distance = calculated_distance
-	new_request.Trip_Mileage = trip_variance.MatrixDistance
+	new_request.Tracked_Mileage = calculated_distance
+	new_request.Calculated_Distance = trip_variance.MatrixDistance
 	new_request.Mileage_Variance = trip_variance.Difference
 	new_request.Variance_Level = trip_variance.Variance
-	new_request.Reimbursement = *mti.Tolls + *mti.Parking + trip_variance.MatrixDistance*0.655
+	new_request.Calculated_Reimbursement = *mti.Tolls + *mti.Parking + trip_variance.MatrixDistance*0.655
+	new_request.Tracked_Reimbursement = *mti.Tolls + *mti.Parking + calculated_distance*0.655
 	new_request.Created_At = time.Now()
 	new_request.Action_History = first_action
 	new_request.Current_User = bson.TypeNull.String()
@@ -225,16 +228,17 @@ func (mti *TEST_MileageTrackingInput) CreateRequest(user_id string) (*TEST_Milea
 		return nil, err
 	}
 	return &TEST_MileageTrackingRes{
-		ID:               new_request.ID,
-		User_ID:          new_request.User_ID,
-		Date:             new_request.Date,
-		Reimbursement:    new_request.Reimbursement,
-		Mileage:          new_request.Calculated_Distance,
-		Trip_Mileage:     trip_variance.MatrixDistance,
-		Mileage_Variance: trip_variance.Difference,
-		Variance:         trip_variance.Variance,
-		Current_Status:   new_request.Current_Status,
-		Current_User:     new_request.Current_User,
-		Is_Active:        new_request.Is_Active,
+		ID:                       new_request.ID,
+		User_ID:                  new_request.User_ID,
+		Date:                     new_request.Date,
+		Tracked_Reimbursement:    new_request.Tracked_Reimbursement,
+		Calculated_Reimbursement: new_request.Calculated_Reimbursement,
+		Mileage:                  new_request.Calculated_Distance,
+		Trip_Mileage:             trip_variance.MatrixDistance,
+		Mileage_Variance:         trip_variance.Difference,
+		Variance:                 trip_variance.Variance,
+		Current_Status:           new_request.Current_Status,
+		Current_User:             new_request.Current_User,
+		Is_Active:                new_request.Is_Active,
 	}, nil
 }
