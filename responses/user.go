@@ -45,10 +45,10 @@ func DeactivateUser(user_info models.PublicInfo) NilRes {
 		Data:    "null",
 	}
 }
-func UserMileage(user_id string, user_info []models.Mileage_Overview) MileageOverviewsRes {
-	return MileageOverviewsRes{
-		Message: "Mileage Requests for User " + user_id,
-		Data:    user_info,
+func UserMileage(mileage_info models.UserMileage) UserMileageRes {
+	return UserMileageRes{
+		Message: "Mileage Requests for User " + mileage_info.User.ID,
+		Data:    mileage_info,
 	}
 }
 func UserPettyCash(user_id string, user_info []models.Petty_Cash_Overview) PettyCashOverviewsRes {

@@ -15,6 +15,10 @@ type MileageOverviewsRes struct {
 	Message string                    `json:"message"`
 	Data    []models.Mileage_Overview `json:"data"`
 }
+type UserMileageRes struct {
+	Message string             `json:"message"`
+	Data    models.UserMileage `json:"data"`
+}
 type MileagesRes struct {
 	Message string                   `json:"message"`
 	Data    []models.Mileage_Request `json:"data"`

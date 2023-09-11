@@ -4,6 +4,7 @@ import (
 	"context"
 	database "financial-api/db"
 	"financial-api/methods"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -90,30 +91,102 @@ type Mileage_Overview struct {
 	Current_User   string    `json:"current_user" bson:"current_user"`
 	Is_Active      bool      `json:"is_active" bson:"is_active"`
 }
+type UserMileage struct {
+	User               UserNameInfo       `json:"user" bson:"user"`
+	TotalReimbursement float64            `json:"total_reimbursement" bson:"total_reimbursement"`
+	StartDate          time.Time          `json:"start_date" bson:"end_date"`
+	EndDate            time.Time          `json:"end_date" bson:"end_date"`
+	Requests           []Mileage_Overview `json:"request" bson:"requests"`
+}
+
 type FindMileageInput struct {
 	MileageID string `json:"mileage_id" bson:"mileage_id" validate:"required"`
 }
 
 var current_mileage_rate = .655
 
-func GetUserMileage(user_id string) ([]Mileage_Overview, error) {
-	collection, err := database.Use("mileage_requests")
-	requests := make([]Mileage_Overview, 0)
-	if err != nil {
-		return []Mileage_Overview{}, err
+func endMonthDay(monthString string) string {
+	switch monthString {
+	case "01":
+	case "03":
+	case "05":
+	case "07":
+	case "08":
+	case "10":
+	case "12":
+		return "-31"
+	default:
+		return "-30"
 	}
-	filter := bson.D{{Key: "user_id", Value: user_id}}
+	return "-30"
+}
+func GetUserMileage(user_id string, start_month string, end_month string) (*UserMileage, error) {
+	collection, err := database.Use("mileage_requests")
+	res := new(UserMileage)
+	if err != nil {
+		return res, err
+	}
+	user_info := new(UserNameInfo)
+	var start_date time.Time
+	var end_date time.Time
+	layout := "2006-01-02"
+	if start_month != "" && len(start_month) > 0 {
+		start_date, _ = time.Parse(layout, start_month+"-01")
+	}
+
+	if end_month != "" && len(end_month) > 0 {
+		end_day := endMonthDay(strings.Split(end_month, "-")[1])
+		end_date, _ = time.Parse(layout, end_month+end_day)
+	}
+	requests := make([]Mileage_Overview, 0)
+	user_name, err := FindUserName(user_id)
+	if err != nil {
+		return res, err
+	}
+	user_info.ID = user_id
+	user_info.Name = user_name
+	var filter bson.D
+	var zero_time time.Time
+	if start_date == zero_time && end_date == zero_time {
+		filter = bson.D{{Key: "user_id", Value: user_id}}
+	}
+	if start_date == zero_time && end_date != zero_time {
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.D{{Key: "$lte", Value: end_date}}}}
+	}
+	if end_date == zero_time && start_date != zero_time {
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.D{{Key: "$gte", Value: start_date}}}}
+	}
+	if end_date != zero_time && start_date != zero_time {
+		filter = bson.D{{Key: "user_id", Value: user_id}, {Key: "date", Value: bson.D{{Key: "$gte", Value: start_date}, {Key: "$lte", Value: end_date}}}}
+	}
 	projection := bson.D{{Key: "_id", Value: 1}, {Key: "user_id", Value: 1}, {Key: "date", Value: 1}, {Key: "reimbursement", Value: 1}, {Key: "current_user", Value: 1}, {Key: "current_status", Value: 1}, {Key: "is_active", Value: 1}}
-	opts := options.Find().SetProjection(projection)
+	opts := options.Find().SetProjection(projection).SetSort(bson.D{{Key: "date", Value: 1}})
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
-		return []Mileage_Overview{}, err
+		return res, err
 	}
 	err = cursor.All(context.TODO(), &requests)
 	if err != nil {
-		return []Mileage_Overview{}, err
+		return res, err
 	}
-	return requests, nil
+	total := 0.00
+	for _, request := range requests {
+		total = total + request.Reimbursement
+	}
+	res.TotalReimbursement = total
+	res.Requests = requests
+	if start_date == zero_time && len(requests) > 0 {
+		res.StartDate = requests[0].Date
+	} else {
+		res.StartDate = start_date
+	}
+	if end_date == zero_time && len(requests) > 0 {
+		res.EndDate = requests[len(requests)-1].Date
+	} else {
+		res.EndDate = end_date
+	}
+	res.User = *user_info
+	return res, nil
 }
 func GetUserMileageDetail(user_id string) ([]Mileage_Request, error) {
 	collection, err := database.Use("mileage_requests")

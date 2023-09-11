@@ -15,7 +15,7 @@ var Collection *mongo.Collection
 
 func Use(collection_name string) (*mongo.Collection, error) {
 	ATLAS_URI := config.ENV("ATLAS_URI")
-	clientOptions := options.Client().ApplyURI(ATLAS_URI).SetMaxConnIdleTime(time.Second * 5)
+	clientOptions := options.Client().ApplyURI(ATLAS_URI).SetMaxConnIdleTime(time.Second * 5).SetMaxPoolSize(10)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		return nil, err

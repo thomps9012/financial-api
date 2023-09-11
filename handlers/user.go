@@ -131,6 +131,12 @@ func DeactivateUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(responses.DeactivateUser(user_info))
 }
 
+type UserMileageBody struct {
+	UserID     string `json:"user_id" bson:"user_id" validate:"required"`
+	StartMonth string `json:"start_month" bson:"start_month"`
+	EndMonth   string `json:"end_month" bson:"end_month"`
+}
+
 // @id user-mileage
 // @summary user mileage
 // @description gathers more detailed information on a specific user's mileage requests
@@ -141,8 +147,8 @@ func DeactivateUser(c *fiber.Ctx) error {
 // @router /user/mileage [get]
 func UserMileage(c *fiber.Ctx) error {
 	var mr *methods.MalformedRequest
-	user_id_body := new(UserIDBody)
-	err := methods.DecodeJSONBody(c, user_id_body)
+	user_mileage_body := new(UserMileageBody)
+	err := methods.DecodeJSONBody(c, user_mileage_body)
 	if err != nil {
 		if errors.As(err, &mr) {
 			return c.Status(mr.Status).JSON(responses.MalformedRequest(mr.Status, mr.Msg))
@@ -150,17 +156,17 @@ func UserMileage(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 		}
 	} else {
-		c.BodyParser(user_id_body)
+		c.BodyParser(user_mileage_body)
 	}
-	errors := methods.ValidateStruct(*user_id_body)
+	errors := methods.ValidateStruct(*user_mileage_body)
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(responses.MalformedBody(errors))
 	}
-	user_info, err := models.GetUserMileage(user_id_body.UserID)
+	user_mileage, err := models.GetUserMileage(user_mileage_body.UserID, user_mileage_body.StartMonth, user_mileage_body.EndMonth)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(responses.ServerError(err.Error()))
 	}
-	return c.Status(fiber.StatusOK).JSON(responses.UserMileage(user_id_body.UserID, user_info))
+	return c.Status(fiber.StatusOK).JSON(responses.UserMileage(*user_mileage))
 }
 
 // @id user-petty_cash

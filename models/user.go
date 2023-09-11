@@ -41,9 +41,8 @@ type User struct {
 }
 
 type UserNameInfo struct {
-	ID        string `json:"id" bson:"_id"`
-	Name      string `json:"name" bson:"name"`
-	Is_Active bool   `json:"is_active" bson:"is_active"`
+	ID   string `json:"id" bson:"_id"`
+	Name string `json:"name" bson:"name"`
 }
 
 type PublicInfo struct {
