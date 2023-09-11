@@ -115,6 +115,8 @@ func endMonthDay(monthString string) string {
 	case "10":
 	case "12":
 		return "-31"
+	case "02":
+		return "-28"
 	default:
 		return "-30"
 	}
