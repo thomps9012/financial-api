@@ -96,7 +96,7 @@ type UserMileage struct {
 	TotalReimbursement float64            `json:"total_reimbursement" bson:"total_reimbursement"`
 	StartDate          time.Time          `json:"start_date" bson:"end_date"`
 	EndDate            time.Time          `json:"end_date" bson:"end_date"`
-	Requests           []Mileage_Overview `json:"request" bson:"requests"`
+	Requests           []Mileage_Overview `json:"requests" bson:"requests"`
 }
 
 type FindMileageInput struct {
